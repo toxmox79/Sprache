@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sprachen lernen – Dekodiermethode</title>
+<meta name="theme-color" content="#e8eef3">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sprachen">
+
+<style>
+:root{
+  --bg:#e8eef3; --surface:#eef3f7; --surface2:#e4eaf0; --text:#24313d; --muted:#6d7884;
+  --accent:#5b7cfa; --accent2:#dfe6ff; --danger:#a14b4b; --ok:#2f7d57; --line:rgba(69,87,104,.14);
+  --out:9px 9px 22px rgba(154,169,182,.38),-9px -9px 22px rgba(255,255,255,.92);
+  --in:inset 4px 4px 8px rgba(159,173,186,.28),inset -4px -4px 8px rgba(255,255,255,.86);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+button,select,input{font:inherit}
+button{color:inherit}
+.app{max-width:1180px;margin:auto;padding:16px 16px 34px}
+.hero{display:flex;gap:16px;justify-content:space-between;align-items:center;margin:4px 0 20px}
+h1{font-size:clamp(27px,5vw,44px);line-height:1.05;margin:0;letter-spacing:-.03em}
+.tagline{color:var(--muted);margin-top:7px;font-size:14px;max-width:720px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--out)}
+.btn,.langbtn,.navbtn,.choice,.sound,.segbtn{border:0;background:var(--surface);box-shadow:5px 5px 12px rgba(154,169,182,.37),-5px -5px 12px rgba(255,255,255,.92);border-radius:15px;min-height:44px;cursor:pointer}
+.btn{padding:10px 14px;font-weight:650}
+.btn.primary,.segbtn.active,.navbtn.active{background:var(--accent2);color:#263b8d}
+.btn:active,.langbtn:active,.navbtn:active,.choice:active,.sound:active,.segbtn:active{box-shadow:var(--in)}
+.home-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.langbtn{padding:16px;text-align:left;min-height:168px;display:flex;flex-direction:column;justify-content:space-between}
+.langflag{font-size:30px}
+.langname{font-size:19px;font-weight:800;margin-top:10px}
+.langnote{font-size:12px;color:var(--muted);line-height:1.35;margin-top:7px}
+.method-overview{margin-top:16px;padding:18px}
+.method-overview h2{margin:0 0 8px;font-size:21px}
+.method-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.method-step{padding:13px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.2)}
+.method-step b{display:block;font-size:14px}
+.method-step small{display:block;color:var(--muted);margin-top:5px;line-height:1.35}
+.course{display:none}
+.course.active{display:block}
+.topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:15px}
+.course-title{display:flex;align-items:center;gap:10px;min-width:0}
+.course-title .flag{font-size:28px}
+.course-title b{font-size:20px}
+.course-title small{display:block;color:var(--muted);margin-top:2px}
+.layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:17px}
+.side{padding:15px;height:max-content;position:sticky;top:10px}
+.progress-label{font-size:12px;color:var(--muted)}
+.progress-num{font-size:29px;font-weight:850;margin-top:3px}
+.progress{height:9px;border-radius:99px;background:#d7dfe6;overflow:hidden;margin:9px 0 13px}
+.progress>div{height:100%;background:var(--accent);width:0;transition:.25s}
+.nav{display:grid;gap:7px}
+.navbtn{text-align:left;padding:10px 11px;font-size:13px;line-height:1.25}
+.content{display:grid;gap:15px;min-width:0}
+.panel{padding:19px}
+.lesson-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.kicker{color:var(--muted);font-size:12px;font-weight:650}
+h2{margin:3px 0 5px;font-size:29px;letter-spacing:-.02em}
+h3{margin:0 0 11px;font-size:20px}
+.goal{font-size:14px;color:var(--muted);line-height:1.45}
+.method-card{margin-top:14px;padding:13px 14px;border-radius:17px;background:var(--accent2);color:#33436c}
+.method-card b{font-size:13px}
+.method-card div{margin-top:4px;font-size:13px;line-height:1.4}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.segbtn{padding:9px 12px;font-size:13px;font-weight:650}
+.phrases{display:grid;gap:11px}
+.phrase{border-radius:19px;background:var(--surface);box-shadow:var(--in);padding:15px;display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:11px;align-items:start}
+.original{font-size:20px;font-weight:800;line-height:1.35;word-break:break-word}
+.original.ar{font-family:"Noto Naskh Arabic","Segoe UI",Tahoma,Arial,sans-serif;font-size:26px;direction:rtl;text-align:right}
+.translit{margin-top:5px;color:#56636e;font-size:13px;font-style:italic}
+.analysis{margin-top:8px;font-size:13px;color:#56636e}
+.literal{margin-top:5px;font-size:13px;color:var(--muted)}
+.natural{margin-top:6px;font-size:14px;font-weight:650}
+.sound{width:48px;padding:0;font-size:19px}
+.patterns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pattern{padding:13px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.2)}
+.pattern code{font-family:inherit;font-weight:800;font-size:14px}
+.pattern small{display:block;color:var(--muted);margin-top:5px;line-height:1.35}
+.special{padding:15px;border-radius:19px;background:var(--surface);box-shadow:var(--in);margin-top:12px}
+.special-title{font-weight:800;margin-bottom:8px}
+.morpheme-row,.root-row,.chunk-row{display:flex;flex-wrap:wrap;gap:7px}
+.morph,.rootchip,.chunkchip{padding:8px 10px;border-radius:12px;background:var(--accent2);font-size:13px;font-weight:700}
+.arrow{align-self:center;color:var(--muted)}
+.quizq{font-weight:750;margin-bottom:11px}
+.choices{display:grid;gap:9px}
+.choice{text-align:left;padding:12px 14px;font-weight:650}
+.choice:disabled{opacity:.72;cursor:default}
+.feedback{min-height:24px;margin-top:10px;font-size:14px;font-weight:800}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.routine{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.routine>div{padding:12px;border:1px solid var(--line);border-radius:16px}
+.routine b{font-size:13px}
+.routine small{display:block;color:var(--muted);margin-top:4px;line-height:1.35}
+.footer-note{color:var(--muted);font-size:12px;line-height:1.45;margin-top:12px}
+.hidden{display:none!important}
+
+.original.cjk{font-size:28px;letter-spacing:.03em}
+.trace-wrap{display:grid;gap:12px}
+.trace-targets{display:flex;flex-wrap:wrap;gap:8px}
+.trace-target{min-width:48px;padding:8px 12px;border:0;border-radius:13px;background:var(--surface);box-shadow:4px 4px 10px rgba(154,169,182,.35),-4px -4px 10px rgba(255,255,255,.9);cursor:pointer;font-size:20px;font-weight:800}
+.trace-target.active{background:var(--accent2);color:#263b8d}
+.trace-stage{border-radius:19px;overflow:hidden;background:var(--surface);box-shadow:var(--in);padding:10px}
+#traceCanvas{display:block;width:100%;height:auto;max-height:330px;border-radius:14px;touch-action:none;background:#eef3f7}
+.trace-help{font-size:13px;color:var(--muted);line-height:1.45}
+.trace-actions{display:flex;flex-wrap:wrap;gap:8px}
+
+@media(max-width:950px){.home-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){
+  .layout{grid-template-columns:1fr}.side{position:static}.nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .method-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.patterns,.routine{grid-template-columns:1fr}
+  .lesson-head{flex-direction:column}.topbar{align-items:flex-start}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:430px){
+  .app{padding:11px 11px 28px}.home-grid{grid-template-columns:1fr}.langbtn{min-height:122px}.nav{grid-template-columns:1fr}
+  .panel{padding:15px}.method-steps{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <section id="home">
+    <div class="hero">
+      <div>
+        <h1>Sprachen gehirn-gerecht lernen</h1>
+        <div class="tagline">Ein gemeinsames Dekodierprinzip – aber jede Sprache bekommt genau die Lernansicht, die zu ihrer Struktur passt.</div>
+      </div>
+      <button id="installBtn" class="btn" hidden>App installieren</button>
+    </div>
+
+    <div id="languageGrid" class="home-grid"></div>
+
+    <section class="card method-overview">
+      <h2>Gemeinsamer Kern</h2>
+      <div class="goal">Die App orientiert sich an den Birkenbihl-Prinzipien: Bedeutung zuerst, Grammatik aus Beispielen erkennen und bekannten Stoff häufig hören. Die Umsetzung wird jedoch an die jeweilige Sprache angepasst.</div>
+      <div class="method-steps">
+        <div class="method-step"><b>1 · Dekodieren</b><small>Wort- oder morphemnah verstehen, bevor etwas auswendig gelernt wird.</small></div>
+        <div class="method-step"><b>2 · Aktiv hören</b><small>Original hören und gleichzeitig die Dekodierung mitlesen.</small></div>
+        <div class="method-step"><b>3 · Passiv hören</b><small>Nur bereits verstandenes Material später nebenbei wiederholen.</small></div>
+        <div class="method-step"><b>4 · Muster entdecken</b><small>Strukturen über echte Sätze statt über isolierte Regelblöcke aufnehmen.</small></div>
+      </div>
+    </section>
+  </section>
+
+  <section id="course" class="course">
+    <div class="topbar">
+      <button id="homeBtn" class="btn">← Sprachen</button>
+      <div class="course-title">
+        <span id="courseFlag" class="flag"></span>
+        <div><b id="courseName"></b><small id="courseMethod"></small></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <aside class="card side">
+        <div class="progress-label">Fortschritt in dieser Sprache</div>
+        <div id="progressNum" class="progress-num">0%</div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div id="lessonNav" class="nav"></div>
+      </aside>
+
+      <main class="content">
+        <section class="card panel">
+          <div class="lesson-head">
+            <div>
+              <div id="lessonMeta" class="kicker"></div>
+              <h2 id="lessonTitle"></h2>
+              <div id="lessonGoal" class="goal"></div>
+            </div>
+            <button id="listenAll" class="btn primary">▶ Dialog hören</button>
+          </div>
+          <div class="method-card"><b>Warum diese Lektion hier anders funktioniert:</b><div id="lessonMethod"></div></div>
+        </section>
+
+        <section class="card panel">
+          <div class="lesson-head" style="margin-bottom:13px">
+            <h3>Dekodieren</h3>
+            <div id="viewControls" class="controls"></div>
+          </div>
+          <div id="phraseList" class="phrases"></div>
+        </section>
+
+        <section class="card panel">
+          <h3>Muster erkennen</h3>
+          <div id="patterns" class="patterns"></div>
+          <div id="specialBox" class="special"></div>
+        </section>
+
+        <section id="traceSection" class="card panel hidden">
+          <div class="lesson-head">
+            <div>
+              <h3>Nachzeichnen</h3>
+              <div class="goal">Mit Finger oder Stift die graue Vorlage nachfahren. Bei Arabisch werden einzelne Buchstaben und verbundene Wortformen geübt.</div>
+            </div>
+            <button id="traceSpeak" class="btn">🔊 Vorlage hören</button>
+          </div>
+          <div class="trace-wrap" style="margin-top:13px">
+            <div id="traceTargets" class="trace-targets"></div>
+            <div class="trace-stage"><canvas id="traceCanvas" width="800" height="420" aria-label="Nachzeichenfläche"></canvas></div>
+            <div id="traceLabel" class="trace-help"></div>
+            <div class="trace-actions">
+              <button id="traceUndo" class="btn">↶ Letzten Strich löschen</button>
+              <button id="traceClear" class="btn">Fläche leeren</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <h3>Mini-Transfer</h3>
+          <div id="quizQuestion" class="quizq"></div>
+          <div id="choices" class="choices"></div>
+          <div id="feedback" class="feedback" aria-live="polite"></div>
+          <div class="actions">
+            <button id="nextQuiz" class="btn primary">Nächste Aufgabe</button>
+            <button id="completeLesson" class="btn">Lektion abschließen</button>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <h3 id="routineTitle">Lernroutine</h3>
+          <div id="routine" class="routine"></div>
+          <div class="footer-note">Die Sprachausgabe verwendet die Stimmen des Geräts. Verfügbare Stimmen und Aussprachequalität unterscheiden sich je nach Android-, iOS- oder Browser-Version.</div>
+        </section>
+      </main>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+const courses = {
+tr:{
+ name:"Türkisch",flag:"🇹🇷",voice:"tr-TR",method:"Morphem-Ketten statt Wort-für-Wort",
+ home:"Türkisch ist agglutinierend. Deshalb zerlegt die App Wörter in Stamm + Suffixe und zeigt die Satzlogik oft vom Verb am Ende her.",
+ controls:["analysis","literal","natural"],
+ controlLabels:{analysis:"Bausteine",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[
+  ["Morpheme sehen","Suffixketten wie ev-ler-im-de als Bedeutungskette lesen."],
+  ["Aktiv hören","Den ganzen Satz hören, während die Bausteine sichtbar bleiben."],
+  ["Verb am Ende","Zuerst Subjekt/Objekte erfassen, dann das Satzverb bewusst erwarten."],
+  ["Passiv hören","Nur bereits dekodierte Dialoge nebenbei wiederholen."]
+ ],
+ lessons:[
+  {title:"Merhaba!",goal:"Begrüßen und sich vorstellen.",method:"Die ersten Sätze bleiben kurz. Endungen werden sofort sichtbar, damit Türkisch nicht wie eine Folge sehr langer Wörter wirkt.",
+   phrases:[
+    ["Merhaba!","merhaba","hallo","Hallo!"],
+    ["Nasılsın?","nasıl-sın","wie-bist-du","Wie geht es dir?"],
+    ["İyiyim, teşekkür ederim.","iyi-yim · teşekkür eder-im","gut-bin-ich · Dank tue-ich","Mir geht es gut, danke."],
+    ["Benim adım Thomas.","ben-im · ad-ım Thomas","ich-mein · Name-mein Thomas","Ich heiße Thomas."],
+    ["Senin adın ne?","sen-in · ad-ın · ne","du-dein · Name-dein · was","Wie heißt du?"]
+   ],
+   patterns:[["-im / -ım","markiert hier Zugehörigkeit oder Ich-Bezug."],["-sın","zeigt in nasılsın die 2. Person Singular."],["ne?","was?"]],
+   special:{type:"morph",title:"Morphem-Lupe",items:["ad","-ım","→","mein Name"]},
+   quiz:[["Was steckt in „adım“?",["ad + -ım = mein Name","ad + -ım = dein Name","ad + -ım = Name nicht"],0],["Was bedeutet „Nasılsın?“",["Wie heißt du?","Wie geht es dir?","Wo wohnst du?"],1]]
+  },
+  {title:"Woher & wo?",goal:"Herkunft und Wohnort ausdrücken.",method:"Lokativ und Herkunft werden als Suffixe gelernt, nicht als separate Präpositionen.",
+   phrases:[
+    ["Almanya'dan geliyorum.","Almanya-dan · gel-iyor-um","Deutschland-aus · komm-gerade-ich","Ich komme aus Deutschland."],
+    ["Nerede yaşıyorsun?","nere-de · yaşa-ıyor-sun","wo-in · leb-gerade-du","Wo wohnst du?"],
+    ["İstanbul'da yaşıyorum.","İstanbul-da · yaşa-ıyor-um","Istanbul-in · leb-gerade-ich","Ich wohne in Istanbul."],
+    ["Burada çalışıyorum.","bura-da · çalış-ıyor-um","hier-in · arbeit-gerade-ich","Ich arbeite hier."]
+   ],
+   patterns:[["-da / -de","in, an, bei – als Lokativsuffix."],["-dan / -den","aus, von – als Herkunftssuffix."],["-yorum / -yorsun","laufende Handlung: ich / du."]],
+   special:{type:"morph",title:"Ortsbaustein",items:["İstanbul","-da","→","in Istanbul"]},
+   quiz:[["Welche Endung bedeutet hier „aus“?",["-da","-dan","-ım"],1],["„İstanbul'da“ bedeutet …",["aus Istanbul","nach Istanbul","in Istanbul"],2]]
+  },
+  {title:"Ich möchte …",goal:"Wünsche ausdrücken und die Verbendstellung spüren.",method:"Türkische Sätze werden in Bedeutungspaketen gelesen. Das zentrale Verb steht häufig am Ende.",
+   phrases:[
+    ["Su istiyorum.","su · iste-iyor-um","Wasser · will-ich","Ich möchte Wasser."],
+    ["Kahve istiyorum.","kahve · iste-iyor-um","Kaffee · will-ich","Ich möchte Kaffee."],
+    ["Yemek yemek istiyorum.","yemek · ye-mek · iste-iyor-um","Essen · essen-zu · will-ich","Ich möchte essen."],
+    ["Eve gitmek istiyorum.","ev-e · git-mek · iste-iyor-um","Haus-zu · gehen-zu · will-ich","Ich möchte nach Hause gehen."]
+   ],
+   patterns:[["-mek / -mak","Infinitiv: etwas tun."],["istemek","wollen / möchten."],["Satzende","Das Hauptverb trägt oft die wichtigste Personeninformation."]],
+   special:{type:"morph",title:"Satz von hinten lesen",items:["Eve","gitmek","istiyorum","→","Ich möchte nach Hause gehen"]},
+   quiz:[["Was ist der Hauptkern von „gitmek istiyorum“?",["ich wohne","ich möchte gehen","ich bin gegangen"],1],["Wo steht das zentrale Verb häufig?",["am Satzanfang","am Satzende","immer in der Mitte"],1]]
+  },
+  {title:"Meine Sachen",goal:"Plural, Besitz und Ort kombinieren.",method:"Jetzt werden mehrere Suffixe gestapelt. Die App liest das Wort als transparente Kette.",
+   phrases:[
+    ["Evlerim burada.","ev-ler-im · bura-da","Haus-mehrere-meine · hier-in","Meine Häuser sind hier."],
+    ["Çocuklarım evde.","çocuk-lar-ım · ev-de","Kind-mehrere-meine · Haus-in","Meine Kinder sind zu Hause."],
+    ["Telefonum çantamda.","telefon-um · çanta-m-da","Telefon-mein · Tasche-meine-in","Mein Telefon ist in meiner Tasche."]
+   ],
+   patterns:[["-lar / -ler","Plural."],["Possessivsuffix","-ım/-im/-um/-üm: mein."],["Suffix-Reihenfolge","Stamm → Plural → Besitz → Fall/Ort."]],
+   special:{type:"morph",title:"Komplette Kette",items:["ev","-ler","-im","-de","→","in meinen Häusern"]},
+   quiz:[["Welche Reihenfolge ist typisch?",["Ort → Stamm → Besitz","Stamm → Plural → Besitz → Ort","Plural → Ort → Stamm"],1],["„çocuklarım“ heißt …",["mein Kind","meine Kinder","ihre Kinder"],1]]
+  }
+ ]
+},
+it:{
+ name:"Italienisch",flag:"🇮🇹",voice:"it-IT",method:"Klang + feste Chunks + kleine Funktionswörter",
+ home:"Italienisch ist relativ lauttreu. Die App nutzt deshalb früh lautes Mitlesen und lernt Artikel, Präpositionen und Pronomen als feste Chunks.",
+ controls:["analysis","literal","natural"],
+ controlLabels:{analysis:"Chunks",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[
+  ["Dekodieren","Kurze Wortgruppen statt isolierter Einzelwörter erfassen."],
+  ["Laut mitlesen","Die relativ transparente Schreibung früh mit dem Klang verbinden."],
+  ["Chunks hören","Formeln wie mi chiamo, vorrei, posso… als Einheiten speichern."],
+  ["Passiv wiederholen","Bekannte Dialoge in normalem Tempo nebenbei hören."]
+ ],
+ lessons:[
+  {title:"Ciao!",goal:"Begrüßen und sich vorstellen.",method:"Schon am Anfang werden feste Gesprächsbausteine als ganze Einheiten gelernt.",
+   phrases:[
+    ["Ciao!","ciao","hallo","Hallo!"],["Come stai?","come · stai","wie · bist-du","Wie geht es dir?"],
+    ["Sto bene, grazie.","sto bene · grazie","bin gut · danke","Mir geht es gut, danke."],
+    ["Mi chiamo Thomas.","mi chiamo · Thomas","mich nenne-ich · Thomas","Ich heiße Thomas."],
+    ["Come ti chiami?","come · ti chiami","wie · dich nennst-du","Wie heißt du?"]
+   ],
+   patterns:[["mi chiamo…","ich heiße … als fertiger Chunk."],["come…?","wie …?"],["sto bene","mir geht es gut."]],
+   special:{type:"chunk",title:"Chunk statt Grammatik",items:["mi chiamo","→","ich heiße"]},
+   quiz:[["„Mi chiamo“ bedeutet …",["ich heiße","ich komme","ich wohne"],0],["„Come stai?“ bedeutet …",["Wo bist du?","Wie geht es dir?","Wie heißt du?"],1]]
+  },
+  {title:"Herkunft & Wohnen",goal:"Sagen, woher man kommt und wo man lebt.",method:"Präposition + Artikel werden gemeinsam gelernt, weil sie im Italienischen häufig verschmelzen.",
+   phrases:[
+    ["Vengo dalla Germania.","vengo · dalla Germania","komme-ich · aus-der Deutschland","Ich komme aus Deutschland."],
+    ["Dove abiti?","dove · abiti","wo · wohnst-du","Wo wohnst du?"],
+    ["Abito a Roma.","abito · a Roma","wohne-ich · in Rom","Ich wohne in Rom."],
+    ["Lavoro qui.","lavoro · qui","arbeite-ich · hier","Ich arbeite hier."]
+   ],
+   patterns:[["dalla","da + la → aus der."],["a + Stadt","a Roma, a Milano."],["Verbform","Das Pronomen kann oft wegfallen: abito = ich wohne."]],
+   special:{type:"chunk",title:"Kleine Wörter zusammen lernen",items:["da","la","→","dalla"]},
+   quiz:[["„Vengo dalla Germania“ heißt …",["Ich wohne in Deutschland.","Ich komme aus Deutschland.","Ich fahre nach Deutschland."],1],["Bei Städten steht häufig …",["a","con","per"],0]]
+  },
+  {title:"Im Café",goal:"Höflich bestellen und bezahlen.",method:"Höfliche Formeln werden als komplette Chunks gespeichert, ohne zuerst den Konjunktiv erklären zu müssen.",
+   phrases:[
+    ["Vorrei un caffè.","vorrei · un caffè","würde-wollen-ich · einen Kaffee","Ich hätte gerne einen Kaffee."],
+    ["Un'acqua, per favore.","un'acqua · per favore","ein Wasser · bitte","Ein Wasser, bitte."],
+    ["Posso pagare con la carta?","posso pagare · con la carta","kann-ich zahlen · mit der Karte","Kann ich mit Karte bezahlen?"],
+    ["Il conto, per favore.","il conto · per favore","die Rechnung · bitte","Die Rechnung, bitte."]
+   ],
+   patterns:[["vorrei…","ich hätte gerne …"],["posso + Infinitiv","kann ich …"],["per favore","bitte."]],
+   special:{type:"chunk",title:"Restaurant-Chunk",items:["Posso","pagare","→","Kann ich bezahlen"]},
+   quiz:[["Wie fragst du nach der Rechnung?",["Il conto, per favore.","La carta, per favore.","Un tavolo, grazie."],0],["„Vorrei“ ist am besten als … zu lernen.",["isolierte Zeitform","Chunk: ich hätte gerne","Substantiv"],1]]
+  },
+  {title:"Gestern & morgen",goal:"Einfache Vergangenheit und Zukunft verstehen.",method:"Zeitwörter tragen viel Bedeutung. Erst danach wird das Verbmuster bewusst gemacht.",
+   phrases:[
+    ["Ieri ho mangiato qui.","ieri · ho mangiato · qui","gestern · habe-ich gegessen · hier","Gestern habe ich hier gegessen."],
+    ["Ho visto il centro.","ho visto · il centro","habe-ich gesehen · das Zentrum","Ich habe das Zentrum gesehen."],
+    ["Domani vado a Firenze.","domani · vado · a Firenze","morgen · gehe-ich · nach Florenz","Morgen fahre ich nach Florenz."],
+    ["Voglio visitare il museo.","voglio visitare · il museo","will-ich besuchen · das Museum","Ich möchte das Museum besuchen."]
+   ],
+   patterns:[["ho + Partizip","häufige Vergangenheitsform."],["domani + Präsens","im Alltag oft genug für Zukunft."],["voglio + Infinitiv","ich will / möchte …"]],
+   special:{type:"chunk",title:"Zeitanker",items:["ieri","→","Vergangenheit","domani","→","Zukunft"]},
+   quiz:[["„Ieri“ heißt …",["heute","gestern","morgen"],1],["„Ho mangiato“ bedeutet …",["ich habe gegessen","ich esse gerade","ich werde essen"],0]]
+  }
+ ]
+},
+es:{
+ name:"Spanisch",flag:"🇪🇸",voice:"es-ES",method:"Verbformen + Chunks + Pronomen-Auslassung",
+ home:"Spanisch trägt Person und Zeit stark im Verb. Die App markiert deshalb Verbendungen und zeigt, wann das Subjektpronomen einfach wegfallen kann.",
+ controls:["analysis","literal","natural"],
+ controlLabels:{analysis:"Verb-Muster",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[
+  ["Verb erkennen","Zuerst die Verbform als Träger von Person und Zeit identifizieren."],
+  ["Chunks bilden","me llamo, quiero, puedo… als produktive Muster verwenden."],
+  ["Ohne Pronomen hören","Lernen, dass vivo bereits „ich wohne“ enthalten kann."],
+  ["Passiv hören","Bekannte Dialoge wiederholt im natürlichen Rhythmus hören."]
+ ],
+ lessons:[
+  {title:"¡Hola!",goal:"Begrüßen und sich vorstellen.",method:"Die Person steckt häufig bereits im Verb; yo wird deshalb nicht künstlich vor jeden Satz gesetzt.",
+   phrases:[
+    ["¡Hola!","hola","hallo","Hallo!"],["¿Cómo estás?","cómo · estás","wie · bist-du","Wie geht es dir?"],
+    ["Estoy bien, gracias.","estoy bien · gracias","bin-ich gut · danke","Mir geht es gut, danke."],
+    ["Me llamo Thomas.","me llamo · Thomas","mich nenne-ich · Thomas","Ich heiße Thomas."],
+    ["¿Cómo te llamas?","cómo · te llamas","wie · dich nennst-du","Wie heißt du?"]
+   ],
+   patterns:[["me llamo…","ich heiße …"],["estoy","ich bin/befinde mich."],["-as / -s","häufige 2.-Person-Signale in frühen Mustern."]],
+   special:{type:"chunk",title:"Person steckt im Verb",items:["vivo","=","ich wohne","→","yo oft unnötig"]},
+   quiz:[["„Me llamo“ bedeutet …",["ich heiße","ich komme","ich mag"],0],["Warum fehlt oft „yo“?",["weil Spanisch kein Subjekt kennt","weil die Verbform die Person zeigt","weil es nur Umgangssprache ist"],1]]
+  },
+  {title:"Woher & wo?",goal:"Herkunft und Wohnort ausdrücken.",method:"ser und vivir werden als Bedeutungsanker gelernt; kein Tabellenpauken.",
+   phrases:[
+    ["Soy de Alemania.","soy · de Alemania","bin-ich · aus Deutschland","Ich komme aus Deutschland."],
+    ["¿Dónde vives?","dónde · vives","wo · wohnst-du","Wo wohnst du?"],
+    ["Vivo en Madrid.","vivo · en Madrid","wohne-ich · in Madrid","Ich wohne in Madrid."],
+    ["Trabajo aquí.","trabajo · aquí","arbeite-ich · hier","Ich arbeite hier."]
+   ],
+   patterns:[["soy de…","ich bin/komme aus …"],["vivo en…","ich wohne in …"],["-o","in vielen frühen Verben ein Ich-Signal."]],
+   special:{type:"chunk",title:"Produktiver Ich-Block",items:["viv-o","trabaj-o","quier-o","→","ich …"]},
+   quiz:[["„Vivo en Madrid“ heißt …",["Ich arbeite in Madrid.","Ich wohne in Madrid.","Ich fahre nach Madrid."],1],["Welche Form zeigt hier oft „ich“?",["-o","-s","-mos"],0]]
+  },
+  {title:"Ich möchte …",goal:"Wünsche und Fähigkeiten ausdrücken.",method:"Quiero und puedo werden als hochproduktive Satzstarter gelernt.",
+   phrases:[
+    ["Quiero agua.","quiero · agua","will-ich · Wasser","Ich möchte Wasser."],
+    ["Quiero comer.","quiero · comer","will-ich · essen","Ich möchte essen."],
+    ["Puedo pagar con tarjeta.","puedo pagar · con tarjeta","kann-ich zahlen · mit Karte","Ich kann mit Karte bezahlen."],
+    ["No puedo ahora.","no · puedo · ahora","nicht · kann-ich · jetzt","Ich kann jetzt nicht."]
+   ],
+   patterns:[["quiero + Nomen/Infinitiv","ich möchte …"],["puedo + Infinitiv","ich kann …"],["no + Verb","Verneinung direkt vor dem Verb."]],
+   special:{type:"chunk",title:"Satzstarter",items:["Quiero","Puedo","No puedo","→","sofort sprechfähig"]},
+   quiz:[["„Quiero comer“ heißt …",["Ich möchte essen.","Ich kann essen.","Ich habe gegessen."],0],["Wie wird verneint?",["no vor dem Verb","no ans Satzende","Verb verdoppeln"],0]]
+  },
+  {title:"Gestern & morgen",goal:"Über einfache vergangene und kommende Handlungen sprechen.",method:"Zeitanker und häufige Formen werden zuerst als komplette Sätze gehört.",
+   phrases:[
+    ["Ayer comí aquí.","ayer · comí · aquí","gestern · aß-ich · hier","Gestern habe ich hier gegessen."],
+    ["Ayer fui al centro.","ayer · fui · al centro","gestern · ging-ich · zum Zentrum","Gestern war/fuhr ich im Zentrum."],
+    ["Mañana voy a Sevilla.","mañana · voy · a Sevilla","morgen · gehe-ich · nach Sevilla","Morgen fahre ich nach Sevilla."],
+    ["Voy a visitar el museo.","voy a visitar · el museo","gehe-ich zu besuchen · das Museum","Ich werde das Museum besuchen."]
+   ],
+   patterns:[["ayer","Vergangenheitsanker."],["mañana","Zukunftsanker."],["voy a + Infinitiv","sehr gebräuchliche nahe Zukunft."]],
+   special:{type:"chunk",title:"Zukunft als Chunk",items:["voy a","visitar","→","ich werde besuchen"]},
+   quiz:[["„Mañana“ heißt …",["gestern","heute","morgen"],2],["„Voy a visitar“ bedeutet …",["ich habe besucht","ich werde besuchen","ich besuche nie"],1]]
+  }
+ ]
+},
+ro:{
+ name:"Rumänisch",flag:"🇷🇴",voice:"ro-RO",method:"Satzmuster + angehängter Artikel + romanische Anker",
+ home:"Rumänisch verbindet romanische Strukturen mit Besonderheiten wie dem angehängten bestimmten Artikel. Die App zeigt bekannte Wortstämme, aber markiert diese Unterschiede bewusst.",
+ controls:["analysis","literal","natural"],
+ controlLabels:{analysis:"Muster",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[
+  ["Dekodieren","Die rumänische Satzstruktur möglichst nah am Original lesen."],
+  ["Romanische Anker","Vertraute Wörter erkennen, ohne sich darauf zu verlassen."],
+  ["Artikel entdecken","Formen wie masa = der Tisch als Wortmuster wahrnehmen."],
+  ["Passiv hören","Bekannte Dialoge später nur auf Rumänisch hören."]
+ ],
+ lessons:[
+  {title:"Bună!",goal:"Begrüßen und sich vorstellen.",method:"Die Dekodierung bleibt sehr nah an der Wortstellung, damit sich typische rumänische Muster früh festsetzen.",
+   phrases:[
+    ["Bună!","bună","gut / hallo","Hallo!"],["Ce faci?","ce · faci","was · machst-du","Wie geht es dir?"],
+    ["Bine, mulțumesc.","bine · mulțumesc","gut · danke-ich","Gut, danke."],
+    ["Mă numesc Thomas.","mă numesc · Thomas","mich nenne-ich · Thomas","Ich heiße Thomas."],
+    ["Cum te numești?","cum · te numești","wie · dich nennst-du","Wie heißt du?"]
+   ],
+   patterns:[["mă numesc…","ich heiße …"],["ce…?","was …?"],["cum…?","wie …?"]],
+   special:{type:"chunk",title:"Satzmuster",items:["mă numesc","→","ich heiße"]},
+   quiz:[["„Mă numesc“ bedeutet …",["ich heiße","ich wohne","ich komme"],0],["„Ce faci?“ bedeutet …",["Was machst du?/Wie geht es dir?","Wo wohnst du?","Wie heißt du?"],0]]
+  },
+  {title:"Herkunft & Wohnen",goal:"Sagen, woher man kommt und wo man wohnt.",method:"Personenformen werden über wiederkehrende Satzpaare statt Konjugationstabellen gelernt.",
+   phrases:[
+    ["Sunt din Germania.","sunt · din Germania","bin-ich · aus Deutschland","Ich komme aus Deutschland."],
+    ["Unde locuiești?","unde · locuiești","wo · wohnst-du","Wo wohnst du?"],
+    ["Locuiesc în București.","locuiesc · în București","wohne-ich · in Bukarest","Ich wohne in Bukarest."],
+    ["Lucrez aici.","lucrez · aici","arbeite-ich · hier","Ich arbeite hier."]
+   ],
+   patterns:[["sunt…","ich bin …"],["locuiesc…","ich wohne …"],["unde…?","wo …?"]],
+   special:{type:"chunk",title:"Ich-Formen als ganze Muster",items:["sunt","locuiesc","lucrez","→","ich …"]},
+   quiz:[["„Unde locuiești?“ heißt …",["Wie heißt du?","Wo wohnst du?","Wo arbeitest du?"],1],["„Sunt din Germania“ bedeutet …",["Ich komme aus Deutschland.","Ich fahre nach Deutschland.","Ich wohne in Deutschland."],0]]
+  },
+  {title:"Essen & Trinken",goal:"Hunger, Durst und Wünsche ausdrücken.",method:"Ungewöhnliche Denkweisen wie mi-e foame werden wortnah gezeigt statt sofort geglättet.",
+   phrases:[
+    ["Mi-e foame.","mi-e · foame","mir-ist · Hunger","Ich habe Hunger."],
+    ["Mi-e sete.","mi-e · sete","mir-ist · Durst","Ich habe Durst."],
+    ["Vreau apă.","vreau · apă","will-ich · Wasser","Ich möchte Wasser."],
+    ["Vreau să mănânc.","vreau · să · mănânc","will-ich · dass · esse-ich","Ich möchte essen."]
+   ],
+   patterns:[["mi-e…","mir ist …"],["vreau…","ich möchte …"],["vreau să + Verb","ich möchte etwas tun."]],
+   special:{type:"chunk",title:"Rumänisch denkt anders",items:["Mi-e","foame","→","mir ist Hunger"]},
+   quiz:[["„Mi-e sete“ bedeutet …",["Ich habe Hunger.","Ich habe Durst.","Ich bin müde."],1],["„Vreau să mănânc“ heißt …",["Ich möchte essen.","Ich kann essen.","Ich habe gegessen."],0]]
+  },
+  {title:"Artikel am Wort",goal:"Eine typische rumänische Besonderheit erkennen.",method:"Der bestimmte Artikel wird nicht als separates Wort gelernt, sondern als Teil der Nomenform sichtbar gemacht.",
+   phrases:[
+    ["masa","masă + -a","Tisch + der","der Tisch"],
+    ["cartea","carte + -a","Buch + das","das Buch"],
+    ["băiatul","băiat + -ul","Junge + der","der Junge"],
+    ["hotelul","hotel + -ul","Hotel + das","das Hotel"]
+   ],
+   patterns:[["-a","häufiger angehängter Artikel bei femininen Nomen."],["-ul","häufiger angehängter Artikel bei mask./neutr. Nomen."],["Wortform","Artikel wird hinten sichtbar statt davor."]],
+   special:{type:"morph",title:"Artikel-Lupe",items:["băiat","-ul","→","der Junge"]},
+   quiz:[["Wo steht der bestimmte Artikel im Rumänischen häufig?",["als eigenes Wort davor","angehängt am Nomen","immer am Satzende"],1],["„hotelul“ bedeutet …",["ein Hotel","das Hotel","Hotels"],1]]
+  }
+ ]
+},
+ar:{
+ name:"Arabisch",flag:"🇦🇪",voice:"ar-SA",translit:true,rtl:true,rate:.78,method:"Schrift + Transliteration + Wurzeln + Audio",
+ home:"Arabisch braucht einen anderen Einstieg: rechts-nach-links-Schrift, optionale Transliteration und Wortfamilien aus Konsonantenwurzeln. Die App trennt deshalb Klang, Schrift und Wurzelanalyse.",
+ controls:["translit","analysis","literal","natural"],
+ controlLabels:{translit:"Transliteration",analysis:"Wurzel/Muster",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[
+  ["Erst hören","Den Satz einmal nur hören, bevor die Schrift analysiert wird."],
+  ["Schrift + Klang","Arabische Schrift und Transliteration parallel sehen, dann Transliteration reduzieren."],
+  ["Wurzeln erkennen","Wortfamilien wie ك-ت-ب als Bedeutungsnetz statt isolierte Wörter lernen."],
+  ["Passiv hören","Bekannte Sätze später ohne deutsche Hilfe hören."]
+ ],
+ lessons:[
+  {title:"مرحبًا",goal:"Begrüßen und sich vorstellen.",method:"Arabisch zeigt zuerst die Schrift, bietet aber eine abschaltbare Transliteration. So bleibt sie eine Brücke und wird nicht zum Dauerersatz.",
+   phrases:[
+    ["مرحبًا","marḥaban","Begrüßungsform","hallo","Hallo!"],
+    ["كيف حالك؟","kayfa ḥāluka / ḥāluki","كيف = wie · حال = Zustand","wie Zustand-dein","Wie geht es dir?"],
+    ["أنا بخير.","anā bi-khayr","أنا = ich · بخير = gut","ich in-gutem","Mir geht es gut."],
+    ["اسمي توماس.","ismī Thomas","اسم = Name · ـي = mein","Name-mein Thomas","Ich heiße Thomas."],
+    ["ما اسمك؟","mā ismuka / ismuki","ما = was · اسم = Name","was Name-dein","Wie heißt du?"]
+   ],
+   patterns:[["أنا","ich."],["ـي","angehängtes „mein“ in اسمي."],["ما…؟","was …?"]],
+   special:{type:"root",title:"Schrift nicht als Bild lernen",items:["اسم","ism","Name","→","اسمي = mein Name"]},
+   quiz:[["„اسمي“ bedeutet …",["mein Name","dein Name","ein Name"],0],["Wozu dient die Transliteration?",["als dauerhafter Ersatz","als vorübergehende Klangbrücke","nur zur Grammatik"],1]]
+  },
+  {title:"من أين؟",goal:"Herkunft und Wohnort ausdrücken.",method:"Präpositionen werden als kurze Klangbausteine gelernt; die Leserichtung bleibt konsequent rechts nach links.",
+   phrases:[
+    ["أنا من ألمانيا.","anā min Almāniyā","أنا = ich · من = aus","ich aus Deutschland","Ich komme aus Deutschland."],
+    ["من أين أنت؟","min ayna anta / anti","من = aus · أين = wo · أنت = du","aus wo du","Woher kommst du?"],
+    ["أين تسكن؟","ayna taskun / taskunīn","أين = wo · تسكن = du wohnst","wo wohnst-du","Wo wohnst du?"],
+    ["أسكن في القاهرة.","askunu fī al-Qāhira","أسكن = ich wohne · في = in","wohne-ich in Kairo","Ich wohne in Kairo."]
+   ],
+   patterns:[["من","aus / von."],["في","in."],["أين؟","wo?"]],
+   special:{type:"root",title:"Verb als Muster",items:["س-ك-ن","Wohnen/Ruhe","→","أسكن = ich wohne"]},
+   quiz:[["„من“ bedeutet …",["in","aus/von","mit"],1],["„أين تسكن؟“ bedeutet …",["Wo wohnst du?","Wie heißt du?","Woher kommst du?"],0]]
+  },
+  {title:"أريد …",goal:"Wünsche ausdrücken.",method:"Ein hochproduktiver Satzstarter wird zuerst über Klang und Bedeutung gefestigt; Schriftanalyse folgt danach.",
+   phrases:[
+    ["أريد ماءً.","urīdu māʾan","أريد = ich möchte · ماء = Wasser","möchte-ich Wasser","Ich möchte Wasser."],
+    ["أريد قهوة.","urīdu qahwa","أريد = ich möchte · قهوة = Kaffee","möchte-ich Kaffee","Ich möchte Kaffee."],
+    ["أريد أن آكل.","urīdu an ākula","أريد = ich möchte · أن = dass/zu · آكل = ich esse","möchte-ich dass esse-ich","Ich möchte essen."],
+    ["أريد أن أذهب.","urīdu an adhhab","أريد = ich möchte · أن = zu · أذهب = ich gehe","möchte-ich dass gehe-ich","Ich möchte gehen."]
+   ],
+   patterns:[["أريد","ich möchte."],["أن + Verb","zu / dass + Verb."],["أ…","häufiges Ich-Signal bei Präsensverben."]],
+   special:{type:"root",title:"Produktiver Satzstarter",items:["أريد","أن","أذهب","→","Ich möchte gehen"]},
+   quiz:[["„أريد ماءً“ bedeutet …",["Ich möchte Wasser.","Ich trinke Wasser.","Ich habe Wasser."],0],["Welche Form ist der produktive Starter?",["أريد","في","من"],0]]
+  },
+  {title:"Wortfamilien",goal:"Die Wurzelidee entdecken, ohne Grammatik zu pauken.",method:"Arabisch wird nicht nur Satz für Satz gelernt: gemeinsame Konsonantenwurzeln verbinden Wörter zu Bedeutungsfamilien.",
+   phrases:[
+    ["كتاب","kitāb","ك-ت-ب · Muster für ein Nomen","Buch","Buch"],
+    ["كتب","kataba","ك-ت-ب · Verbmuster","er schrieb","Er schrieb."],
+    ["يكتب","yaktubu","ك-ت-ب · Präsensmuster","er schreibt","Er schreibt."],
+    ["مكتبة","maktaba","ك-ت-ب · Orts-/Nomenmuster","Bibliothek","Bibliothek"]
+   ],
+   patterns:[["ك-ت-ب","Wurzelfamilie rund ums Schreiben."],["Muster","Vokale und Zusatzbuchstaben verändern Funktion/Bedeutung."],["Wortnetz","Neue Wörter werden an bekannte Wurzeln angehängt."]],
+   special:{type:"root",title:"Wurzelnetz",items:["ك","ت","ب","→","كتاب · كتب · يكتب · مكتبة"]},
+   quiz:[["Welche Wörter gehören zur selben Familie?",["كتاب und مكتبة","ماء und كتاب","أنا und في"],0],["Was ist das Ziel der Wurzelansicht?",["jede Grammatikregel auswendig lernen","Wortfamilien als Netz erkennen","Transliteration dauerhaft nutzen"],1]]
+  }
+ ]
+},
+en:{
+ name:"Englisch",flag:"🇬🇧",voice:"en-GB",rate:.88,method:"Klang vor Rechtschreibung + Chunks + Reduktionen",
+ home:"Englisch wird nicht so geschrieben, wie es klingt. Deshalb verbindet die App feste Chunks zuerst mit Audio und zeigt typische Klangverkürzungen, bevor Rechtschreibung analysiert wird.",
+ controls:["analysis","literal","natural"],
+ controlLabels:{analysis:"Klang/Chunks",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[
+  ["Erst Klang","Den Satz hören, bevor einzelne Schreibweisen analysiert werden."],
+  ["Chunks speichern","How are you?, I'd like…, Can I…? als Einheiten aufnehmen."],
+  ["Reduktionen hören","Schwache Formen und Verschleifungen in bekannten Sätzen erkennen."],
+  ["Passiv hören","Bereits verstandene Dialoge häufig im natürlichen Tempo hören."]
+ ],
+ lessons:[
+  {title:"Hello!",goal:"Begrüßen und sich vorstellen.",method:"Keine Buchstaben-Aussprache-Regeln am Anfang: Die häufigsten Gesprächsformeln werden als Klangblöcke gelernt.",
+   phrases:[["Hello!","HEL-lo · Begrüßungs-Chunk","hallo","Hallo!"],["How are you?","how-are-you als ein Rhythmusblock","wie bist du","Wie geht es dir?"],["I'm fine, thanks.","I'm = I am · fine · thanks","ich-bin gut danke","Mir geht es gut, danke."],["My name is Thomas.","my name is …","mein Name ist Thomas","Ich heiße Thomas."],["What's your name?","what's = what is","was-ist dein Name","Wie heißt du?"]],
+   patterns:[["I'm…","I am als gesprochener Chunk."],["What's…?","what is wird häufig zusammengezogen."],["How are you?","als komplette Gesprächsformel hören."]],
+   special:{type:"chunk",title:"Klangblock",items:["How are you?","→","nicht Wort für Wort sprechen"]},
+   quiz:[["Was ist für den Einstieg wichtiger?",["jeden Buchstaben einzeln sprechen","den kompletten Klang-Chunk erkennen","alle Zeiten lernen"],1],["„What's your name?“ bedeutet …",["Wie heißt du?","Wo wohnst du?","Wie geht es dir?"],0]]
+  },
+  {title:"I don't know",goal:"Verstehen, nachfragen und reagieren.",method:"Häufige Funktionswörter werden im echten Satzrhythmus gehört, weil sie gesprochen oft schwächer klingen als in der Schrift.",
+   phrases:[["I don't know.","don't = do not · Klang oft kompakt","ich tue-nicht wissen","Ich weiß es nicht."],["I don't understand.","don't understand als fester Block","ich tue-nicht verstehen","Ich verstehe nicht."],["Could you repeat that?","could-you klingt verbunden","könntest du wiederholen das","Könntest du das wiederholen?"],["A little slower, please.","a little slower · please","ein wenig langsamer bitte","Etwas langsamer, bitte."]],
+   patterns:[["I don't + Verb","sehr produktives Verneinungsmuster."],["Could you…?","höfliche Bitte."],["please","kann am Ende als Höflichkeitschunk stehen."]],
+   special:{type:"chunk",title:"Gesprochene Verbindung",items:["could","you","→","could-you"]},
+   quiz:[["„I don't understand“ heißt …",["Ich verstehe nicht.","Ich will nicht.","Ich weiß nicht."],0],["Welche Form ist eine höfliche Bitte?",["Could you…?","I am…","There is…"],0]]
+  },
+  {title:"I'd like …",goal:"Bestellen und Wünsche äußern.",method:"I'd like wird als kompletter Höflichkeitsbaustein gespeichert; die zugrunde liegende Grammatik muss nicht zuerst erklärt werden.",
+   phrases:[["I'd like a coffee.","I'd like = I would like","ich-würde mögen einen Kaffee","Ich hätte gerne einen Kaffee."],["Can I pay by card?","can-I als Fragerhythmus","kann ich zahlen mit Karte","Kann ich mit Karte bezahlen?"],["The bill, please.","the bill · please","die Rechnung bitte","Die Rechnung, bitte."],["Where is the station?","where-is als Frageblock","wo ist der Bahnhof","Wo ist der Bahnhof?"]],
+   patterns:[["I'd like…","ich hätte gerne …"],["Can I + Verb?","Kann ich …?"],["Where is…?","Wo ist …?"]],
+   special:{type:"chunk",title:"Sofort nutzbarer Chunk",items:["I'd like","a coffee","→","Ich hätte gerne einen Kaffee"]},
+   quiz:[["„I'd like“ lernst du am besten als …",["kompletten Chunk","isoliertes Verb","Pluralregel"],0],["„Can I pay by card?“ bedeutet …",["Kann ich mit Karte bezahlen?","Haben Sie eine Karte?","Wo ist die Kasse?"],0]]
+  },
+  {title:"Yesterday & tomorrow",goal:"Zeit über klare Anker verstehen.",method:"Zeitwörter und häufige Verbformen werden in kompletten Sätzen erkannt, statt mit einer langen Liste unregelmäßiger Verben zu beginnen.",
+   phrases:[["Yesterday I went to London.","yesterday · went","gestern ich ging nach London","Gestern war/fuhr ich in London."],["I saw the museum.","saw = häufige Vergangenheitsform von see","ich sah das Museum","Ich habe das Museum gesehen."],["Tomorrow I'm going to Oxford.","tomorrow · I'm going to","morgen ich-bin gehend nach Oxford","Morgen fahre ich nach Oxford."],["I'm going to visit the centre.","going to + Verb","ich-bin gehend zu besuchen das Zentrum","Ich werde das Zentrum besuchen."]],
+   patterns:[["yesterday","klarer Vergangenheitsanker."],["tomorrow","klarer Zukunftsanker."],["going to + Verb","häufiger Zukunfts-Chunk."]],
+   special:{type:"chunk",title:"Zeit zuerst erkennen",items:["yesterday","→","Vergangenheit","tomorrow","→","Zukunft"]},
+   quiz:[["„Tomorrow“ heißt …",["gestern","morgen","heute"],1],["„going to + Verb“ zeigt häufig …",["eine geplante Zukunft","nur Besitz","eine Frage"],0]]
+  }
+ ]
+},
+zh:{
+ name:"Chinesisch",flag:"🇨🇳",voice:"zh-CN",translit:true,cjk:true,rate:.78,method:"Schriftzeichen + Komponenten + Bedeutung",
+ home:"Der Kurs „Chinesisch“ ist bewusst schriftzentriert: Hanzi werden als bedeutungstragende Komponenten und wiederkehrende Zeichenfamilien gelernt. Pinyin dient nur als Klangbrücke.",
+ controls:["translit","analysis","literal","natural"],
+ controlLabels:{translit:"Pinyin",analysis:"Zeichen-Bausteine",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[["Zeichen sehen","Ein Zeichen zuerst als Bedeutungseinheit wahrnehmen."],["Komponenten erkennen","Wiederkehrende Bausteine in mehreren Zeichen vergleichen."],["Pinyin nur als Brücke","Aussprachehilfe anzeigen und später bewusst ausblenden."],["Sätze hören","Bekannte Zeichen in kurzen natürlichen Sätzen wiedererkennen."]],
+ lessons:[
+  {title:"你好",goal:"Erste Zeichen und Begrüßungen lesen.",method:"Die Zeichen werden nicht als abstrakte Bilder gelernt, sondern in wiederkehrende Bausteine und Bedeutungen zerlegt.",
+   phrases:[["你好","nǐ hǎo","你 = du · 好 = gut","du gut","Hallo!"],["我很好。","wǒ hěn hǎo","我 = ich · 很 = sehr/Grad · 好 = gut","ich sehr gut","Mir geht es gut."],["你好吗？","nǐ hǎo ma","吗 = Fragepartikel","du gut Frage","Wie geht es dir?"],["我叫 Thomas。","wǒ jiào Thomas","我 = ich · 叫 = heißen/genannt werden","ich heiße Thomas","Ich heiße Thomas."]],
+   patterns:[["我","ich."],["你","du."],["吗","macht aus einer Aussage häufig eine Ja/Nein-Frage."]],
+   special:{type:"root",title:"Zeichen als Bedeutungseinheiten",items:["你","du","好","gut","→","你好"]},
+   quiz:[["Welche Funktion hat „吗“?",["Fragepartikel","Plural","Vergangenheit"],0],["„我“ bedeutet …",["du","ich","wir"],1]]
+  },
+  {title:"人 · 大 · 小",goal:"Einfache Zeichenformen und Bedeutungsnetze erkennen.",method:"Sehr häufige Zeichen werden über Kontrast und Formfamilien gelernt.",
+   phrases:[["人","rén","Grundzeichen: Mensch","Mensch","Mensch"],["大","dà","Formidee: groß/ausgebreitet","groß","groß"],["小","xiǎo","Formidee: klein","klein","klein"],["大人","dàrén","大 = groß/erwachsen · 人 = Mensch","großer Mensch","Erwachsener"]],
+   patterns:[["人","Mensch als häufiges Zeichen und Bestandteil."],["大 / 小","Gegensatz groß / klein."],["Zeichenkombination","Bedeutungen können sich zu neuen Wörtern verbinden."]],
+   special:{type:"root",title:"Bedeutung kombinieren",items:["大","+","人","→","大人"]},
+   quiz:[["„小“ bedeutet …",["klein","Mensch","gut"],0],["Was trainiert dieser Kurs besonders?",["Schriftzeichen als Bedeutungsbausteine","nur lateinische Umschrift","deutsche Grammatik"],0]]
+  },
+  {title:"我想…",goal:"Einen produktiven Satzstarter lesen.",method:"Ein häufiges Zeichenmuster wird in mehreren Sätzen wiederholt, damit die Zeichenfolge als Ganzes erkannt wird.",
+   phrases:[["我想喝水。","wǒ xiǎng hē shuǐ","我 = ich · 想 = möchte · 喝 = trinken · 水 = Wasser","ich möchte trinken Wasser","Ich möchte Wasser trinken."],["我想吃饭。","wǒ xiǎng chī fàn","吃 = essen · 饭 = Essen/Mahlzeit","ich möchte essen Mahlzeit","Ich möchte essen."],["我想去北京。","wǒ xiǎng qù Běijīng","去 = gehen · 北京 = Beijing","ich möchte gehen Beijing","Ich möchte nach Beijing fahren."]],
+   patterns:[["我想 + Verb","ich möchte …"],["喝","trinken."],["吃","essen."]],
+   special:{type:"chunk",title:"Visueller Satzstarter",items:["我","想","→","ich möchte"]},
+   quiz:[["„我想“ bedeutet …",["ich möchte","ich bin","du möchtest"],0],["Welches Zeichen bedeutet trinken?",["吃","喝","去"],1]]
+  },
+  {title:"Zeichenfamilien",goal:"Komponenten als Wiedererkennungshilfe nutzen.",method:"Komponenten werden als Gedächtnisanker verwendet, ohne zu behaupten, dass sie immer die gesamte moderne Wortbedeutung erklären.",
+   phrases:[["妈","mā","女 + 马 · Zeichen für Mutter","Mutter","Mutter"],["吗","ma","口 + 马 · Fragepartikel","Fragepartikel","Fragepartikel"],["马","mǎ","Grundzeichen: Pferd","Pferd","Pferd"],["好","hǎo","女 + 子 · Zeichen für gut","gut","gut"]],
+   patterns:[["马","erscheint als wiederkehrender Bestandteil."],["口","Mund-Komponente in vielen sprachbezogenen Zeichen."],["女","weibliche Komponente in mehreren Zeichen."]],
+   special:{type:"root",title:"Komponenten vergleichen",items:["妈","吗","马","→","gemeinsamen Bestandteil sehen"]},
+   quiz:[["Welche Zeichen teilen den Bestandteil 马?",["妈 und 吗","好 und 人","我 und 水"],0],["Pinyin soll hier …",["die Schrift dauerhaft ersetzen","nur eine Aussprachebrücke sein","nicht angezeigt werden"],1]]
+  }
+ ]
+},
+ja:{
+ name:"Japanisch",flag:"🇯🇵",voice:"ja-JP",translit:true,cjk:true,rate:.8,method:"Kana + Partikel + SOV-Satzbau",
+ home:"Japanisch wird über Klang, Kana, feste Partikel und die häufige Subjekt–Objekt–Verb-Struktur aufgebaut. Rōmaji wird nur am Anfang als Brücke angezeigt.",
+ controls:["translit","analysis","literal","natural"],
+ controlLabels:{translit:"Rōmaji",analysis:"Partikel/Muster",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[["Klang zuerst","Kurze Sätze hören und den Rhythmus aufnehmen."],["Kana verankern","Rōmaji schrittweise ausblenden und Kana direkt mit Klang verbinden."],["Partikel sehen","は・を・に als Funktionsmarker im Satz erkennen."],["Verb erwarten","Das Verb bewusst am Satzende erwarten."]],
+ lessons:[
+  {title:"こんにちは",goal:"Begrüßen und sich vorstellen.",method:"Die Begrüßungen werden als komplette Klangformen gelernt; Rōmaji bleibt abschaltbar.",
+   phrases:[["こんにちは。","konnichiwa","feste Begrüßungsform","guten Tag","Guten Tag!"],["元気ですか。","genki desu ka","元気 = wohlauf · です = höflich · か = Frage","gesund/munter ist Frage","Wie geht es dir?"],["元気です。","genki desu","元気 + です","wohlauf ist","Mir geht es gut."],["トーマスです。","Tōmasu desu","Name + です","Thomas bin","Ich bin Thomas."]],
+   patterns:[["です","höflicher Satzabschluss."],["か","Fragepartikel am Satzende."],["…です","sehr produktives Anfangsmuster."]],
+   special:{type:"chunk",title:"Satzende zuerst erkennen",items:["元気","です","か","→","Frage"]},
+   quiz:[["Welche Partikel markiert hier eine Frage?",["か","を","に"],0],["„元気です“ bedeutet …",["Mir geht es gut.","Ich heiße Genki.","Wo bist du?"],0]]
+  },
+  {title:"わたしは…",goal:"Thema und Herkunft ausdrücken.",method:"は wird nicht vorschnell mit einem deutschen Wort gleichgesetzt, sondern als Themenmarker im Satz erkannt.",
+   phrases:[["わたしはドイツ人です。","watashi wa Doitsu-jin desu","わたし = ich · は = Thema · ドイツ人 = Deutscher","ich Thema Deutschland-Mensch bin","Ich bin Deutscher/Deutsche."],["どこに住んでいますか。","doko ni sunde imasu ka","どこ = wo · に = Ort/Ziel · 住んでいます = wohnen","wo an wohne höflich Frage","Wo wohnst du?"],["東京に住んでいます。","Tōkyō ni sunde imasu","東京 = Tokio · に = Ort","Tokio an wohne","Ich wohne in Tokio."]],
+   patterns:[["は","Themenmarker."],["に","markiert hier Ort/Ziel."],["か","Frage am Ende."]],
+   special:{type:"chunk",title:"Partikel als Wegweiser",items:["東京","に","住んでいます","→","Ort → wohnen"]},
+   quiz:[["Was macht は hier?",["markiert das Thema","zeigt Vergangenheit","bedeutet immer 'ist'"],0],["Wo steht das Verb häufig?",["am Ende","immer am Anfang","vor jedem Nomen"],0]]
+  },
+  {title:"…をください",goal:"Einfach bestellen und Dinge verlangen.",method:"Objektpartikel und höfliche Bestellform werden als zusammengehörige Satzstruktur gelernt.",
+   phrases:[["水をください。","mizu o kudasai","水 = Wasser · を = Objekt · ください = bitte geben","Wasser Objekt bitte","Wasser, bitte."],["コーヒーをください。","kōhī o kudasai","コーヒー = Kaffee · を · ください","Kaffee Objekt bitte","Einen Kaffee, bitte."],["これをください。","kore o kudasai","これ = dieses · を · ください","dieses Objekt bitte","Das hier, bitte."]],
+   patterns:[["を","markiert hier das Objekt."],["ください","bitte geben / bitte …"],["これ","dieses hier."]],
+   special:{type:"chunk",title:"Bestellmuster",items:["これ","を","ください","→","Das hier, bitte"]},
+   quiz:[["„…をください“ eignet sich besonders für …",["Bestellungen/Bitten","Vergangenheit","Begrüßungen"],0],["Welche Partikel markiert das Objekt?",["を","か","は"],0]]
+  },
+  {title:"Kana erkennen",goal:"Rōmaji schrittweise überflüssig machen.",method:"Klang wird direkt an Kana gebunden. Rōmaji ist nur eine vorübergehende Stütze.",
+   phrases:[["あ","a","Hiragana für a","a","a"],["い","i","Hiragana für i","i","i"],["う","u","Hiragana für u","u","u"],["か","ka","Hiragana für ka","ka","ka"]],
+   patterns:[["あ・い・う","Klang direkt an das Zeichen koppeln."],["か","ka; dasselbe Zeichen kann in Sätzen auch als Silbe erscheinen."],["Rōmaji ausblenden","sobald Klang und Kana sicher verbunden sind."]],
+   special:{type:"root",title:"Direkte Klangbrücke",items:["あ","a","い","i","う","u"]},
+   quiz:[["Was ist das Ziel?",["Kana direkt erkennen","Rōmaji dauerhaft lesen","nur Kanji lernen"],0],["„か“ wird hier gelesen als …",["ka","mi","to"],0]]
+  }
+ ]
+},
+cmn:{
+ name:"Mandarin",flag:"🗣️",voice:"zh-CN",translit:true,cjk:true,rate:.72,method:"Töne + Pinyin + Hörmuster + Wortstellung",
+ home:"Der Mandarin-Kurs ist sprech- und hörzentriert. Pinyin und Töne werden als Teil des Wortes gelernt; Hanzi bleiben sichtbar, aber der Schwerpunkt liegt auf Klang und Satzmelodie.",
+ controls:["translit","analysis","literal","natural"],
+ controlLabels:{translit:"Pinyin + Töne",analysis:"Ton/Muster",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[["Ton mitlernen","Silbe und Ton nie als zwei getrennte Informationen lernen."],["Tonpaare hören","Zwei Silben als rhythmische Einheit wiederholen."],["Kurze Wortstellung","Subjekt–Verb–Objekt und Zeitangaben über Beispielsätze aufnehmen."],["Passiv hören","Bekannte Sätze häufig ohne deutsche Hilfe hören."]],
+ lessons:[
+  {title:"nǐ hǎo",goal:"Die vier Töne als Bedeutungsträger wahrnehmen.",method:"Pinyin wird nicht tonlos angezeigt: nǐ ist ein anderer Lerngegenstand als ni. Der Ton gehört zum Wort.",
+   phrases:[["你好！","nǐ³ hǎo³","nǐ = 3. Ton · hǎo = 3. Ton","du gut","Hallo!"],["我很好。","wǒ³ hěn³ hǎo³","drei Silben mit Tonkontur","ich sehr gut","Mir geht es gut."],["你好吗？","nǐ³ hǎo³ ma⁰","ma neutral = Fragepartikel","du gut Frage","Wie geht es dir?"]],
+   patterns:[["1. Ton","hoch und relativ eben."],["2. Ton","steigend."],["3. Ton","tief/fallend-steigend, im Satz oft verändert."],["4. Ton","deutlich fallend."]],
+   special:{type:"chunk",title:"Ton ist Teil des Wortes",items:["nǐ³","hǎo³","→","nicht ni hao ohne Töne lernen"]},
+   quiz:[["Was gehört beim Mandarin zum Wort?",["nur die Konsonanten","Silbe + Ton","nur das Schriftzeichen"],1],["„ma“ in 你好吗 ist hier …",["neutral gesprochen","immer 4. Ton","Plural"],0]]
+  },
+  {title:"wǒ jiào…",goal:"Sich vorstellen und Fragen stellen.",method:"Satzmuster werden als Tonfolgen und Bedeutungsblöcke gehört.",
+   phrases:[["我叫 Thomas。","wǒ³ jiào⁴ Thomas","wǒ³ · jiào⁴","ich heiße Thomas","Ich heiße Thomas."],["你叫什么名字？","nǐ³ jiào⁴ shén²me ming²zi⁰","Tonfolge als Chunk","du heißt was Name","Wie heißt du?"],["我是德国人。","wǒ³ shì⁴ Dé²guó² rén²","shì⁴ = sein · rén² = Mensch","ich bin Deutschland Mensch","Ich bin Deutscher/Deutsche."]],
+   patterns:[["wǒ³…","ich …"],["nǐ³…?","du …?"],["shì⁴","sein / ist."]],
+   special:{type:"chunk",title:"Ton-Chunk",items:["wǒ³","jiào⁴","→","ich heiße"]},
+   quiz:[["„wǒ jiào“ bedeutet …",["ich heiße","ich möchte","ich wohne"],0],["Was sollte mitgelernt werden?",["die Tonfolge","nur die Übersetzung","nur Hanzi"],0]]
+  },
+  {title:"wǒ xiǎng…",goal:"Wünsche ausdrücken.",method:"Der Satzstarter wird mit verschiedenen Verben kombiniert, damit Ton und Wortstellung automatisch stabil werden.",
+   phrases:[["我想喝水。","wǒ³ xiǎng³ hē¹ shuǐ³","xiǎng³ + Verb","ich möchte trinken Wasser","Ich möchte Wasser trinken."],["我想吃饭。","wǒ³ xiǎng³ chī¹ fàn⁴","chī¹ = essen · fàn⁴ = Mahlzeit","ich möchte essen Mahlzeit","Ich möchte essen."],["我想去北京。","wǒ³ xiǎng³ qù⁴ Běi³jīng¹","qù⁴ = gehen/fahren","ich möchte gehen Beijing","Ich möchte nach Beijing fahren."]],
+   patterns:[["xiǎng³ + Verb","möchten / vorhaben."],["hē¹","trinken."],["chī¹","essen."],["qù⁴","gehen/fahren."]],
+   special:{type:"chunk",title:"Tonfolge wiederverwenden",items:["wǒ³ xiǎng³","+","Verb","→","ich möchte …"]},
+   quiz:[["„hē“ bedeutet …",["trinken","essen","gehen"],0],["„wǒ xiǎng + Verb“ heißt …",["ich möchte …","du kannst …","ich war …"],0]]
+  },
+  {title:"Fragen ohne Umbau",goal:"Die Fragepartikel ma als Hörsignal erkennen.",method:"Statt deutscher Satzumstellung bleibt die Aussage weitgehend stehen; die Partikel macht die Frage hörbar.",
+   phrases:[["你是德国人。","nǐ³ shì⁴ Dé²guó² rén²","Aussagesatz","du bist Deutschland Mensch","Du bist Deutscher/Deutsche."],["你是德国人吗？","nǐ³ shì⁴ Dé²guó² rén² ma⁰","Aussage + ma⁰","du bist Deutschland Mensch Frage","Bist du Deutscher/Deutsche?"],["你想喝水吗？","nǐ³ xiǎng³ hē¹ shuǐ³ ma⁰","Satz + ma⁰","du möchtest trinken Wasser Frage","Möchtest du Wasser trinken?"]],
+   patterns:[["…ma⁰?","Ja/Nein-Frage ohne deutsche Verbverschiebung."],["Wortstellung","Aussage bleibt weitgehend erhalten."],["neutraler Ton","Fragepartikel ma häufig neutral."]],
+   special:{type:"chunk",title:"Ein hörbares Frage-Signal",items:["Aussage","+","ma⁰","→","Frage"]},
+   quiz:[["Wie entsteht hier eine Ja/Nein-Frage?",["durch ma am Ende","durch Verb an erste Stelle","durch Plural"],0],["Was passiert mit der Wortstellung?",["sie bleibt weitgehend gleich","sie wird komplett umgedreht","das Verb verschwindet"],0]]
+  }
+ ]
+},
+ru:{
+ name:"Russisch",flag:"🇷🇺",voice:"ru-RU",translit:true,rate:.82,method:"Kyrillisch + Wortakzent + Fälle als Chunks",
+ home:"Russisch wird zuerst über Klang und Kyrillisch verbunden. Fälle erscheinen nicht als Deklinationstabellen, sondern als wiederkehrende Satzmuster mit sichtbaren Endungen.",
+ controls:["translit","analysis","literal","natural"],
+ controlLabels:{translit:"Umschrift",analysis:"Endung/Muster",literal:"Wörtlich",natural:"Deutsch"},
+ routine:[["Kyrillisch direkt koppeln","Buchstaben möglichst schnell mit dem russischen Klang verbinden."],["Betonung hören","Wortakzent ist wichtig und wird mit dem ganzen Wort gelernt."],["Fälle in Sätzen","Endungen über echte Chunks statt Tabellen aufnehmen."],["Passiv hören","Bekannte Sätze wiederholt in normalem Tempo hören."]],
+ lessons:[
+  {title:"Привет!",goal:"Begrüßen und sich vorstellen.",method:"Die Umschrift ist nur eine Brücke. Kyrillisch bleibt immer die primäre sichtbare Form.",
+   phrases:[["Привет!","privét","Betonung auf -вет","hallo","Hallo!"],["Как дела?","kak delá","fester Gesprächs-Chunk","wie Dinge","Wie geht es dir?"],["Хорошо, спасибо.","khoroshó, spasíbo","zwei feste Antwort-Chunks","gut danke","Gut, danke."],["Меня зовут Томас.","menyá zovút Tomas","Меня зовут = mich nennt man","mich nennen Thomas","Ich heiße Thomas."]],
+   patterns:[["Меня зовут…","ich heiße … als kompletter Chunk."],["Как…?","wie …?"],["спасибо","danke."]],
+   special:{type:"chunk",title:"Kyrillisch zuerst",items:["зовут","zovút","→","Klang direkt an Schrift"]},
+   quiz:[["„Меня зовут…“ bedeutet …",["Ich heiße …","Ich wohne …","Ich möchte …"],0],["Was soll die Umschrift werden?",["eine dauerhafte Ersatzschrift","eine vorübergehende Brücke","eine Grammatikregel"],1]]
+  },
+  {title:"Я из…",goal:"Herkunft und Wohnort ausdrücken.",method:"Präposition und Fallendung werden im ganzen Ausdruck gelernt: из Германии statt isolierter Genitivtabelle.",
+   phrases:[["Я из Германии.","ya iz Germánii","из + Form Германии","ich aus Deutschland","Ich komme aus Deutschland."],["Где ты живёшь?","gde ty zhivyósh","где = wo · живёшь = du wohnst","wo du wohnst","Wo wohnst du?"],["Я живу в Москве.","ya zhivú v Moskvé","в + Москве als Orts-Chunk","ich wohne in Moskau","Ich wohne in Moskau."],["Я работаю здесь.","ya rabótayu zdes","я + Verb","ich arbeite hier","Ich arbeite hier."]],
+   patterns:[["из + Genitivform","aus … als kompletter Ausdruck."],["в + Ortsform","in … als Chunk."],["живу / живёшь","ich wohne / du wohnst."]],
+   special:{type:"morph",title:"Endung im Chunk sehen",items:["Москва","→","в Москве","Deutschland","→","из Германии"]},
+   quiz:[["„Я из Германии“ bedeutet …",["Ich komme aus Deutschland.","Ich wohne in Deutschland.","Ich fahre nach Deutschland."],0],["Wie werden Fälle zuerst gelernt?",["in kompletten Satzmustern","nur als Tabellen","gar nicht"],0]]
+  },
+  {title:"Я хочу…",goal:"Wünsche ausdrücken.",method:"Я хочу + Infinitiv wird als hochproduktiver Satzstarter gelernt.",
+   phrases:[["Я хочу воду.","ya khochú vódu","хочу = ich möchte · воду = Wasserform","ich möchte Wasser","Ich möchte Wasser."],["Я хочу есть.","ya khochú yest","хочу + Infinitiv","ich möchte essen","Ich möchte essen."],["Я хочу кофе.","ya khochú kófe","хочу + Nomen","ich möchte Kaffee","Ich möchte Kaffee."],["Я хочу поехать домой.","ya khochú poékhat domóy","хочу + поехать","ich möchte fahren nach-Hause","Ich möchte nach Hause fahren."]],
+   patterns:[["Я хочу…","ich möchte …"],["хочу + Infinitiv","ich möchte etwas tun."],["домой","nach Hause / heimwärts."]],
+   special:{type:"chunk",title:"Produktiver Starter",items:["Я хочу","+","Verb/Nomen","→","ich möchte …"]},
+   quiz:[["„Я хочу есть“ bedeutet …",["Ich möchte essen.","Ich habe gegessen.","Du möchtest essen."],0],["Was ist der produktive Starter?",["Я хочу","Где ты","Спасибо"],0]]
+  },
+  {title:"Gestern & morgen",goal:"Zeitformen über Satzmuster erkennen.",method:"Russische Vergangenheitsformen zeigen zusätzlich Genus; zunächst wird die Bedeutung aus Zeitanker + Satzform verstanden.",
+   phrases:[["Вчера я был в Москве.","vcherá ya byl v Moskvé","вчера = gestern · был = war (m.)","gestern ich war in Moskau","Gestern war ich in Moskau."],["Вчера я работал.","vcherá ya rabótal","-л als häufiges Vergangenheitsmerkmal","gestern ich arbeitete","Gestern habe ich gearbeitet."],["Завтра я еду в город.","závtra ya yédu v górod","завтра = morgen","morgen ich fahre in Stadt","Morgen fahre ich in die Stadt."],["Завтра я буду дома.","závtra ya búdu dóma","буду = werde/bin künftig","morgen ich werde zuhause","Morgen werde ich zu Hause sein."]],
+   patterns:[["вчера","gestern – Vergangenheitsanker."],["-л","häufiges Merkmal der männlichen Vergangenheitsform."],["завтра","morgen – Zukunftsanker."]],
+   special:{type:"morph",title:"Zeitanker + Form",items:["вчера","+","работал","→","Vergangenheit"]},
+   quiz:[["„Завтра“ heißt …",["gestern","morgen","heute"],1],["Was ist zunächst wichtiger als eine komplette Fall-/Zeittabelle?",["das Satzmuster im Kontext","alle Endungen auswendig","lateinische Umschrift"],0]]
+  }
+ ]
+}
+
+};
+
+let lang=null, lessonIndex=0, quizIndex=0;
+let views={analysis:false,literal:false,natural:false,translit:true};
+const storageKey="bb_multi_progress_v1";
+let saved={};
+try{saved=JSON.parse(localStorage.getItem(storageKey)||"{}")}catch(e){saved={}}
+const $=id=>document.getElementById(id);
+
+function save(){localStorage.setItem(storageKey,JSON.stringify(saved))}
+function doneSet(code){return new Set(saved[code]||[])}
+function setDone(code,set){saved[code]=[...set];save()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function speech(text){
+ if(!("speechSynthesis" in window)){alert("Auf diesem Gerät ist keine Browser-Sprachausgabe verfügbar.");return}
+ speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(text);u.lang=courses[lang].voice;u.rate=courses[lang].rate||.86;speechSynthesis.speak(u)
+}
+function renderHome(){
+ const grid=$("languageGrid");grid.innerHTML="";
+ Object.entries(courses).forEach(([code,c])=>{
+  const btn=document.createElement("button");btn.className="langbtn";btn.type="button";
+  const completed=doneSet(code).size, pct=Math.round(completed/c.lessons.length*100);
+  btn.innerHTML=`<div><div class="langflag">${c.flag}</div><div class="langname">${c.name}</div><div class="langnote">${escapeHtml(c.home)}</div></div><div class="kicker">${pct}% abgeschlossen</div>`;
+  btn.addEventListener("click",()=>openCourse(code));grid.appendChild(btn)
+ })
+}
+function openCourse(code){
+ lang=code;lessonIndex=0;quizIndex=0;views={analysis:false,literal:false,natural:false,translit:!!courses[code].translit};
+ $("home").classList.add("hidden");$("course").classList.add("active");renderCourse();window.scrollTo({top:0,behavior:"smooth"})
+}
+function goHome(){
+ if("speechSynthesis" in window)speechSynthesis.cancel();
+ $("course").classList.remove("active");$("home").classList.remove("hidden");renderHome();window.scrollTo({top:0,behavior:"smooth"})
+}
+function renderCourse(){
+ const c=courses[lang], l=c.lessons[lessonIndex];
+ $("courseFlag").textContent=c.flag;$("courseName").textContent=c.name;$("courseMethod").textContent=c.method;
+ $("lessonMeta").textContent=`Lektion ${lessonIndex+1} von ${c.lessons.length}`;
+ $("lessonTitle").textContent=l.title;$("lessonGoal").textContent=l.goal;$("lessonMethod").textContent=l.method;
+ renderControls();renderNav();renderPhrases();renderPatterns();renderTrace();renderQuiz();renderRoutine();renderProgress()
+}
+function renderControls(){
+ const c=courses[lang], box=$("viewControls");box.innerHTML="";
+ c.controls.forEach(k=>{
+  const b=document.createElement("button");b.type="button";b.className="segbtn"+(views[k]?" active":"");b.textContent=c.controlLabels[k];
+  b.addEventListener("click",()=>{views[k]=!views[k];renderControls();renderPhrases()});box.appendChild(b)
+ })
+}
+function renderNav(){
+ const c=courses[lang], done=doneSet(lang), n=$("lessonNav");n.innerHTML="";
+ c.lessons.forEach((l,i)=>{
+  const b=document.createElement("button");b.type="button";b.className="navbtn"+(i===lessonIndex?" active":"");
+  b.textContent=(done.has(i)?"✓ ":"")+(i+1)+". "+l.title;
+  b.addEventListener("click",()=>{lessonIndex=i;quizIndex=0;traceGuideIndex=0;traceStrokes=[];views.analysis=false;views.literal=false;views.natural=false;renderCourse()});n.appendChild(b)
+ })
+}
+function renderPhrases(){
+ const c=courses[lang], l=c.lessons[lessonIndex], box=$("phraseList");box.innerHTML="";
+ l.phrases.forEach(p=>{
+  let original,translit="",analysis,literal,natural;
+  if(c.translit){[original,translit,analysis,literal,natural]=p}
+  else{[original,analysis,literal,natural]=p}
+  const card=document.createElement("article");card.className="phrase";
+  const txt=document.createElement("div");
+  const o=document.createElement("div");o.className="original"+(c.rtl?" ar":(c.cjk?" cjk":""));o.textContent=original;
+  if(c.rtl)o.dir="rtl";txt.appendChild(o);
+  if(c.translit && views.translit){const t=document.createElement("div");t.className="translit";t.textContent=translit;txt.appendChild(t)}
+  if(views.analysis){const a=document.createElement("div");a.className="analysis";a.textContent=analysis;txt.appendChild(a)}
+  if(views.literal){const d=document.createElement("div");d.className="literal";d.textContent="wörtlich: "+literal;txt.appendChild(d)}
+  if(views.natural){const n=document.createElement("div");n.className="natural";n.textContent="→ "+natural;txt.appendChild(n)}
+  const b=document.createElement("button");b.type="button";b.className="sound";b.textContent="🔊";b.setAttribute("aria-label","Satz anhören");b.addEventListener("click",()=>speech(original));
+  card.append(txt,b);box.appendChild(card)
+ })
+}
+function renderPatterns(){
+ const l=courses[lang].lessons[lessonIndex], box=$("patterns");box.innerHTML="";
+ l.patterns.forEach(([a,b])=>{
+  const d=document.createElement("div");d.className="pattern";
+  const code=document.createElement("code");code.textContent=a;
+  if(courses[lang].rtl && /[\u0600-\u06FF]/.test(a)){code.dir="rtl";code.style.fontSize="18px"}
+  if(courses[lang].cjk)code.style.fontSize="18px"
+  const sm=document.createElement("small");sm.textContent=b;d.append(code,sm);box.appendChild(d)
+ });
+ const s=l.special, sp=$("specialBox");sp.innerHTML="";
+ const title=document.createElement("div");title.className="special-title";title.textContent=s.title;sp.appendChild(title);
+ const row=document.createElement("div");row.className=s.type==="root"?"root-row":s.type==="morph"?"morpheme-row":"chunk-row";
+ s.items.forEach(item=>{
+  if(item==="→" || item==="="){const x=document.createElement("span");x.className="arrow";x.textContent=item;row.appendChild(x)}
+  else{const x=document.createElement("span");x.className=s.type==="root"?"rootchip":s.type==="morph"?"morph":"chunkchip";x.textContent=item;if(courses[lang].rtl&&/[\u0600-\u06FF]/.test(item))x.dir="rtl";row.appendChild(x)}
+ });sp.appendChild(row)
+}
+
+const traceGuides={
+ ar:[
+  [{g:"ا",n:"alif – Grundstrich"},{g:"م",n:"mīm"},{g:"س",n:"sīn"},{g:"اسمي",n:"ismī – mein Name; verbundene Form"}],
+  [{g:"م",n:"mīm"},{g:"ن",n:"nūn"},{g:"من",n:"min – aus/von"},{g:"في",n:"fī – in"},{g:"أين",n:"ayna – wo"}],
+  [{g:"أ",n:"alif mit hamza"},{g:"ر",n:"rāʾ"},{g:"ي",n:"yāʾ"},{g:"د",n:"dāl"},{g:"أريد",n:"urīdu – ich möchte"}],
+  [{g:"ك",n:"kāf"},{g:"ت",n:"tāʾ"},{g:"ب",n:"bāʾ"},{g:"كتاب",n:"kitāb – Buch"},{g:"مكتبة",n:"maktaba – Bibliothek"}]
+ ]
+};
+let traceGuideIndex=0, traceStrokes=[], activeStroke=null;
+function currentTrace(){
+ const rows=traceGuides[lang]; if(!rows)return null; const row=rows[Math.min(lessonIndex,rows.length-1)]; return row[Math.min(traceGuideIndex,row.length-1)]
+}
+function renderTrace(){
+ const section=$("traceSection");
+ if(lang!=="ar"){section.classList.add("hidden");return}
+ section.classList.remove("hidden");
+ const row=traceGuides.ar[Math.min(lessonIndex,traceGuides.ar.length-1)];
+ if(traceGuideIndex>=row.length)traceGuideIndex=0;
+ const targets=$("traceTargets");targets.innerHTML="";
+ row.forEach((x,i)=>{const b=document.createElement("button");b.type="button";b.className="trace-target"+(i===traceGuideIndex?" active":"");b.textContent=x.g;b.dir="rtl";b.title=x.n;b.addEventListener("click",()=>{traceGuideIndex=i;traceStrokes=[];activeStroke=null;renderTrace()});targets.appendChild(b)});
+ const cur=currentTrace();$("traceLabel").textContent=cur.n+". Fahre die graue Form mehrmals langsam nach. Bei Wörtern auf die verbundenen Buchstabenformen achten.";
+ drawTrace()
+}
+function tracePos(ev){
+ const c=$("traceCanvas"),r=c.getBoundingClientRect();return {x:(ev.clientX-r.left)*c.width/r.width,y:(ev.clientY-r.top)*c.height/r.height}
+}
+function drawTrace(){
+ const c=$("traceCanvas"),ctx=c.getContext("2d"),cur=currentTrace();if(!cur)return;
+ ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle="#eef3f7";ctx.fillRect(0,0,c.width,c.height);
+ ctx.strokeStyle="rgba(90,105,120,.16)";ctx.lineWidth=2;ctx.setLineDash([8,10]);
+ ctx.beginPath();ctx.moveTo(40,c.height/2);ctx.lineTo(c.width-40,c.height/2);ctx.stroke();ctx.setLineDash([]);
+ const long=cur.g.length>2;ctx.font=`${long?145:250}px "Noto Naskh Arabic","Segoe UI",Tahoma,Arial,sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.direction="rtl";ctx.fillStyle="rgba(76,91,105,.20)";ctx.fillText(cur.g,c.width/2,c.height/2+8);
+ ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#5b7cfa";ctx.lineWidth=10;ctx.lineCap="round";ctx.lineJoin="round";
+ traceStrokes.forEach(st=>{if(st.length<1)return;ctx.beginPath();ctx.moveTo(st[0].x,st[0].y);for(let i=1;i<st.length;i++)ctx.lineTo(st[i].x,st[i].y);ctx.stroke()})
+}
+function initTraceCanvas(){
+ const c=$("traceCanvas");
+ c.addEventListener("pointerdown",ev=>{if(lang!=="ar")return;ev.preventDefault();c.setPointerCapture(ev.pointerId);activeStroke=[tracePos(ev)];traceStrokes.push(activeStroke);drawTrace()});
+ c.addEventListener("pointermove",ev=>{if(!activeStroke)return;ev.preventDefault();activeStroke.push(tracePos(ev));drawTrace()});
+ const end=()=>{activeStroke=null};c.addEventListener("pointerup",end);c.addEventListener("pointercancel",end);
+ $("traceUndo").addEventListener("click",()=>{traceStrokes.pop();activeStroke=null;drawTrace()});
+ $("traceClear").addEventListener("click",()=>{traceStrokes=[];activeStroke=null;drawTrace()});
+ $("traceSpeak").addEventListener("click",()=>{const cur=currentTrace();if(cur)speech(cur.g)});
+}
+
+function renderQuiz(){
+ const l=courses[lang].lessons[lessonIndex], q=l.quiz[quizIndex], box=$("choices");
+ $("quizQuestion").textContent=q[0];$("feedback").textContent="";$("feedback").style.color="";
+ box.innerHTML="";
+ q[1].forEach((choice,i)=>{
+  const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=choice;
+  if(courses[lang].rtl&&/[\u0600-\u06FF]/.test(choice))b.dir="rtl";
+  b.addEventListener("click",()=>{
+   [...box.children].forEach(x=>x.disabled=true);
+   const ok=i===q[2];$("feedback").textContent=ok?"✓ Richtig.":"Noch nicht. Richtig ist: "+q[1][q[2]];$("feedback").style.color=ok?"var(--ok)":"var(--danger)"
+  });box.appendChild(b)
+ })
+}
+function renderRoutine(){
+ const c=courses[lang], box=$("routine");box.innerHTML="";$("routineTitle").textContent=`Lernroutine für ${c.name}`;
+ c.routine.forEach(([a,b])=>{const d=document.createElement("div");const s=document.createElement("b");s.textContent=a;const sm=document.createElement("small");sm.textContent=b;d.append(s,sm);box.appendChild(d)})
+}
+function renderProgress(){
+ const done=doneSet(lang), pct=Math.round(done.size/courses[lang].lessons.length*100);
+ $("progressNum").textContent=pct+"%";$("progressBar").style.width=pct+"%";
+ $("completeLesson").textContent=done.has(lessonIndex)?"✓ Lektion abgeschlossen":"Lektion abschließen"
+}
+
+$("homeBtn").addEventListener("click",goHome);
+$("listenAll").addEventListener("click",()=>{
+ const p=courses[lang].lessons[lessonIndex].phrases.map(x=>x[0]).join("   ");speech(p)
+});
+$("nextQuiz").addEventListener("click",()=>{const l=courses[lang].lessons[lessonIndex];quizIndex=(quizIndex+1)%l.quiz.length;renderQuiz()});
+$("completeLesson").addEventListener("click",()=>{
+ const done=doneSet(lang);done.add(lessonIndex);setDone(lang,done);
+ if(lessonIndex<courses[lang].lessons.length-1){lessonIndex++;quizIndex=0;traceGuideIndex=0;traceStrokes=[];views.analysis=false;views.literal=false;views.natural=false}
+ renderCourse()
+});
+
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});
+$("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").hidden=true});
+
+if("serviceWorker" in navigator && location.protocol!=="file:"){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
+initTraceCanvas();
+renderHome();
+})();
+</script>
+</body>
+</html>
