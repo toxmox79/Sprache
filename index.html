@@ -197,7 +197,7 @@ body.modal-open{overflow:hidden}
     <div class="card native-card">
       <div class="kicker">Schritt 1 von 2</div>
       <h1>Was ist deine eigene Sprache?</h1>
-      <div class="lead-native">Wähle deine Muttersprache bzw. Ausgangssprache. Sie wird für die Wortbedeutungen verwendet und anschließend nicht als Lernsprache angeboten. Du kannst die Auswahl später jederzeit ändern.</div>
+      <div class="lead-native">Tippe auf die Aussage in deiner Sprache. Deine Auswahl wird für die Wortbedeutungen verwendet und anschließend nicht als Lernsprache angeboten. Du kannst sie später jederzeit ändern.</div>
       <div id="nativeGrid" class="native-grid"></div>
     </div>
   </section>
@@ -898,12 +898,17 @@ const TOPICS=[
 ];
 const DATA_CODE={de:"de",tr:"tr",it:"it",es:"es",ro:"ro",ar:"ar",en:"en",zh:"zh",ja:"ja",cmn:"cmn",ru:"ru"};
 const LANGUAGE_META={
- de:{name:"Deutsch",native:"Deutsch",flag:"🇩🇪",data:"de"},en:{name:"Englisch",native:"English",flag:"🇬🇧",data:"en"},
- tr:{name:"Türkisch",native:"Türkçe",flag:"🇹🇷",data:"tr"},it:{name:"Italienisch",native:"Italiano",flag:"🇮🇹",data:"it"},
- es:{name:"Spanisch",native:"Español",flag:"🇪🇸",data:"es"},ro:{name:"Rumänisch",native:"Română",flag:"🇷🇴",data:"ro"},
- ar:{name:"Arabisch",native:"العربية",flag:"🇸🇦",data:"ar"},zh:{name:"Chinesisch",native:"中文",flag:"🇨🇳",data:"zh"},
- cmn:{name:"Mandarin",native:"普通话",flag:"🇨🇳",data:"cmn"},ja:{name:"Japanisch",native:"日本語",flag:"🇯🇵",data:"ja"},
- ru:{name:"Russisch",native:"Русский",flag:"🇷🇺",data:"ru"}
+ de:{name:"Deutsch",native:"Deutsch",flag:"🇩🇪",data:"de",nativePrompt:"Das ist meine Muttersprache"},
+ en:{name:"Englisch",native:"English",flag:"🇬🇧",data:"en",nativePrompt:"This is my native language"},
+ tr:{name:"Türkisch",native:"Türkçe",flag:"🇹🇷",data:"tr",nativePrompt:"Bu benim ana dilim"},
+ it:{name:"Italienisch",native:"Italiano",flag:"🇮🇹",data:"it",nativePrompt:"Questa è la mia lingua madre"},
+ es:{name:"Spanisch",native:"Español",flag:"🇪🇸",data:"es",nativePrompt:"Este es mi idioma materno"},
+ ro:{name:"Rumänisch",native:"Română",flag:"🇷🇴",data:"ro",nativePrompt:"Aceasta este limba mea maternă"},
+ ar:{name:"Arabisch",native:"العربية",flag:"🇸🇦",data:"ar",nativePrompt:"هذه لغتي الأم"},
+ zh:{name:"Chinesisch",native:"中文",flag:"🇨🇳",data:"zh",nativePrompt:"这是我的母语"},
+ cmn:{name:"Mandarin",native:"普通话",flag:"🇨🇳",data:"cmn",nativePrompt:"这是我的母语"},
+ ja:{name:"Japanisch",native:"日本語",flag:"🇯🇵",data:"ja",nativePrompt:"これは私の母語です"},
+ ru:{name:"Russisch",native:"Русский",flag:"🇷🇺",data:"ru",nativePrompt:"Это мой родной язык"}
 };
 let nativeLanguage=localStorage.getItem("bb_native_language_v1")||"";
 const DATA_ROOT_RAW="https://raw.githubusercontent.com/appsinacup/polyglot-dictionaries/main/1000_words/";
@@ -1148,7 +1153,8 @@ function renderNativeSelector(){
  const grid=$("nativeGrid");grid.innerHTML="";
  Object.entries(LANGUAGE_META).forEach(([code,m])=>{
   const b=document.createElement("button");b.type="button";b.className="native-btn";
-  b.innerHTML=`<span class="nf">${m.flag}</span><span><b>${escapeHtml(m.native)}</b><small>${escapeHtml(m.name)}</small></span>`;
+  b.innerHTML=`<span class="nf">${m.flag}</span><span><b>${escapeHtml(m.nativePrompt)}</b><small>${escapeHtml(m.native)}</small></span>`;
+  if(code==="ar") b.dir="rtl";
   b.addEventListener("click",()=>selectNativeLanguage(code));grid.appendChild(b)
  })
 }
