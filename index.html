@@ -285,6 +285,25 @@ body.modal-open{overflow:hidden}
 .pronunciation-line.unavailable{background:rgba(120,130,140,.06);color:var(--muted)}
 .pronunciation-help{margin-top:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.24);font-size:10.5px;line-height:1.45;color:var(--muted)}
 
+
+.word-decode{margin-top:9px;padding:10px;border-radius:16px;background:rgba(255,255,255,.26);border:1px solid rgba(90,105,120,.08)}
+.word-decode-title{font-size:10.5px;font-weight:850;color:var(--muted);letter-spacing:.02em;margin-bottom:7px}
+.word-decode-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.word-decode-grid.rtl{direction:rtl;justify-content:flex-start}
+.decode-token{min-width:92px;max-width:220px;flex:0 1 auto;padding:9px 10px;border-radius:14px;background:var(--surface);box-shadow:3px 3px 8px rgba(154,169,182,.25),-3px -3px 8px rgba(255,255,255,.72)}
+.decode-target{font-size:17px;font-weight:900;line-height:1.25;overflow-wrap:anywhere}
+.decode-target.cjk{font-size:21px}
+.decode-target.rtl{direction:rtl;text-align:right;font-size:20px}
+.decode-pron{margin-top:5px;font-size:10.5px;line-height:1.3;color:#405171}
+.decode-pron b{color:#263b8d}
+.decode-meaning{margin-top:5px;padding-top:5px;border-top:1px solid rgba(80,95,110,.09);font-size:12px;font-weight:800;line-height:1.3;color:#33404c;overflow-wrap:anywhere}
+.decode-meaning.pending{color:var(--muted);font-weight:650;font-style:italic}
+.decode-summary{margin-top:7px;font-size:10.5px;color:var(--muted);line-height:1.35}
+@media(max-width:620px){
+ .word-decode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .decode-token{min-width:0;max-width:none;width:auto}
+}
+
 </style>
 </head>
 <body>
@@ -1281,7 +1300,7 @@ const DATA_ROOT_CDN="https://cdn.jsdelivr.net/gh/appsinacup/polyglot-dictionarie
 const ESSENTIAL=("be have do say go can get make know think take see come want look use find give tell work call try ask need feel become leave put mean keep let begin seem help talk turn start show hear play run move live believe bring happen write provide sit stand lose pay meet include continue set learn change lead understand watch follow stop create speak read allow add spend grow open walk win offer remember love consider appear buy wait serve send expect build stay fall cut reach remain suggest raise pass sell require report decide pull return explain hope develop carry break receive agree support hit produce eat cover catch draw choose cause point listen realize place close involve increase improve join pick wear drive arrive born friend family mother father brother sister child man woman people person name home house room door window table chair bed kitchen bathroom food water bread milk coffee tea meat fish fruit apple banana vegetable money shop store market price restaurant hotel street road car bus train station airport city country school teacher student book word question answer time day week month year morning afternoon evening today tomorrow yesterday now later early late good bad big small long short new old young happy sad tired sick hot cold fast slow easy hard important possible different same right left near far here there where when why how what who which this that some many much more less very always never often sometimes again together without with for from to in on under over before after because if but and or not yes no please thanks sorry hello goodbye").split(/\s+/);
 const essentialRank=new Map(ESSENTIAL.map((w,i)=>[w,i]));
 
-const wordBanks={}, bankPromises={}, wordGermanVisible={};
+const wordBanks={}, bankPromises={}, wordGermanVisible={}, translationLookups={};
 
 /* ===== Aussprache in der gewählten Muttersprache ===== */
 const PRON_CACHE_KEY="bb_pronunciation_native_v2";
@@ -2029,6 +2048,11 @@ function makeVirtualLessons(){
 }
 makeVirtualLessons();
 
+Object.values(courses).forEach(c=>{
+ if(c.controlLabels&&c.controlLabels.literal)c.controlLabels.literal="Wort für Wort";
+});
+
+
 function csvRows(text){
  const rows=[];let row=[],field="",q=false;
  for(let i=0;i<text.length;i++){
@@ -2053,6 +2077,44 @@ async function fetchDictionaryFile(code){
 function cleanWord(s){return String(s||"").replace(/^\s+|\s+$/g,"").replace(/\s{2,}/g," ")}
 function entryKey(r){return `${(r.english_word||"").toLowerCase()}|${r.part_of_speech||""}|${r.sense||""}`}
 function shortMeta(r){const pos={noun:"Nomen",verb:"Verb",adj:"Adjektiv",adv:"Adverb",prep:"Präposition",pron:"Pronomen"}[r.pos]||r.pos||"Wort";return pos}
+
+function decodeNorm(s){
+ return cleanWord(String(s||""))
+  .normalize("NFKC")
+  .replace(/^[^\p{L}\p{M}\p{N}]+|[^\p{L}\p{M}\p{N}]+$/gu,"")
+  .toLocaleLowerCase();
+}
+function buildTranslationLookup(targetCode,sourceCode,sourceRows,targetRows){
+ const map=new Map(),sourceExact=new Map(),sourceLoose=new Map();
+ if(sourceCode!=="en"){
+  for(const r of sourceRows){
+   const w=cleanWord(r.word);if(!w)continue;
+   const k=entryKey(r),lo=`${(r.english_word||"").toLowerCase()}|${r.part_of_speech||""}`;
+   if(!sourceExact.has(k))sourceExact.set(k,w);
+   if(!sourceLoose.has(lo))sourceLoose.set(lo,w);
+  }
+ }
+ if(targetCode==="en"){
+  if(sourceCode==="en")return map;
+  for(const r of sourceRows){
+   const target=cleanWord(r.english_word),source=cleanWord(r.word),k=decodeNorm(target);
+   if(k&&source&&!map.has(k))map.set(k,source);
+  }
+  return map;
+ }
+ for(const r of targetRows){
+  const target=cleanWord(r.word),k=decodeNorm(target);if(!target||!k)continue;
+  let source="";
+  if(sourceCode==="en")source=cleanWord(r.english_word);
+  else{
+   const lo=`${(r.english_word||"").toLowerCase()}|${r.part_of_speech||""}`;
+   source=sourceExact.get(entryKey(r))||sourceLoose.get(lo)||"";
+  }
+  if(source&&!map.has(k))map.set(k,source);
+ }
+ return map;
+}
+
 function buildBank(targetCode,sourceCode,sourceRows,targetRows){
  const sourceExact=new Map(),sourceLoose=new Map();
  if(sourceCode!=="en"){
@@ -2095,10 +2157,12 @@ async function loadWordBank(code){
    let sourceRows=sourceCode==="en"?[]:csvRows(sourceTxt), targetRows=code==="en"?[]:csvRows(targetTxt);
    if(code==="en" && sourceCode==="en") throw new Error("Ausgangs- und Zielsprache identisch");
    const bank=buildBank(code,sourceCode,sourceRows,targetRows);
+   const lookup=buildTranslationLookup(code,sourceCode,sourceRows,targetRows);
    wordBanks[bankKey]=bank;wordBanks[code]=bank;
+   translationLookups[bankKey]=lookup;translationLookups[code]=lookup;
    const srcName=LANGUAGE_META[sourceCode]?.native||sourceCode;
    $("bankStatus").textContent=`Wortbank: ${bank.length.toLocaleString("de-DE")} Einträge · Bedeutung in ${srcName} · offline gecacht`;
-   renderWordField();renderScriptHub();renderWordQuiz();renderReinforce();renderProgress();return bank
+   renderWordField();renderPhrases();renderScriptHub();renderWordQuiz();renderReinforce();renderProgress();return bank
   }catch(e){wordBanks[code]=[];$("bankStatus").textContent="Wortbank konnte nicht geladen werden. Kernlektionen bleiben nutzbar.";renderWordField();renderReinforce();return []}
  })();return bankPromises[bankKey]
 }
@@ -2260,7 +2324,7 @@ function renderNativeSelector(){
 }
 function selectNativeLanguage(code){
  nativeLanguage=code;localStorage.setItem("bb_native_language_v1",code);
- Object.keys(wordBanks).forEach(k=>delete wordBanks[k]);Object.keys(bankPromises).forEach(k=>delete bankPromises[k]);
+ Object.keys(wordBanks).forEach(k=>delete wordBanks[k]);Object.keys(bankPromises).forEach(k=>delete bankPromises[k]);Object.keys(translationLookups).forEach(k=>delete translationLookups[k]);
  $("nativeScreen").classList.add("hidden");$("home").classList.remove("hidden");
  $("nativeCurrentLabel").textContent=`${LANGUAGE_META[code].flag} ${LANGUAGE_META[code].native}`;renderHome();window.scrollTo({top:0})
 }
@@ -2306,7 +2370,7 @@ function openCourse(code){
  lang=code;lessonIndex=0;quizIndex=0;views={analysis:false,literal:false,natural:false,translit:!!courses[code].translit};
  $("home").classList.add("hidden");$("course").classList.add("active");stageOverride=null;wordQuizMode="current";wordQuizIndex=0;courseMode="learn";
  renderCourse();setCourseMode("learn",false);loadWordBank(code);window.scrollTo({top:0,behavior:"smooth"});
- ensureEnhancementsForLanguage(code).then(()=>{if(lang===code&&$("course").classList.contains("active")){renderWordField();if(supportsWordTrace(code))renderScriptHub()}}).catch(()=>{})
+ ensureEnhancementsForLanguage(code).then(()=>{if(lang===code&&$("course").classList.contains("active")){renderWordField();renderPhrases();if(supportsWordTrace(code))renderScriptHub()}}).catch(()=>{})
 }
 function goHome(){
  if("speechSynthesis" in window)speechSynthesis.cancel();
@@ -2336,6 +2400,144 @@ function renderNav(){
   if(sel){const o=document.createElement("option");o.value=String(i);o.textContent=label;o.selected=i===lessonIndex;sel.appendChild(o)}
  })
 }
+
+function phraseWordTokens(original,analysis="",translit=""){
+ const text=String(original||"").trim();
+ if(!text)return [];
+ // Sprachen mit regulären Leerzeichen: jedes orthographische Wort.
+ if(!(lang==="zh"||lang==="cmn"||lang==="ja")){
+  return text.match(/[\p{L}\p{M}\p{N}]+(?:['’ʼ-][\p{L}\p{M}\p{N}]+)*/gu)||[];
+ }
+
+ // CJK/Japanisch: vorhandene Birkenbihl-Analyse als Segmentierungshilfe nutzen.
+ const clean=text.replace(/[。！？!?.,，、；;：:“”"'「」『』（）()[\]{}]/g,"").trim();
+ const candidates=[];
+ String(analysis||"").split(/\s*·\s*/).forEach(part=>{
+  const p=part.trim();if(!p)return;
+  if(p.includes("=")){
+   const left=p.split("=")[0].trim();
+   if(left&&clean.includes(left))candidates.push(left);
+  }else if(p.includes("+")){
+   p.split("+").map(x=>x.trim()).forEach(x=>{if(x&&clean.includes(x))candidates.push(x)});
+  }
+ });
+ // Längere Kandidaten zuerst nur bei gleicher Startposition; anschließend sequenziell suchen.
+ const found=[];
+ let cursor=0;
+ for(const cand of candidates){
+  const pos=clean.indexOf(cand,cursor);
+  if(pos<0)continue;
+  if(pos>cursor){
+   const gap=clean.slice(cursor,pos).trim();
+   if(gap)found.push(...splitCjkGap(gap,translit));
+  }
+  found.push(cand);cursor=pos+cand.length;
+ }
+ if(cursor<clean.length){
+  const gap=clean.slice(cursor).trim();
+  if(gap)found.push(...splitCjkGap(gap,translit));
+ }
+ if(found.length)return found.filter(Boolean);
+
+ // Keine Analyse vorhanden: für Chinesisch einzelne Hanzi, Japanisch als sichtbare Formeinheit.
+ if(lang==="zh"||lang==="cmn"){
+  const arr=[];
+  for(const ch of clean){
+   if(/\s/.test(ch))continue;
+   arr.push(ch);
+  }
+  return arr;
+ }
+ return clean.split(/\s+/).filter(Boolean);
+}
+function splitCjkGap(gap,translit=""){
+ const g=String(gap||"").trim();if(!g)return [];
+ // Lateinische Eigennamen / Zahlen separat erhalten.
+ if(/^[\p{L}\p{M}\p{N}]+$/u.test(g)&&/[A-Za-z0-9]/.test(g))return [g];
+ // Chinesisch: zwei bekannte Zeichen dürfen als häufige Wortform zusammenbleiben.
+ if(lang==="zh"||lang==="cmn")return [g];
+ // Japanische Reststücke (z.B. です / 住んでいます) als grammatische Formeinheit.
+ return [g];
+}
+function analysisMeaningMap(analysis){
+ const map=new Map();
+ String(analysis||"").split(/\s*·\s*/).forEach(part=>{
+  if(!part.includes("="))return;
+  const [left,...rest]=part.split("=");
+  const k=decodeNorm(left),v=rest.join("=").trim();
+  if(k&&v&&!map.has(k))map.set(k,v);
+ });
+ return map;
+}
+function literalMeaningTokens(literal){
+ return String(literal||"").trim().split(/\s*·\s*|\s+/).map(x=>x.trim()).filter(Boolean);
+}
+function meaningForDecodeToken(token,index,tokens,analysis,literal){
+ const key=decodeNorm(token);
+ const lookup=translationLookups[lang];
+ if(lookup&&key&&lookup.has(key))return {text:lookup.get(key),native:true};
+
+ // Eigennamen/Zahlen bleiben verständlicherweise gleich.
+ if(/^[A-ZÄÖÜ][\p{L}\p{M}'’-]*$/u.test(token)||/^\d+$/u.test(token))return {text:token,native:true};
+
+ // Die handgebauten Kernlektionen sind historisch deutsch dekodiert.
+ // Nur bei deutscher Muttersprache als exakten Fallback verwenden.
+ if(nativeLanguage==="de"){
+  const amap=analysisMeaningMap(analysis);
+  if(key&&amap.has(key))return {text:amap.get(key),native:true};
+  const lt=literalMeaningTokens(literal);
+  if(lt.length===tokens.length&&lt[index])return {text:lt[index],native:true};
+ }
+ return {text:"…",native:false};
+}
+function renderWordByWordDecode(container,original,translit,analysis,literal){
+ const tokens=phraseWordTokens(original,analysis,translit);
+ if(!tokens.length)return;
+
+ const wrap=document.createElement("div");wrap.className="word-decode";
+ const title=document.createElement("div");title.className="word-decode-title";
+ title.textContent=`Wort für Wort · ${tokens.length} ${tokens.length===1?"Einheit":"Einheiten"} · Bedeutung: ${LANGUAGE_META[nativeLanguage]?.native||"Muttersprache"}`;
+ wrap.appendChild(title);
+
+ const grid=document.createElement("div");grid.className="word-decode-grid"+(courses[lang].rtl?" rtl":"");
+ tokens.forEach((token,i)=>{
+  const cell=document.createElement("div");cell.className="decode-token";
+  const target=document.createElement("div");
+  target.className="decode-target"+(courses[lang].rtl?" rtl":courses[lang].cjk?" cjk":"");
+  target.textContent=token;if(courses[lang].rtl)target.dir="rtl";
+  cell.appendChild(target);
+
+  const pron=document.createElement("div");pron.className="decode-pron";
+  const ui=pronUI();
+  pron.innerHTML=`<b>${escapeHtml(ui.label)}:</b> ${escapeHtml(ui.loading)}`;
+  cell.appendChild(pron);
+  attachPronunciation(pron,token,lang);
+
+  const meaning=meaningForDecodeToken(token,i,tokens,analysis,literal);
+  const m=document.createElement("div");m.className="decode-meaning"+(meaning.native?"":" pending");
+  m.textContent=meaning.text;cell.appendChild(m);
+
+  const sound=document.createElement("button");sound.type="button";sound.className="mini-btn";
+  sound.textContent="🔊";sound.title="Dieses Wort hören";sound.style.marginTop="7px";
+  sound.addEventListener("click",()=>speech(token));cell.appendChild(sound);
+
+  if(supportsWordTrace(lang)){
+   target.classList.add("script-clickable");target.tabIndex=0;target.setAttribute("role","button");
+   target.title="Schriftstudio öffnen";
+   target.addEventListener("click",()=>openWordTrace(token,meaning.text!=="…"?`→ ${meaning.text}`:""));
+   target.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();openWordTrace(token,meaning.text!=="…"?`→ ${meaning.text}`:"")}});
+  }
+  grid.appendChild(cell);
+ });
+ wrap.appendChild(grid);
+
+ const summary=document.createElement("div");summary.className="decode-summary";
+ summary.textContent=`Satz wörtlich: ${literal}`;
+ wrap.appendChild(summary);
+ container.appendChild(wrap);
+}
+
+
 function renderPhrases(){
  const c=courses[lang], l=c.lessons[lessonIndex], box=$("phraseList");box.innerHTML="";
  l.phrases.forEach(p=>{
@@ -2350,7 +2552,7 @@ function renderPhrases(){
   txt.appendChild(o);
   if(c.translit && views.translit){const t=document.createElement("div");t.className="translit";t.textContent=translit;txt.appendChild(t)}
   if(views.analysis){const a=document.createElement("div");a.className="analysis";a.textContent=analysis;txt.appendChild(a)}
-  if(views.literal){const d=document.createElement("div");d.className="literal";d.textContent="wörtlich: "+literal;txt.appendChild(d)}
+  if(views.literal){renderWordByWordDecode(txt,original,translit,analysis,literal)}
   if(views.natural){const n=document.createElement("div");n.className="natural";n.textContent="→ "+natural;txt.appendChild(n)}
   const b=document.createElement("button");b.type="button";b.className="sound";b.textContent="🔊";b.setAttribute("aria-label","Satz anhören");b.addEventListener("click",()=>speech(original));
   card.append(txt,b);box.appendChild(card)

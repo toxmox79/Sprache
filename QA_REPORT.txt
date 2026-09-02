@@ -1,50 +1,30 @@
-QA-REPORT – VERSION 16
+QA-REPORT – VERSION 17
 
-Ausgangspunkt
-- v13 wurde als letzter vollständiger Funktionsstand verwendet.
-- v15 wurde nicht weiter gepatcht, weil dort ein Regressionsverlust vorlag.
+Änderung
+- Dekodierung ist jetzt konsequent Wort für Wort.
+- Jedes erkannte Originalwort / jede analysierte CJK-Einheit erscheint einzeln.
+- Jede Einheit erhält:
+  1. Originalschreibweise
+  2. geschriebene Aussprache in der eingestellten Muttersprache
+  3. Bedeutung in der eingestellten Muttersprache, soweit die Wörterbuchquelle sie liefert
+  4. eigenen Audio-Button
+- Bei Schriftsprachen kann die Einheit direkt das Schriftstudio öffnen.
+- Der alte Schalter „Wörtlich“ heißt jetzt „Wort für Wort“.
 
-Statischer Vollvergleich
-- Alle 132 Funktionen aus v13 vorhanden: 132/132.
-- Alle 109 UI-IDs aus v13 vorhanden: 109/109.
-- v16 enthält insgesamt 150 benannte Funktionen.
-- 24 Muttersprache-Profile vorhanden.
-- 10 Festigungsmodi vorhanden.
-- Keine blockierenden externen <script src>-Tags beim App-Start.
-- JavaScript-Syntaxprüfung mit Node: ohne Fehler.
+Daten
+- Für die Dekodierbedeutung wird nicht nur die auf 3000 Lernwörter begrenzte Wortbank verwendet.
+- Zusätzlich wird aus den vollständig geladenen Wörterbuchdateien ein Übersetzungs-Lookup aufgebaut.
+- Nach dem Laden der Wortbank wird die Dekodierung automatisch neu gerendert.
+- Deutsche Kern-Dekodierungen dienen nur bei Deutsch als Muttersprache als Fallback.
 
-Chromium-Interaktionstest
-- 38 Kernprüfungen: 38 erfolgreich, 0 fehlgeschlagen.
-- 0 ungefangene JavaScript-Ausnahmen.
-- 24 Flaggen im Muttersprache-Dialog.
-- Nach Deutsch als Muttersprache: 23 Lernsprachen.
-- Sprachsuche getestet.
-- 120-Lektionen-Anzeige getestet.
-- 5 Kursbereiche getestet.
-- Alle 10 Festigungsmodi einzeln geöffnet:
-  Krücken-Test, Hör-Puzzle, Dekodier-Puzzle, Bedeutung,
-  Gedankenbrücke, Lückensatz, Satzlabor, ABC/KaWa,
-  Mini-Geschichte, Chor-Sprechen.
-- Chinesisches Schriftstudio geöffnet.
-- Strichnummern-Schalter vorhanden und standardmäßig aktiv.
-- Schreibprüfung vorhanden.
-- Schreibheft/Canvas vorhanden und aufklappbar.
-- 5 Schreibstufen vorhanden.
+Regressionstest
+- JavaScript-Syntax mit Node: OK.
+- Funktionen aus v16 erhalten: 150/150.
+- UI-IDs aus v16 erhalten: 109/109.
+- Fehlende Funktionen: keine.
+- Fehlende UI-IDs: keine.
+- Manifest, Service Worker und favicon.ico sind in v17 wieder im ZIP enthalten.
 
-Alle Lernsprachen einzeln gerendert
-Bei Deutsch als Muttersprache wurden alle 23 Ziele einzeln geöffnet.
-Jeder Kurs zeigte „Lektion 1 von 120“, 5 Kursbereiche und 10 Festigungsmodi.
-Keine Ausnahme beim Durchlauf.
-
-Geprüfte Zielsprachen
-Arabisch, Bulgarisch, Chinesisch, Dänisch, Englisch, Finnisch,
-Französisch, Griechisch, Italienisch, Japanisch, Mandarin,
-Niederländisch, Norwegisch, Polnisch, Portugiesisch, Rumänisch,
-Russisch, Schwedisch, Spanisch, Tschechisch, Türkisch,
-Ukrainisch, Ungarisch.
-
-Kompatibilität
-- Lernfortschrittsschlüssel bb_multi_progress_v4_3000 bleibt erhalten.
-- Muttersprache-Schlüssel bb_native_language_v1 bleibt erhalten.
-- Aussprache-Cache wurde bewusst versioniert, da die Darstellung jetzt
-  von der gewählten Muttersprache abhängt.
+Hinweis
+- Eine phonetische Umschrift in Muttersprache ist eine Lernannäherung; der Audio-Button bleibt die Referenz.
+- Wenn ein seltenes/flektiertes Wort in der Wörterbuchquelle nicht eindeutig zugeordnet werden kann, zeigt die Bedeutung vorübergehend „…“ statt eine erfundene Übersetzung.

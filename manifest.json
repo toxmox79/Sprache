@@ -3,12 +3,12 @@
   "name": "Sprachen gehirn-gerecht lernen",
   "short_name": "Sprachen",
   "lang": "de",
-  "start_url": "./index.html?v=16",
+  "start_url": "./index.html?v=17",
   "scope": "./",
   "display": "standalone",
   "background_color": "#e8eef3",
   "theme_color": "#e8eef3",
-  "description": "Birkenbihl-orientierte Sprachlern-PWA mit 24 Sprachen, vollständigem Festigungsstudio, Schriftstudio und Aussprachehilfe in der gewählten Muttersprache.",
+  "description": "Birkenbihl-orientierte Sprachlern-PWA mit 24 Sprachen, vollständiger Wort-für-Wort-Dekodierung und Aussprachehilfe in der Muttersprache.",
   "icons": [
     {
       "src": "icon-192.png",
