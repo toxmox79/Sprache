@@ -1,0 +1,50 @@
+QA-REPORT – VERSION 16
+
+Ausgangspunkt
+- v13 wurde als letzter vollständiger Funktionsstand verwendet.
+- v15 wurde nicht weiter gepatcht, weil dort ein Regressionsverlust vorlag.
+
+Statischer Vollvergleich
+- Alle 132 Funktionen aus v13 vorhanden: 132/132.
+- Alle 109 UI-IDs aus v13 vorhanden: 109/109.
+- v16 enthält insgesamt 150 benannte Funktionen.
+- 24 Muttersprache-Profile vorhanden.
+- 10 Festigungsmodi vorhanden.
+- Keine blockierenden externen <script src>-Tags beim App-Start.
+- JavaScript-Syntaxprüfung mit Node: ohne Fehler.
+
+Chromium-Interaktionstest
+- 38 Kernprüfungen: 38 erfolgreich, 0 fehlgeschlagen.
+- 0 ungefangene JavaScript-Ausnahmen.
+- 24 Flaggen im Muttersprache-Dialog.
+- Nach Deutsch als Muttersprache: 23 Lernsprachen.
+- Sprachsuche getestet.
+- 120-Lektionen-Anzeige getestet.
+- 5 Kursbereiche getestet.
+- Alle 10 Festigungsmodi einzeln geöffnet:
+  Krücken-Test, Hör-Puzzle, Dekodier-Puzzle, Bedeutung,
+  Gedankenbrücke, Lückensatz, Satzlabor, ABC/KaWa,
+  Mini-Geschichte, Chor-Sprechen.
+- Chinesisches Schriftstudio geöffnet.
+- Strichnummern-Schalter vorhanden und standardmäßig aktiv.
+- Schreibprüfung vorhanden.
+- Schreibheft/Canvas vorhanden und aufklappbar.
+- 5 Schreibstufen vorhanden.
+
+Alle Lernsprachen einzeln gerendert
+Bei Deutsch als Muttersprache wurden alle 23 Ziele einzeln geöffnet.
+Jeder Kurs zeigte „Lektion 1 von 120“, 5 Kursbereiche und 10 Festigungsmodi.
+Keine Ausnahme beim Durchlauf.
+
+Geprüfte Zielsprachen
+Arabisch, Bulgarisch, Chinesisch, Dänisch, Englisch, Finnisch,
+Französisch, Griechisch, Italienisch, Japanisch, Mandarin,
+Niederländisch, Norwegisch, Polnisch, Portugiesisch, Rumänisch,
+Russisch, Schwedisch, Spanisch, Tschechisch, Türkisch,
+Ukrainisch, Ungarisch.
+
+Kompatibilität
+- Lernfortschrittsschlüssel bb_multi_progress_v4_3000 bleibt erhalten.
+- Muttersprache-Schlüssel bb_native_language_v1 bleibt erhalten.
+- Aussprache-Cache wurde bewusst versioniert, da die Darstellung jetzt
+  von der gewählten Muttersprache abhängt.

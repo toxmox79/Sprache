@@ -1,15 +1,21 @@
-BIRKENBIHL-SPRACHENLERN-PWA – VERSION 15
+BIRKENBIHL-SPRACHENLERN-PWA – VERSION 16 (VOLLSTÄNDIG WIEDERHERGESTELLT)
 
-Wichtiger Start-Fix:
-- Die leere Flaggenauswahl aus v14 ist behoben.
-- Ursache: Beim v14-Umbau wurden Funktionen des Schriftstudios versehentlich
-  aus dem JavaScript entfernt. Dadurch brach der Start vor initStartScreen ab.
-- Das vollständige Schriftstudio aus v13 ist wiederhergestellt.
-- Die Aussprachehilfe in der gewählten Muttersprache aus v14 bleibt erhalten.
-- Hanzi Writer, Pinyin und WanaKana blockieren den Start nicht mehr.
-- Diese Bibliotheken werden erst bei Bedarf geladen.
-- Der Service Worker lädt die Startseite network-first und löscht alte Caches.
+Basis: letzter vollständiger Stand v13.
 
-Erhalten:
-24 Sprachen, 120 Lektionen, Festigungsstudio, Aussprachehilfe,
-Strichfolge/Strichnummern, Schreibprüfung und Schreibheft.
+Enthalten und geprüft:
+- 24 Sprachen und Muttersprache-Auswahl
+- 120-Lektionen-Kursmaschine / große Wortbank
+- übersichtliche Bereiche Lernen, Wörter, Festigen, Schrift, Routine
+- vollständiges Birkenbihl-Festigungsstudio mit 10 Modi
+- 7-stufiger Lernpfad
+- Gedankenbrücken inklusive Zeichnung
+- ABC/KaWa, Mini-Geschichten, Satzlabor, Chor-Sprechen
+- Wortquiz und Wiederholungsintervalle
+- Schriftstudio: Strichfolge, Strichnummern, Nachfahren, freie Schrift
+- Schreibprüfung und Schreibheft
+- Aussprachehilfe in der eingestellten Muttersprache
+- Pinyin/Romaji/Hanzi-Writer nur noch optional und lazy geladen
+- robuster Start ohne externe Bibliotheks-Abhängigkeit
+- PWA/Service Worker mit network-first Startseite
+
+Wichtig: Bestehende lokale Lernstände und der Muttersprache-Schlüssel bleiben kompatibel.
