@@ -15,3 +15,10 @@ Wortdaten:
 https://github.com/appsinacup/polyglot-dictionaries (MIT, aus Wiktionary aufbereitet)
 
 Für Installation über HTTPS bereitstellen, z. B. GitHub Pages.
+
+NEU V6:
+- Startauswahl der eigenen/Muttersprache
+- Deutsch als 11. Lernsprache
+- eigene Sprache wird aus Lernsprachen ausgeblendet
+- Wortbank übersetzt nach Möglichkeit direkt in die gewählte Ausgangssprache
+- Groß-Nachzeichnen für Arabisch, Chinesisch, Mandarin und Japanisch

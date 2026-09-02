@@ -8,7 +8,7 @@
   "display": "standalone",
   "background_color": "#e8eef3",
   "theme_color": "#e8eef3",
-  "description": "Birkenbihl-orientierte Lern-PWA für 10 Sprachen mit 120 Lektionen, 3000-Wörter-Ziel, Dekodierung, Hörtraining und Wiederholung.",
+  "description": "Birkenbihl-orientierte Lern-PWA mit frei wählbarer Ausgangssprache und 11 Lernsprachen, 120 Lektionen, 3000-Wörter-Ziel, Dekodierung, Hörtraining und Schrift-Nachzeichnen.",
   "icons": [
     {
       "src": "icon-192.png",
