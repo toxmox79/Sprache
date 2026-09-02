@@ -178,7 +178,7 @@ h3{margin:0 0 11px;font-size:20px}
 .writing-coach-head b{font-size:13px}
 .writing-coach-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .writing-coach-view{min-height:240px;border-radius:18px;background:#eef3f7;border:1px solid rgba(80,95,110,.08);display:flex;align-items:center;justify-content:center;padding:12px;position:relative;overflow:hidden}
-.hanzi-writer-box{width:min(360px,100%);height:220px;display:flex;align-items:center;justify-content:center}
+.hanzi-writer-box{width:min(360px,100%);height:220px;display:flex;align-items:center;justify-content:center;position:relative;overflow:visible}
 .hanzi-writer-box.hidden,.script-flow-box.hidden{display:none}
 .script-flow-box{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 .script-flow-word{font-size:72px;font-weight:900;line-height:1.2;min-height:96px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px}
@@ -194,8 +194,8 @@ h3{margin:0 0 11px;font-size:20px}
 @media(max-width:760px){.script-flow-word{font-size:54px;min-height:74px}.writing-coach-view{min-height:200px}}
 
 .hanzi-writer-box{position:relative}
-.stroke-number-overlay{position:absolute;inset:0;width:220px;height:220px;pointer-events:none;left:50%;transform:translateX(-50%);top:0}
-.stroke-number-overlay text{font-size:36px;font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:10px;stroke-linejoin:round;fill:#d84f4f}
+.stroke-number-overlay{position:absolute;width:220px;height:220px;pointer-events:none;left:50%;top:50%;transform:translate(-50%,-50%);z-index:40;overflow:visible}
+.stroke-number-overlay text{font-size:38px;font-weight:950;paint-order:stroke;stroke:#fff;stroke-width:12px;stroke-linejoin:round;fill:#d83939;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
 .stroke-number-overlay.hidden{display:none}
 .writer-result{margin-top:9px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.42);font-size:12px;line-height:1.45;min-height:38px}
 .writer-result.good{background:#dcefe4;color:#235a3c}.writer-result.mid{background:#f3e9cf;color:#74571f}.writer-result.bad{background:#f4dede;color:#7b3b3b}
@@ -207,7 +207,7 @@ h3{margin:0 0 11px;font-size:20px}
 .copybook-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
 .script-flow-unit{position:relative;display:inline-flex;align-items:center;justify-content:center}
 .script-flow-unit .flow-num{position:absolute;top:-18px;right:50%;transform:translateX(50%);font-size:12px;font-weight:900;background:#d84f4f;color:white;border-radius:999px;min-width:22px;height:22px;align-items:center;justify-content:center;display:none}
-.script-flow-unit.revealed .flow-num{display:flex}
+.script-flow-unit.revealed .flow-num{display:flex}.script-flow-box.hide-flow-numbers .flow-num{display:none!important}
 @media(max-width:760px){.stroke-number-overlay{width:200px;height:200px}.stroke-number-overlay text{font-size:32px}}
 
 
@@ -248,6 +248,36 @@ body.modal-open{overflow:hidden}
 .learning-summary{font-size:12px;color:var(--muted);line-height:1.45}.learning-summary strong{color:var(--text)}
 @media(max-width:760px){.mastery-strip{grid-template-columns:repeat(4,minmax(0,1fr))}.mnemonic-grid{grid-template-columns:1fr}.visual-choices{grid-template-columns:repeat(2,minmax(0,1fr))}.knowledge-net{grid-template-columns:1fr}.net-center{width:140px}.chorus-rounds{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+.course-mode-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 15px;position:sticky;top:6px;z-index:80;padding:8px;border-radius:19px;background:rgba(232,238,243,.92);backdrop-filter:blur(12px);box-shadow:0 7px 22px rgba(85,100,115,.13)}
+.course-mode-btn{border:0;border-radius:13px;min-height:46px;padding:8px 9px;background:var(--surface);box-shadow:4px 4px 9px rgba(154,169,182,.30),-4px -4px 9px rgba(255,255,255,.88);font-size:12px;font-weight:850;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center}
+.course-mode-btn.active{background:var(--accent2);color:#263b8d;box-shadow:var(--in)}
+.course-mode-btn.hidden{display:none!important}
+.course-section-hidden{display:none!important}
+.lesson-select-wrap{display:none;margin:9px 0 6px}
+.lesson-select{width:100%;border:0;border-radius:13px;padding:11px 12px;background:var(--surface);box-shadow:var(--in);color:var(--text);font-weight:750}
+.script-hub-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
+.script-hub-word{border:0;border-radius:16px;padding:13px 10px;background:var(--surface);box-shadow:var(--in);cursor:pointer;text-align:center;min-height:76px}
+.script-hub-word .glyph{display:block;font-size:27px;font-weight:900;line-height:1.3}
+.script-hub-word .meaning{display:block;margin-top:5px;font-size:11px;color:var(--muted)}
+.section-intro{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.compact-note{font-size:11px;color:var(--muted);line-height:1.4}
+@media(max-width:760px){
+ .course-mode-nav{grid-template-columns:repeat(5,minmax(58px,1fr));gap:5px;overflow-x:auto;position:sticky;top:4px;padding:6px}
+ .course-mode-btn{font-size:10px;min-height:42px;padding:6px 5px;white-space:nowrap}
+ .side{padding:12px}.side .nav{display:none!important}.lesson-select-wrap{display:block}.bank-status{font-size:10px}
+ .script-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .course-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.course-stat{padding:9px}.course-stat b{font-size:17px}
+ .method-card{display:none}.level-banner{margin-top:7px}
+}
+
+
+.language-toolbar{display:flex;gap:9px;align-items:center;justify-content:space-between;margin:0 0 14px;flex-wrap:wrap}
+.language-search{flex:1;min-width:220px;border:0;border-radius:15px;padding:12px 14px;background:var(--surface);box-shadow:var(--in);color:var(--text);font-weight:700}
+.language-count{font-size:12px;color:var(--muted);white-space:nowrap}
+.lang-family{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700}
+@media(max-width:700px){.language-toolbar{align-items:stretch}.language-search{min-width:100%}}
+
 </style>
 </head>
 <body>
@@ -257,6 +287,10 @@ body.modal-open{overflow:hidden}
       <div class="kicker">Schritt 1 von 2</div>
       <h1>Was ist deine eigene Sprache?</h1>
       <div class="lead-native">Tippe auf die Aussage in deiner Sprache. Deine Auswahl wird für die Wortbedeutungen verwendet und anschließend nicht als Lernsprache angeboten. Du kannst sie später jederzeit ändern.</div>
+      <div class="language-toolbar">
+        <input id="nativeSearch" class="language-search" type="search" placeholder="Sprache / language / idioma …" autocomplete="off">
+        <div id="nativeCount" class="language-count"></div>
+      </div>
       <div id="nativeGrid" class="native-grid"></div>
     </div>
   </section>
@@ -269,11 +303,15 @@ body.modal-open{overflow:hidden}
     <div class="hero">
       <div>
         <h1>Sprachen gehirn-gerecht lernen</h1>
-        <div class="tagline">Wähle eine Lernsprache. Deine eigene Sprache dient als Ausgangspunkt – jede Zielsprache bekommt trotzdem ihre passende Dekodier- und Lernlogik.</div>
+        <div class="tagline">Wähle aus 24 Sprachen eine Lernsprache. Deine eigene Sprache dient als Ausgangspunkt – jede Zielsprache bekommt trotzdem ihre passende Dekodier- und Lernlogik.</div>
       </div>
       <button id="installBtn" class="btn" hidden>App installieren</button>
     </div>
 
+    <div class="language-toolbar">
+      <input id="languageSearch" class="language-search" type="search" placeholder="Lernsprache suchen …" autocomplete="off">
+      <div id="languageCount" class="language-count"></div>
+    </div>
     <div id="languageGrid" class="home-grid"></div>
 
     <section class="card method-overview">
@@ -297,19 +335,29 @@ body.modal-open{overflow:hidden}
       </div>
     </div>
 
+
+    <nav id="courseModeNav" class="course-mode-nav" aria-label="Lernbereiche">
+      <button type="button" class="course-mode-btn active" data-course-mode="learn">📖 Lernen</button>
+      <button type="button" class="course-mode-btn" data-course-mode="words">🔤 Wörter</button>
+      <button type="button" class="course-mode-btn" data-course-mode="reinforce">🧠 Festigen</button>
+      <button id="scriptModeBtn" type="button" class="course-mode-btn hidden" data-course-mode="script">✍️ Schrift</button>
+      <button type="button" class="course-mode-btn" data-course-mode="routine">⏱ Routine</button>
+    </nav>
+
     <div class="layout">
       <aside class="card side">
         <div class="progress-label">Fortschritt in dieser Sprache</div>
         <div id="progressNum" class="progress-num">0%</div>
         <div class="progress"><div id="progressBar"></div></div>
         <div id="stageChips" class="stage-chips"></div>
+        <div class="lesson-select-wrap"><select id="lessonSelect" class="lesson-select" aria-label="Lektion auswählen"></select></div>
         <button id="reviewBtn" type="button" class="btn review-btn">↻ Fällige Wörter <span id="dueCount">0</span></button>
         <div id="bankStatus" class="bank-status">Wortbank: noch nicht geladen</div>
         <div id="lessonNav" class="nav"></div>
       </aside>
 
       <main class="content">
-        <section class="card panel">
+        <section class="card panel" id="courseOverviewSection">
           <div class="lesson-head">
             <div>
               <div id="lessonMeta" class="kicker"></div>
@@ -328,7 +376,7 @@ body.modal-open{overflow:hidden}
           </div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel" id="decodeSection">
           <div class="lesson-head" style="margin-bottom:13px">
             <h3>Dekodieren</h3>
             <div id="viewControls" class="controls"></div>
@@ -352,10 +400,22 @@ body.modal-open{overflow:hidden}
           <div class="source-note">Die große Wortbank wird beim ersten Online-Aufruf aus dem offenen Polyglot-Dictionaries/Wiktionary-Datensatz geladen und anschließend vom Browser zwischengespeichert. Die handgebauten Dekodier- und Strukturlektionen funktionieren auch ohne Wortbank.</div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel" id="patternsSection">
           <h3>Muster erkennen</h3>
           <div id="patterns" class="patterns"></div>
           <div id="specialBox" class="special"></div>
+        </section>
+
+
+        <section id="scriptHubSection" class="card panel course-section-hidden">
+          <div class="section-intro">
+            <div>
+              <h3 style="margin-bottom:4px">Schriftstudio</h3>
+              <div class="goal">Tippe auf ein Wort oder Zeichen. Du siehst Schreibfolge bzw. Schreibfluss und kannst anschließend mit Finger oder Stift üben.</div>
+            </div>
+          </div>
+          <div id="scriptHubInfo" class="compact-note"></div>
+          <div id="scriptHubWords" class="script-hub-grid"></div>
         </section>
 
         <section id="traceSection" class="card panel hidden">
@@ -403,7 +463,7 @@ body.modal-open{overflow:hidden}
           <div id="reinforceBox" class="reinforce-box"></div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel" id="miniTransferSection">
           <h3>Mini-Transfer</h3>
           <div id="quizQuestion" class="quizq"></div>
           <div id="choices" class="choices"></div>
@@ -414,7 +474,7 @@ body.modal-open{overflow:hidden}
           </div>
         </section>
 
-        <section class="card panel">
+        <section class="card panel" id="routineSection">
           <h3 id="routineTitle">Lernroutine</h3>
           <div id="routine" class="routine"></div>
           <div class="footer-note">Die Sprachausgabe verwendet die Stimmen des Geräts. Verfügbare Stimmen und Aussprachequalität unterscheiden sich je nach Android-, iOS- oder Browser-Version.</div>
@@ -999,7 +1059,170 @@ de:{
  ]
 }
 
+
 };
+
+/* ===== Erweiterung Europa ===== */
+const EUROPEAN_EXPANSIONS={
+ fr:{name:"Französisch",flag:"🇫🇷",voice:"fr-FR",family:"Romanisch",method:"Klangverkettung + feste Chunks + Pronomen/Negation",
+ home:"Französisch wird über häufige Klang-Chunks aufgebaut. Stumme Endungen, Liaison und kleine Funktionswörter werden zuerst im ganzen Satz gehört statt als isolierte Regel gelernt.",
+ lessons:[
+  ["Bonjour!",[["Bonjour!","Guten Tag!"],["Comment ça va ?","Wie geht es dir?"],["Ça va bien, merci.","Mir geht es gut, danke."],["Je m'appelle Thomas.","Ich heiße Thomas."]]],
+  ["Je viens de…",[["Je viens d'Allemagne.","Ich komme aus Deutschland."],["Où habites-tu ?","Wo wohnst du?"],["J'habite à Berlin.","Ich wohne in Berlin."],["Je travaille ici.","Ich arbeite hier."]]],
+  ["Je voudrais…",[["Je voudrais de l'eau.","Ich hätte gern Wasser."],["Je voudrais manger.","Ich möchte essen."],["Un café, s'il vous plaît.","Einen Kaffee, bitte."],["Je peux payer par carte ?","Kann ich mit Karte bezahlen?"]]],
+  ["Hier & demain",[["Hier, j'ai travaillé.","Gestern habe ich gearbeitet."],["Demain, je vais en ville.","Morgen fahre ich in die Stadt."],["Aujourd'hui, je n'ai pas le temps.","Heute habe ich keine Zeit."],["Peut-être plus tard.","Vielleicht später."]]]
+ ]},
+ pt:{name:"Portugiesisch",flag:"🇵🇹",voice:"pt-PT",family:"Romanisch",method:"Vokalreduktion + Verbformen + feste Satzstarter",
+ home:"Portugiesisch wird als Klangsprache gelernt: häufige reduzierte Vokale und Verbformen werden an komplette Chunks gekoppelt, bevor Tabellen eine Rolle spielen.",
+ lessons:[
+  ["Olá!",[["Olá!","Hallo!"],["Como estás?","Wie geht es dir?"],["Estou bem, obrigado.","Mir geht es gut, danke."],["Chamo-me Thomas.","Ich heiße Thomas."]]],
+  ["Sou da Alemanha",[["Sou da Alemanha.","Ich komme aus Deutschland."],["Onde moras?","Wo wohnst du?"],["Moro em Berlim.","Ich wohne in Berlin."],["Trabalho aqui.","Ich arbeite hier."]]],
+  ["Quero…",[["Quero água.","Ich möchte Wasser."],["Quero comer.","Ich möchte essen."],["Queria um café, por favor.","Ich hätte gern einen Kaffee, bitte."],["Posso pagar com cartão?","Kann ich mit Karte bezahlen?"]]],
+  ["Ontem & amanhã",[["Ontem trabalhei.","Gestern habe ich gearbeitet."],["Amanhã vou à cidade.","Morgen fahre ich in die Stadt."],["Hoje não tenho tempo.","Heute habe ich keine Zeit."],["Talvez mais tarde.","Vielleicht später."]]]
+ ]},
+ nl:{name:"Niederländisch",flag:"🇳🇱",voice:"nl-NL",family:"Germanisch",method:"Wortstellung + trennbare Verben + Klang-Chunks",
+ home:"Niederländisch nutzt viele vertraute germanische Muster. Die App macht Unterschiede in Aussprache, Wortstellung und Verbklammer bewusst, ohne Ähnlichkeiten mit Deutsch zu überschätzen.",
+ lessons:[
+  ["Hallo!",[["Hallo!","Hallo!"],["Hoe gaat het?","Wie geht es dir?"],["Het gaat goed, dank je.","Mir geht es gut, danke."],["Ik heet Thomas.","Ich heiße Thomas."]]],
+  ["Ik kom uit…",[["Ik kom uit Duitsland.","Ich komme aus Deutschland."],["Waar woon je?","Wo wohnst du?"],["Ik woon in Berlijn.","Ich wohne in Berlin."],["Ik werk hier.","Ich arbeite hier."]]],
+  ["Ik wil…",[["Ik wil water.","Ich möchte Wasser."],["Ik wil eten.","Ich möchte essen."],["Ik wil graag koffie.","Ich hätte gern Kaffee."],["Kan ik met kaart betalen?","Kann ich mit Karte bezahlen?"]]],
+  ["Gisteren & morgen",[["Gisteren heb ik gewerkt.","Gestern habe ich gearbeitet."],["Morgen ga ik naar de stad.","Morgen fahre ich in die Stadt."],["Vandaag heb ik geen tijd.","Heute habe ich keine Zeit."],["Misschien later.","Vielleicht später."]]]
+ ]},
+ pl:{name:"Polnisch",flag:"🇵🇱",voice:"pl-PL",family:"Slawisch",method:"Endungen/Fälle als Chunks + Verb-Aspekt + Konsonantenklang",
+ home:"Polnisch wird über wiederkehrende Endungen in echten Sätzen erschlossen. Fälle und Aspekt erscheinen zunächst als Bedeutungs-Chunks statt als große Deklinationstabellen.",
+ lessons:[
+  ["Cześć!",[["Cześć!","Hallo!"],["Jak się masz?","Wie geht es dir?"],["Dobrze, dziękuję.","Gut, danke."],["Mam na imię Thomas.","Ich heiße Thomas."]]],
+  ["Jestem z…",[["Jestem z Niemiec.","Ich komme aus Deutschland."],["Gdzie mieszkasz?","Wo wohnst du?"],["Mieszkam w Berlinie.","Ich wohne in Berlin."],["Pracuję tutaj.","Ich arbeite hier."]]],
+  ["Chcę…",[["Chcę wody.","Ich möchte Wasser."],["Chcę jeść.","Ich möchte essen."],["Poproszę kawę.","Einen Kaffee, bitte."],["Czy mogę zapłacić kartą?","Kann ich mit Karte bezahlen?"]]],
+  ["Wczoraj & jutro",[["Wczoraj padało.","Gestern hat es geregnet."],["Jutro jadę do miasta.","Morgen fahre ich in die Stadt."],["Dzisiaj nie mam czasu.","Heute habe ich keine Zeit."],["Może później.","Vielleicht später."]]]
+ ]},
+ cs:{name:"Tschechisch",flag:"🇨🇿",voice:"cs-CZ",family:"Slawisch",method:"Fälle als Satzmuster + Diakritik + flexible Wortstellung",
+ home:"Tschechisch wird mit vollständigen Orts- und Handlungs-Chunks gelernt. Endungen werden als sichtbare Veränderung eines bekannten Wortes entdeckt.",
+ lessons:[
+  ["Ahoj!",[["Ahoj!","Hallo!"],["Jak se máš?","Wie geht es dir?"],["Mám se dobře, děkuji.","Mir geht es gut, danke."],["Jmenuji se Thomas.","Ich heiße Thomas."]]],
+  ["Jsem z…",[["Jsem z Německa.","Ich komme aus Deutschland."],["Kde bydlíš?","Wo wohnst du?"],["Bydlím v Berlíně.","Ich wohne in Berlin."],["Pracuji tady.","Ich arbeite hier."]]],
+  ["Chci…",[["Chci vodu.","Ich möchte Wasser."],["Chci jíst.","Ich möchte essen."],["Prosím kávu.","Einen Kaffee, bitte."],["Můžu platit kartou?","Kann ich mit Karte bezahlen?"]]],
+  ["Včera & zítra",[["Včera pršelo.","Gestern hat es geregnet."],["Zítra jedu do města.","Morgen fahre ich in die Stadt."],["Dnes nemám čas.","Heute habe ich keine Zeit."],["Možná později.","Vielleicht später."]]]
+ ]},
+ da:{name:"Dänisch",flag:"🇩🇰",voice:"da-DK",family:"Germanisch",method:"Hörbild vor Schriftbild + reduzierte Aussprache + Wortstellung",
+ home:"Beim Dänischen steht das Hören besonders früh im Vordergrund, weil gesprochene Formen oft stärker reduziert wirken als das Schriftbild vermuten lässt.",
+ lessons:[
+  ["Hej!",[["Hej!","Hallo!"],["Hvordan går det?","Wie geht es dir?"],["Det går godt, tak.","Mir geht es gut, danke."],["Jeg hedder Thomas.","Ich heiße Thomas."]]],
+  ["Jeg kommer fra…",[["Jeg kommer fra Tyskland.","Ich komme aus Deutschland."],["Hvor bor du?","Wo wohnst du?"],["Jeg bor i Berlin.","Ich wohne in Berlin."],["Jeg arbejder her.","Ich arbeite hier."]]],
+  ["Jeg vil gerne…",[["Jeg vil gerne have vand.","Ich hätte gern Wasser."],["Jeg vil gerne spise.","Ich möchte essen."],["En kaffe, tak.","Einen Kaffee, bitte."],["Kan jeg betale med kort?","Kann ich mit Karte bezahlen?"]]],
+  ["I går & i morgen",[["I går regnede det.","Gestern hat es geregnet."],["I morgen tager jeg ind til byen.","Morgen fahre ich in die Stadt."],["I dag har jeg ikke tid.","Heute habe ich keine Zeit."],["Måske senere.","Vielleicht später."]]]
+ ]},
+ nb:{name:"Norwegisch",flag:"🇳🇴",voice:"nb-NO",family:"Germanisch",method:"Klang-Chunks + einfache Wortstellung + feste Verbmuster",
+ home:"Norwegisch (Bokmål) wird über sehr häufige Satzstarter und natürliche Hörblöcke aufgebaut; Grammatik wird aus den wiederkehrenden Formen herausgelesen.",
+ lessons:[
+  ["Hei!",[["Hei!","Hallo!"],["Hvordan går det?","Wie geht es dir?"],["Det går bra, takk.","Mir geht es gut, danke."],["Jeg heter Thomas.","Ich heiße Thomas."]]],
+  ["Jeg kommer fra…",[["Jeg kommer fra Tyskland.","Ich komme aus Deutschland."],["Hvor bor du?","Wo wohnst du?"],["Jeg bor i Berlin.","Ich wohne in Berlin."],["Jeg jobber her.","Ich arbeite hier."]]],
+  ["Jeg vil gjerne…",[["Jeg vil gjerne ha vann.","Ich hätte gern Wasser."],["Jeg vil gjerne spise.","Ich möchte essen."],["En kaffe, takk.","Einen Kaffee, bitte."],["Kan jeg betale med kort?","Kann ich mit Karte bezahlen?"]]],
+  ["I går & i morgen",[["I går regnet det.","Gestern hat es geregnet."],["I morgen drar jeg til byen.","Morgen fahre ich in die Stadt."],["I dag har jeg ikke tid.","Heute habe ich keine Zeit."],["Kanskje senere.","Vielleicht später."]]]
+ ]},
+ sv:{name:"Schwedisch",flag:"🇸🇪",voice:"sv-SE",family:"Germanisch",method:"Vokallänge + Satzmelodie + Wortstellung als Chunks",
+ home:"Schwedisch wird über Klang, Rhythmus und kurze Satzmuster erschlossen. Ähnliche Wörter zu Deutsch werden bewusst gehört statt nur optisch geraten.",
+ lessons:[
+  ["Hej!",[["Hej!","Hallo!"],["Hur mår du?","Wie geht es dir?"],["Jag mår bra, tack.","Mir geht es gut, danke."],["Jag heter Thomas.","Ich heiße Thomas."]]],
+  ["Jag kommer från…",[["Jag kommer från Tyskland.","Ich komme aus Deutschland."],["Var bor du?","Wo wohnst du?"],["Jag bor i Berlin.","Ich wohne in Berlin."],["Jag arbetar här.","Ich arbeite hier."]]],
+  ["Jag vill…",[["Jag vill ha vatten.","Ich möchte Wasser."],["Jag vill äta.","Ich möchte essen."],["En kaffe, tack.","Einen Kaffee, bitte."],["Kan jag betala med kort?","Kann ich mit Karte bezahlen?"]]],
+  ["Igår & imorgon",[["Igår regnade det.","Gestern hat es geregnet."],["Imorgon åker jag till stan.","Morgen fahre ich in die Stadt."],["Idag har jag inte tid.","Heute habe ich keine Zeit."],["Kanske senare.","Vielleicht später."]]]
+ ]},
+ fi:{name:"Finnisch",flag:"🇫🇮",voice:"fi-FI",family:"Uralisch",method:"Suffixketten + Vokalharmonie + Wortstämme sichtbar machen",
+ home:"Finnisch wird morphemnah dekodiert: Stamm und Endungen werden wie Bausteine betrachtet. So werden lange Formen nicht als einzelne neue Wörter gelernt.",
+ lessons:[
+  ["Hei!",[["Hei!","Hallo!"],["Mitä kuuluu?","Wie geht es dir?"],["Hyvää, kiitos.","Gut, danke."],["Nimeni on Thomas.","Ich heiße Thomas."]]],
+  ["Olen Saksasta",[["Olen Saksasta.","Ich komme aus Deutschland."],["Missä asut?","Wo wohnst du?"],["Asun Berliinissä.","Ich wohne in Berlin."],["Työskentelen täällä.","Ich arbeite hier."]]],
+  ["Haluan…",[["Haluan vettä.","Ich möchte Wasser."],["Haluan syödä.","Ich möchte essen."],["Kahvi, kiitos.","Einen Kaffee, bitte."],["Voinko maksaa kortilla?","Kann ich mit Karte bezahlen?"]]],
+  ["Eilen & huomenna",[["Eilen satoi.","Gestern hat es geregnet."],["Huomenna menen kaupunkiin.","Morgen fahre/gehe ich in die Stadt."],["Tänään minulla ei ole aikaa.","Heute habe ich keine Zeit."],["Ehkä myöhemmin.","Vielleicht später."]]]
+ ]},
+ hu:{name:"Ungarisch",flag:"🇭🇺",voice:"hu-HU",family:"Uralisch",method:"Suffixketten + Vokalharmonie + flexible Satzbausteine",
+ home:"Ungarisch wird ähnlich wie Türkisch stark über Wortbausteine erschlossen: Wortstamm und Suffixe werden sichtbar getrennt und anschließend als ganze Klangform gehört.",
+ lessons:[
+  ["Szia!",[["Szia!","Hallo!"],["Hogy vagy?","Wie geht es dir?"],["Jól vagyok, köszönöm.","Mir geht es gut, danke."],["Thomas vagyok.","Ich bin Thomas."]]],
+  ["Németországból…",[["Németországból jövök.","Ich komme aus Deutschland."],["Hol laksz?","Wo wohnst du?"],["Berlinben lakom.","Ich wohne in Berlin."],["Itt dolgozom.","Ich arbeite hier."]]],
+  ["Szeretnék…",[["Vizet szeretnék.","Ich möchte Wasser."],["Enni szeretnék.","Ich möchte essen."],["Egy kávét kérek.","Einen Kaffee, bitte."],["Fizethetek kártyával?","Kann ich mit Karte bezahlen?"]]],
+  ["Tegnap & holnap",[["Tegnap esett az eső.","Gestern hat es geregnet."],["Holnap bemegyek a városba.","Morgen fahre/gehe ich in die Stadt."],["Ma nincs időm.","Heute habe ich keine Zeit."],["Talán később.","Vielleicht später."]]]
+ ]},
+ el:{name:"Griechisch",flag:"🇬🇷",voice:"el-GR",family:"Hellenisch",method:"Griechisches Alphabet + Artikel/Endungen + Hör-Chunks",
+ home:"Griechisch koppelt die eigene Schrift von Anfang an direkt an Klang. Artikel und Endungen werden zunächst als Teile kompletter Ausdrücke gelernt.",
+ lessons:[
+  ["Γεια σου!",[["Γεια σου!","Hallo!"],["Τι κάνεις;","Wie geht es dir?"],["Καλά, ευχαριστώ.","Gut, danke."],["Με λένε Thomas.","Ich heiße Thomas."]]],
+  ["Είμαι από…",[["Είμαι από τη Γερμανία.","Ich komme aus Deutschland."],["Πού μένεις;","Wo wohnst du?"],["Μένω στο Βερολίνο.","Ich wohne in Berlin."],["Δουλεύω εδώ.","Ich arbeite hier."]]],
+  ["Θέλω…",[["Θέλω νερό.","Ich möchte Wasser."],["Θέλω να φάω.","Ich möchte essen."],["Έναν καφέ, παρακαλώ.","Einen Kaffee, bitte."],["Μπορώ να πληρώσω με κάρτα;","Kann ich mit Karte bezahlen?"]]],
+  ["Χθες & αύριο",[["Χθες έβρεχε.","Gestern hat es geregnet."],["Αύριο θα πάω στην πόλη.","Morgen fahre/gehe ich in die Stadt."],["Σήμερα δεν έχω χρόνο.","Heute habe ich keine Zeit."],["Ίσως αργότερα.","Vielleicht später."]]]
+ ]},
+ bg:{name:"Bulgarisch",flag:"🇧🇬",voice:"bg-BG",family:"Slawisch",method:"Kyrillisch + bestimmte Artikel als Endungen + Verb-Chunks",
+ home:"Bulgarisch verbindet Kyrillisch direkt mit Klang. Auffällige Endungen – etwa angehängte bestimmte Artikel – werden in echten Wörtern sichtbar gemacht.",
+ lessons:[
+  ["Здравей!",[["Здравей!","Hallo!"],["Как си?","Wie geht es dir?"],["Добре съм, благодаря.","Mir geht es gut, danke."],["Казвам се Томас.","Ich heiße Thomas."]]],
+  ["Аз съм от…",[["Аз съм от Германия.","Ich komme aus Deutschland."],["Къде живееш?","Wo wohnst du?"],["Живея в Берлин.","Ich wohne in Berlin."],["Работя тук.","Ich arbeite hier."]]],
+  ["Искам…",[["Искам вода.","Ich möchte Wasser."],["Искам да ям.","Ich möchte essen."],["Едно кафе, моля.","Einen Kaffee, bitte."],["Мога ли да платя с карта?","Kann ich mit Karte bezahlen?"]]],
+  ["Вчера & утре",[["Вчера валя.","Gestern hat es geregnet."],["Утре ще отида в града.","Morgen fahre/gehe ich in die Stadt."],["Днес нямам време.","Heute habe ich keine Zeit."],["Може би по-късно.","Vielleicht später."]]]
+ ]},
+ uk:{name:"Ukrainisch",flag:"🇺🇦",voice:"uk-UA",family:"Slawisch",method:"Kyrillisch + Fälle als Chunks + Verb-Aspekt im Kontext",
+ home:"Ukrainisch wird über direkte Klang-Schrift-Kopplung und häufige Satzmuster gelernt. Endungen werden in Orts-, Besitz- und Handlungs-Chunks entdeckt.",
+ lessons:[
+  ["Привіт!",[["Привіт!","Hallo!"],["Як справи?","Wie geht es dir?"],["Добре, дякую.","Gut, danke."],["Мене звати Томас.","Ich heiße Thomas."]]],
+  ["Я з…",[["Я з Німеччини.","Ich komme aus Deutschland."],["Де ти живеш?","Wo wohnst du?"],["Я живу в Берліні.","Ich wohne in Berlin."],["Я працюю тут.","Ich arbeite hier."]]],
+  ["Я хочу…",[["Я хочу води.","Ich möchte Wasser."],["Я хочу їсти.","Ich möchte essen."],["Каву, будь ласка.","Einen Kaffee, bitte."],["Можна оплатити карткою?","Kann ich mit Karte bezahlen?"]]],
+  ["Вчора & завтра",[["Вчора йшов дощ.","Gestern hat es geregnet."],["Завтра я поїду в місто.","Morgen fahre ich in die Stadt."],["Сьогодні в мене немає часу.","Heute habe ich keine Zeit."],["Можливо, пізніше.","Vielleicht später."]]]
+ ]}
+};
+
+function makeEuropeanCourse(cfg){
+ const goals=[
+  "Begrüßen, reagieren und sich vorstellen.",
+  "Herkunft, Wohnort und Arbeit ausdrücken.",
+  "Wünsche, Bestellungen und einfache Bitten ausdrücken.",
+  "Zeitanker für gestern, heute und morgen verstehen."
+ ];
+ const methods=[
+  "Kurze, hochfrequente Äußerungen werden als komplette Klang- und Bedeutungsblöcke gelernt.",
+  "Orts- und Herkunftsausdrücke werden als fertige Chunks gehört; Endungen und Präpositionen werden erst danach analysiert.",
+  "Produktive Satzstarter werden mit mehreren Inhalten wiederverwendet, damit ein kleines Muster viele Aussagen ermöglicht.",
+  "Zeitwörter liefern zuerst den Bedeutungsrahmen; die Verbform wird im Satz wiederholt beobachtet statt isoliert gepaukt."
+ ];
+ const lessons=cfg.lessons.map(([title,items],idx)=>{
+  const phrases=items.map(([target,natural])=>[
+    target,
+    target.split(/\s+/).join(" · "),
+    natural,
+    natural
+  ]);
+  const firstWords=items[0][0].replace(/[!?.,;:«»„“]/g,"").split(/\s+/).slice(0,3);
+  return {
+   title,
+   goal:goals[idx],
+   method:methods[idx],
+   phrases,
+   patterns:[
+    [firstWords.join(" "),`als wiederkehrenden ${idx===2?"Satzstarter":"Bedeutungs-Chunk"} erkennen.`],
+    ["Klang vor Regel","Zuerst verstehen und hören; die Form wird danach bewusst betrachtet."],
+    ["Variieren","Bekannte Struktur mit neuen Wörtern kombinieren."]
+   ],
+   special:{type:"chunk",title:"Chunk-Lupe",items:[...firstWords,"→",items[0][1]]},
+   quiz:[
+    [`Welche Form gehört zu „${items[0][1]}“?`,[items[0][0],items[1][0],items[2][0]],0],
+    ["Wie soll das Muster gefestigt werden?",["im Kontext hören und variieren","nur als Regel auswendig lernen","nur abschreiben"],0]
+   ]
+  };
+ });
+ return {
+  name:cfg.name,flag:cfg.flag,voice:cfg.voice,rate:.84,method:cfg.method,home:cfg.home,family:cfg.family,
+  controls:["analysis","literal","natural"],
+  controlLabels:{analysis:"Bausteine",literal:"Dekodierung",natural:"Bedeutung"},
+  routine:[
+   ["Dekodieren","Den Sinn zuerst transparent machen und die Wortgruppen sichtbar trennen."],
+   ["Aktiv hören","Original hören und die Bedeutung gleichzeitig mitverfolgen."],
+   ["Krücke reduzieren","Dekodierung ausblenden, sobald der Klang direkt verstanden wird."],
+   ["Variieren","Bekannte Satzstarter mit neuen Wörtern produktiv wiederverwenden."]
+  ],
+  lessons
+ };
+}
+Object.entries(EUROPEAN_EXPANSIONS).forEach(([code,cfg])=>{courses[code]=makeEuropeanCourse(cfg)});
+
 /* ===== Große Kursstruktur: 120 Lektionen / 3000 Wörter ===== */
 const COURSE_LENGTH=120, WORDS_PER_LESSON=25, WORD_TARGET=3000;
 const LEVELS=[
@@ -1018,7 +1241,7 @@ const TOPICS=[
  "Geschichten erzählen","Natur & Umgebung","Technik & Medien","Kultur & Reisen","Gesellschaft & Alltag","Dienstleistungen",
  "Kommunikation & Missverständnisse","Entscheidungen","Erfahrungen","Wortschatz vernetzen"
 ];
-const DATA_CODE={de:"de",tr:"tr",it:"it",es:"es",ro:"ro",ar:"ar",en:"en",zh:"zh",ja:"ja",cmn:"cmn",ru:"ru"};
+const DATA_CODE={de:"de",tr:"tr",it:"it",es:"es_translated",ro:"ro",ar:"ar",en:"en",zh:"zh",ja:"ja",cmn:"cmn",ru:"ru",fr:"fr",pt:"pt",nl:"nl",pl:"pl",cs:"cs",da:"da",nb:"nb",sv:"sv",fi:"fi",hu:"hu",el:"el",bg:"bg",uk:"uk"};
 const LANGUAGE_META={
  de:{name:"Deutsch",native:"Deutsch",flag:"🇩🇪",data:"de",nativePrompt:"Das ist meine Muttersprache"},
  en:{name:"Englisch",native:"English",flag:"🇬🇧",data:"en",nativePrompt:"This is my native language"},
@@ -1030,7 +1253,20 @@ const LANGUAGE_META={
  zh:{name:"Chinesisch",native:"中文",flag:"🇨🇳",data:"zh",nativePrompt:"这是我的母语"},
  cmn:{name:"Mandarin",native:"普通话",flag:"🇨🇳",data:"cmn",nativePrompt:"这是我的母语"},
  ja:{name:"Japanisch",native:"日本語",flag:"🇯🇵",data:"ja",nativePrompt:"これは私の母語です"},
- ru:{name:"Russisch",native:"Русский",flag:"🇷🇺",data:"ru",nativePrompt:"Это мой родной язык"}
+ ru:{name:"Russisch",native:"Русский",flag:"🇷🇺",data:"ru",nativePrompt:"Это мой родной язык"},
+ fr:{name:"Französisch",native:"Français",flag:"🇫🇷",data:"fr",nativePrompt:"C’est ma langue maternelle"},
+ pt:{name:"Portugiesisch",native:"Português",flag:"🇵🇹",data:"pt",nativePrompt:"Esta é a minha língua materna"},
+ nl:{name:"Niederländisch",native:"Nederlands",flag:"🇳🇱",data:"nl",nativePrompt:"Dit is mijn moedertaal"},
+ pl:{name:"Polnisch",native:"Polski",flag:"🇵🇱",data:"pl",nativePrompt:"To jest mój język ojczysty"},
+ cs:{name:"Tschechisch",native:"Čeština",flag:"🇨🇿",data:"cs",nativePrompt:"Toto je můj mateřský jazyk"},
+ da:{name:"Dänisch",native:"Dansk",flag:"🇩🇰",data:"da",nativePrompt:"Dette er mit modersmål"},
+ nb:{name:"Norwegisch",native:"Norsk (Bokmål)",flag:"🇳🇴",data:"nb",nativePrompt:"Dette er morsmålet mitt"},
+ sv:{name:"Schwedisch",native:"Svenska",flag:"🇸🇪",data:"sv",nativePrompt:"Det här är mitt modersmål"},
+ fi:{name:"Finnisch",native:"Suomi",flag:"🇫🇮",data:"fi",nativePrompt:"Tämä on äidinkieleni"},
+ hu:{name:"Ungarisch",native:"Magyar",flag:"🇭🇺",data:"hu",nativePrompt:"Ez az anyanyelvem"},
+ el:{name:"Griechisch",native:"Ελληνικά",flag:"🇬🇷",data:"el",nativePrompt:"Αυτή είναι η μητρική μου γλώσσα"},
+ bg:{name:"Bulgarisch",native:"Български",flag:"🇧🇬",data:"bg",nativePrompt:"Това е моят майчин език"},
+ uk:{name:"Ukrainisch",native:"Українська",flag:"🇺🇦",data:"uk",nativePrompt:"Це моя рідна мова"}
 };
 let nativeLanguage=localStorage.getItem("bb_native_language_v1")||"";
 const DATA_ROOT_RAW="https://raw.githubusercontent.com/appsinacup/polyglot-dictionaries/main/1000_words/";
@@ -1266,6 +1502,7 @@ function renderHanziWriterChar(ch){
   }).catch(()=>{writerCharData=null;renderFallbackFlow(ch, 'Für dieses Zeichen steht gerade keine Strichfolge-Datei bereit. Du kannst die Form aber sofort nachfahren.', false)});
 }
 function renderArabicFlow(word){
+  $('scriptFlowBox').classList.toggle('hide-flow-numbers',!strokeNumbersVisible);
   renderFallbackFlow(word, 'Arabisch schreibt sich von rechts nach links. Die App zeigt den Schreibfluss des Wortes und die verbundenen Buchstabenformen. Anschließend kannst du das Wort selbst nachfahren.', true);
   setWritingInfo('Arabisch: erst den Schreibfluss beobachten, dann die verbundene Form selbst schreiben.');
 }
@@ -1291,7 +1528,7 @@ function wordTraceFontSize(word){
 }
 function openWordTrace(word,meta=""){
   if(!supportsWordTrace(lang) || !word) return;
-  modalTraceWord=String(word).trim(); modalTraceMeta=meta||""; modalTraceStrokes=[]; modalTraceActive=null; modalTraceShowGuide=true; modalTraceMode="look"; writerCharData=null; strokeNumbersVisible=false; writerQuizActive=false; copybookStrokes=[]; copybookActive=null; copybookShowGuides=true; $('copybookPanel').classList.add('hidden'); setWriterResult('Noch keine Schreibprüfung gestartet.'); $('strokeNumbersBtn').textContent='# Strichnummern';
+  modalTraceWord=String(word).trim(); modalTraceMeta=meta||""; modalTraceStrokes=[]; modalTraceActive=null; modalTraceShowGuide=true; modalTraceMode="look"; writerCharData=null; strokeNumbersVisible=(lang==='zh'||lang==='cmn'||lang==='ja'||lang==='ar'); writerQuizActive=false; copybookStrokes=[]; copybookActive=null; copybookShowGuides=true; $('copybookPanel').classList.add('hidden'); setWriterResult('Noch keine Schreibprüfung gestartet.'); $('strokeNumbersBtn').textContent=strokeNumbersVisible?'# Nummern ausblenden':'# Strichnummern';
   const m=$("wordTraceModal"); m.classList.remove("hidden"); m.setAttribute("aria-hidden","false"); document.body.classList.add("modal-open");
   const d=$("wordTraceDisplay"); d.textContent=modalTraceWord; d.className="trace-modal-word"+(courses[lang].rtl?" rtl":""); if(courses[lang].rtl) d.dir="rtl"; else d.removeAttribute("dir");
   $("wordTraceMeta").textContent=modalTraceMeta || ""; $("wordTraceGuideToggle").textContent="Vorlage ausblenden"; $$(".trace-stage-btn").forEach(x=>x.classList.toggle("active",x.dataset.traceMode==="look")); drawModalTrace(); showWritingCoach();
@@ -1324,6 +1561,15 @@ function initWordTraceCanvas(){
  $("wordTraceGuideToggle").addEventListener("click",()=>{ modalTraceShowGuide=!modalTraceShowGuide; $("wordTraceGuideToggle").textContent=modalTraceShowGuide?"Vorlage ausblenden":"Vorlage einblenden"; drawModalTrace(); });
  
  $$(".trace-stage-btn").forEach(b=>b.addEventListener("click",()=>{modalTraceMode=b.dataset.traceMode;$$(`.trace-stage-btn`).forEach(x=>x.classList.toggle("active",x===b));if(modalTraceMode==="free")modalTraceShowGuide=false;else modalTraceShowGuide=true;drawModalTrace();if(modalTraceMode==="check"&&modalTraceWord){const w=(wordBanks[lang]||[]).find(x=>x.target===modalTraceWord);if(w){setMastery(w.id,"transferred");renderMastery()}}}));
+ $("strokeNumbersBtn").addEventListener("click",()=>{
+   strokeNumbersVisible=!strokeNumbersVisible;
+   $("strokeNumbersBtn").textContent=strokeNumbersVisible?'# Nummern ausblenden':'# Strichnummern';
+   if(lang==='ar'){$('scriptFlowBox').classList.toggle('hide-flow-numbers',!strokeNumbersVisible);replayWritingCoach();}
+   else if(writerCharData)renderStrokeNumbers(writerCharData);
+   else replayWritingCoach();
+ });
+ $("writingQuizBtn").addEventListener("click",startWritingQuiz);
+ $("copybookBtn").addEventListener("click",toggleCopybook);
  $("writingReplay").addEventListener("click",replayWritingCoach);
  $("writingPrevChar").addEventListener("click",()=>{ if(writingUnits.length>1){ writingIndex=(writingIndex-1+writingUnits.length)%writingUnits.length; updateWritingNav(); replayWritingCoach(); }});
  $("writingNextChar").addEventListener("click",()=>{ if(writingUnits.length>1){ writingIndex=(writingIndex+1)%writingUnits.length; updateWritingNav(); replayWritingCoach(); }});
@@ -1426,7 +1672,7 @@ async function loadWordBank(code){
    wordBanks[bankKey]=bank;wordBanks[code]=bank;
    const srcName=LANGUAGE_META[sourceCode]?.native||sourceCode;
    $("bankStatus").textContent=`Wortbank: ${bank.length.toLocaleString("de-DE")} Einträge · Bedeutung in ${srcName} · offline gecacht`;
-   renderWordField();renderWordQuiz();renderReinforce();renderProgress();return bank
+   renderWordField();renderScriptHub();renderWordQuiz();renderReinforce();renderProgress();return bank
   }catch(e){wordBanks[code]=[];$("bankStatus").textContent="Wortbank konnte nicht geladen werden. Kernlektionen bleiben nutzbar.";renderWordField();renderReinforce();return []}
  })();return bankPromises[bankKey]
 }
@@ -1500,6 +1746,34 @@ function listenCurrentWords(){
  const next=()=>{if(i>=words.length)return;const u=new SpeechSynthesisUtterance(words[i++].target);u.lang=courses[lang].voice;u.rate=(courses[lang].rate||.86)*.88;u.onend=()=>setTimeout(next,280);speechSynthesis.speak(u)};next()
 }
 
+
+let courseMode="learn";
+const COURSE_MODE_SECTIONS={
+ learn:["courseOverviewSection","decodeSection","patternsSection"],
+ words:["wordSection","wordQuizSection"],
+ reinforce:["reinforcementSection","miniTransferSection"],
+ script:["scriptHubSection","traceSection"],
+ routine:["routineSection"]
+};
+function setCourseMode(mode,scroll=true){
+  if(mode==="script"&&!supportsWordTrace(lang))mode="learn";
+  courseMode=mode;
+  const all=[...new Set(Object.values(COURSE_MODE_SECTIONS).flat())];
+  all.forEach(id=>{const el=$(id);if(!el)return;const should=(COURSE_MODE_SECTIONS[mode]||[]).includes(id);if(id==="traceSection"){el.classList.toggle("course-section-hidden",!should);if(lang!=="ar")el.classList.add("hidden");}else el.classList.toggle("course-section-hidden",!should)});
+  $$(".course-mode-btn").forEach(b=>b.classList.toggle("active",b.dataset.courseMode===mode));
+  if(mode==="script")renderScriptHub();
+  if(scroll){const main=document.querySelector(".content");if(main)main.scrollIntoView({behavior:"smooth",block:"start"})}
+}
+function renderScriptHub(){
+ const btn=$("scriptModeBtn");if(btn)btn.classList.toggle("hidden",!supportsWordTrace(lang));
+ const box=$("scriptHubWords"),info=$("scriptHubInfo");if(!box||!info)return;box.innerHTML="";
+ if(!supportsWordTrace(lang)){info.textContent="Für diese Schrift ist kein separates Schriftstudio nötig.";return}
+ const words=currentWords();
+ info.textContent=lang==="ar"?"Arabisch: Schreibfluss von rechts nach links und verbundene Formen ansehen.":"Tippe ein Zeichen/Wort an. Bei Hanzi und vielen Kanji werden echte Strichfolgen angezeigt.";
+ if(!words.length){box.innerHTML='<div class="bank-loading">Wortbank wird geladen …</div>';return}
+ words.slice(0,18).forEach(w=>{const b=document.createElement("button");b.type="button";b.className="script-hub-word";const g=document.createElement("span");g.className="glyph";g.textContent=w.target;if(courses[lang].rtl)g.dir="rtl";const m=document.createElement("span");m.className="meaning";m.textContent=w.de;b.append(g,m);b.addEventListener("click",()=>openWordTrace(w.target,`→ ${w.de}`));box.appendChild(b)});
+}
+
 let lang=null, lessonIndex=0, quizIndex=0;
 let views={analysis:false,literal:false,natural:false,translit:true};
 const storageKey="bb_multi_progress_v4_3000";
@@ -1518,13 +1792,19 @@ function speech(text){
  const u=new SpeechSynthesisUtterance(text);u.lang=courses[lang].voice;u.rate=courses[lang].rate||.86;speechSynthesis.speak(u)
 }
 function renderNativeSelector(){
- const grid=$("nativeGrid");grid.innerHTML="";
- Object.entries(LANGUAGE_META).forEach(([code,m])=>{
+ const grid=$("nativeGrid"),q=(($("nativeSearch")?.value||"").trim().toLocaleLowerCase());grid.innerHTML="";
+ const entries=Object.entries(LANGUAGE_META).sort((a,b)=>a[1].name.localeCompare(b[1].name,"de"));
+ let shown=0;
+ entries.forEach(([code,m])=>{
+  const hay=`${m.name} ${m.native} ${m.nativePrompt}`.toLocaleLowerCase();
+  if(q&&!hay.includes(q))return;
+  shown++;
   const b=document.createElement("button");b.type="button";b.className="native-btn";
-  b.innerHTML=`<span class="nf">${m.flag}</span><span><b>${escapeHtml(m.nativePrompt)}</b><small>${escapeHtml(m.native)}</small></span>`;
-  if(code==="ar") b.dir="rtl";
+  b.innerHTML=`<span class="nf">${m.flag}</span><span><b>${escapeHtml(m.nativePrompt)}</b><small>${escapeHtml(m.native)} · ${escapeHtml(m.name)}</small></span>`;
+  if(code==="ar")b.dir="rtl";
   b.addEventListener("click",()=>selectNativeLanguage(code));grid.appendChild(b)
- })
+ });
+ if($("nativeCount"))$("nativeCount").textContent=`${shown} Sprachen`;
 }
 function selectNativeLanguage(code){
  nativeLanguage=code;localStorage.setItem("bb_native_language_v1",code);
@@ -1541,18 +1821,24 @@ function initStartScreen(){
  else {$("nativeScreen").classList.remove("hidden");$("home").classList.add("hidden")}
 }
 function renderHome(){
- const grid=$("languageGrid");grid.innerHTML="";
- Object.entries(courses).forEach(([code,c])=>{
+ const grid=$("languageGrid"),q=(($("languageSearch")?.value||"").trim().toLocaleLowerCase());grid.innerHTML="";
+ const entries=Object.entries(courses).sort((a,b)=>a[1].name.localeCompare(b[1].name,"de"));
+ let shown=0;
+ entries.forEach(([code,c])=>{
   if(code===nativeLanguage)return;
+  const hay=`${c.name} ${c.family||""} ${c.method||""}`.toLocaleLowerCase();
+  if(q&&!hay.includes(q))return;
+  shown++;
   const btn=document.createElement("button");btn.className="langbtn";btn.type="button";
-  const completed=doneSet(code).size, pct=Math.round(completed/c.lessons.length*100);
-  btn.innerHTML=`<div><div class="langflag">${c.flag}</div><div class="langname">${c.name}</div><div class="langnote">${escapeHtml(c.home)}</div></div><div class="kicker">${pct}% abgeschlossen</div>`;
+  const completed=doneSet(code).size,pct=Math.round(completed/c.lessons.length*100);
+  btn.innerHTML=`<div><div class="langflag">${c.flag}</div><div class="langname">${c.name}</div>${c.family?`<div class="lang-family">${escapeHtml(c.family)}</div>`:""}<div class="langnote">${escapeHtml(c.home)}</div></div><div class="kicker">${pct}% abgeschlossen</div>`;
   btn.addEventListener("click",()=>openCourse(code));grid.appendChild(btn)
- })
+ });
+ if($("languageCount"))$("languageCount").textContent=`${shown} Lernsprachen`;
 }
 function openCourse(code){
  lang=code;lessonIndex=0;quizIndex=0;views={analysis:false,literal:false,natural:false,translit:!!courses[code].translit};
- $("home").classList.add("hidden");$("course").classList.add("active");stageOverride=null;wordQuizMode="current";wordQuizIndex=0;renderCourse();loadWordBank(code);window.scrollTo({top:0,behavior:"smooth"})
+ $("home").classList.add("hidden");$("course").classList.add("active");stageOverride=null;wordQuizMode="current";wordQuizIndex=0;courseMode="learn";renderCourse();setCourseMode("learn",false);loadWordBank(code);window.scrollTo({top:0,behavior:"smooth"})
 }
 function goHome(){
  if("speechSynthesis" in window)speechSynthesis.cancel();
@@ -1563,7 +1849,7 @@ function renderCourse(){
  $("courseFlag").textContent=c.flag;$("courseName").textContent=c.name;$("courseMethod").textContent=c.method;
  $("lessonMeta").textContent=`Lektion ${lessonIndex+1} von ${c.lessons.length}`;
  $("lessonTitle").textContent=l.title;$("lessonGoal").textContent=l.goal;$("lessonMethod").textContent=l.method;
- renderControls();renderStages();renderNav();renderPhrases();renderWordField();renderPatterns();renderTrace();renderWordQuiz();renderReinforce();renderQuiz();renderRoutine();renderProgress()
+ renderControls();renderStages();renderNav();renderPhrases();renderWordField();renderPatterns();renderTrace();renderScriptHub();renderWordQuiz();renderReinforce();renderQuiz();renderRoutine();renderProgress();setCourseMode(courseMode,false)
 }
 function renderControls(){
  const c=courses[lang], box=$("viewControls");box.innerHTML="";
@@ -1573,12 +1859,13 @@ function renderControls(){
  })
 }
 function renderNav(){
- const c=courses[lang], done=doneSet(lang), n=$("lessonNav");n.innerHTML="";
+ const c=courses[lang], done=doneSet(lang), n=$("lessonNav"),sel=$("lessonSelect");n.innerHTML="";if(sel)sel.innerHTML="";
  const lv=LEVELS.find(x=>x.id===(stageOverride||levelFor(lessonIndex).id))||levelFor(lessonIndex);
  c.lessons.forEach((l,i)=>{if(i<lv.from||i>lv.to)return;
-  const b=document.createElement("button");b.type="button";b.className="navbtn"+(i===lessonIndex?" active":"");
-  b.textContent=(done.has(i)?"✓ ":"")+(i+1)+". "+l.title;
-  b.addEventListener("click",()=>{lessonIndex=i;quizIndex=0;wordQuizIndex=0;traceGuideIndex=0;traceStrokes=[];views.analysis=false;views.literal=false;views.natural=false;renderCourse()});n.appendChild(b)
+  const label=(done.has(i)?"✓ ":"")+(i+1)+". "+l.title;
+  const b=document.createElement("button");b.type="button";b.className="navbtn"+(i===lessonIndex?" active":"");b.textContent=label;
+  b.addEventListener("click",()=>{lessonIndex=i;quizIndex=0;wordQuizIndex=0;traceGuideIndex=0;traceStrokes=[];views.analysis=false;views.literal=false;views.natural=false;renderCourse()});n.appendChild(b);
+  if(sel){const o=document.createElement("option");o.value=String(i);o.textContent=label;o.selected=i===lessonIndex;sel.appendChild(o)}
  })
 }
 function renderPhrases(){
@@ -1691,6 +1978,8 @@ function renderProgress(){
 
 $("homeBtn").addEventListener("click",goHome);
 $("changeNativeBtn").addEventListener("click",showNativeSelector);
+if($("nativeSearch"))$("nativeSearch").addEventListener("input",renderNativeSelector);
+if($("languageSearch"))$("languageSearch").addEventListener("input",renderHome);
 $("listenAll").addEventListener("click",()=>{
  const p=courses[lang].lessons[lessonIndex].phrases.map(x=>x[0]).join("   ");speech(p)
 });
@@ -1716,6 +2005,10 @@ $("reviewBtn").addEventListener("click",()=>{wordQuizMode="due";wordQuizIndex=0;
 
 
 $("randomReinforce").addEventListener("click",()=>{reinforceMode=REINFORCE_MODES[Math.floor(Math.random()*REINFORCE_MODES.length)][0];reinforceIndex=Math.floor(Math.random()*Math.max(1,currentWords().length));renderReinforce();$("reinforcementSection").scrollIntoView({behavior:"smooth",block:"start"})});
+
+
+$$('.course-mode-btn').forEach(b=>b.addEventListener('click',()=>setCourseMode(b.dataset.courseMode)));
+$('lessonSelect').addEventListener('change',()=>{const i=Number($('lessonSelect').value);if(Number.isFinite(i)){lessonIndex=i;quizIndex=0;wordQuizIndex=0;traceGuideIndex=0;traceStrokes=[];views.analysis=false;views.literal=false;views.natural=false;renderCourse();window.scrollTo({top:0,behavior:'smooth'})}});
 
 let deferredPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("installBtn").hidden=false});

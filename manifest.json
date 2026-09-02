@@ -8,7 +8,7 @@
   "display": "standalone",
   "background_color": "#e8eef3",
   "theme_color": "#e8eef3",
-  "description": "Birkenbihl-orientierte Sprachlern-PWA mit 11 Sprachen, 120 Lektionen, 3000-Wörter-Ziel und gehirn-gerechtem Festigungsstudio.",
+  "description": "Birkenbihl-orientierte Lern-PWA mit 24 Sprachen, Dekodierung, Hörtraining, Festigung und Schriftstudio.",
   "icons": [
     {
       "src": "icon-192.png",
