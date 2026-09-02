@@ -1,4 +1,4 @@
-const CACHE="bb-languages-v8-birkenbihl-mastery";
+const CACHE="bb-languages-v10-writing-check";
 const CORE=["./","./index.html","./manifest.json","./icon-192.png","./icon-512.png","./icon-maskable-192.png","./icon-maskable-512.png","./apple-touch-icon.png","./favicon-32.png","./favicon-16.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

@@ -35,3 +35,7 @@ VERSION 8 – FESTIGUNGSSTUDIO
 - Mini-Geschichten/Hörblöcke
 - Chor-Sprechen mit optionaler lokaler Mikrofonaufnahme
 - Schrifttraining: ansehen, nachfahren, blass, frei, Original prüfen
+
+- Schriftstudio mit Schreibfolge/Schreibfluss für Chinesisch, Mandarin, Japanisch und Arabisch
+
+- Schriftstudio v10: Strichnummern, Schreibprüfung und beschreibbarer Schreibheft-Modus

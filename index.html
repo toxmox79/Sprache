@@ -172,6 +172,45 @@ h3{margin:0 0 11px;font-size:20px}
 #wordTraceCanvas{display:block;width:100%;height:auto;max-height:60vh;border-radius:18px;touch-action:none;background:#eef3f7;border:1px solid rgba(80,95,110,.08)}
 .trace-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .trace-hint{font-size:11px;color:var(--muted);line-height:1.4;margin-top:10px}
+
+.writing-coach{margin:10px 0 14px;padding:12px;border-radius:18px;background:rgba(255,255,255,.28);border:1px solid rgba(110,120,132,.08)}
+.writing-coach-head{display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.writing-coach-head b{font-size:13px}
+.writing-coach-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.writing-coach-view{min-height:240px;border-radius:18px;background:#eef3f7;border:1px solid rgba(80,95,110,.08);display:flex;align-items:center;justify-content:center;padding:12px;position:relative;overflow:hidden}
+.hanzi-writer-box{width:min(360px,100%);height:220px;display:flex;align-items:center;justify-content:center}
+.hanzi-writer-box.hidden,.script-flow-box.hidden{display:none}
+.script-flow-box{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.script-flow-word{font-size:72px;font-weight:900;line-height:1.2;min-height:96px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px}
+.script-flow-word.rtl{direction:rtl}
+.script-flow-word span{opacity:.16;transform:translateY(6px);transition:opacity .25s,transform .25s,background-color .25s,color .25s;border-radius:12px;padding:0 4px}
+.script-flow-word span.revealed{opacity:1;transform:translateY(0)}
+.script-flow-word span.active{background:rgba(91,124,250,.16);color:#26407a}
+.script-flow-hint{font-size:12px;color:var(--muted);line-height:1.45;text-align:center;max-width:720px}
+.script-flow-arrow{font-size:22px;font-weight:900;color:#d84f4f;letter-spacing:2px}
+.writer-char-nav{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.writer-char-pill{padding:5px 9px;border-radius:999px;background:rgba(91,124,250,.11);font-size:11px;font-weight:800;color:#304a91}
+.writer-note{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px}
+@media(max-width:760px){.script-flow-word{font-size:54px;min-height:74px}.writing-coach-view{min-height:200px}}
+
+.hanzi-writer-box{position:relative}
+.stroke-number-overlay{position:absolute;inset:0;width:220px;height:220px;pointer-events:none;left:50%;transform:translateX(-50%);top:0}
+.stroke-number-overlay text{font-size:36px;font-weight:900;paint-order:stroke;stroke:#fff;stroke-width:10px;stroke-linejoin:round;fill:#d84f4f}
+.stroke-number-overlay.hidden{display:none}
+.writer-result{margin-top:9px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.42);font-size:12px;line-height:1.45;min-height:38px}
+.writer-result.good{background:#dcefe4;color:#235a3c}.writer-result.mid{background:#f3e9cf;color:#74571f}.writer-result.bad{background:#f4dede;color:#7b3b3b}
+.copybook-panel{margin-top:12px;padding:12px;border-radius:18px;background:rgba(255,255,255,.28);border:1px solid rgba(110,120,132,.08)}
+.copybook-panel.hidden{display:none}
+.copybook-head{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-start;margin-bottom:9px}
+.copybook-head b{font-size:13px}.copybook-head small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}
+#copybookCanvas{display:block;width:100%;height:auto;max-height:70vh;border-radius:16px;background:#fff;touch-action:none;border:1px solid rgba(80,95,110,.10)}
+.copybook-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.script-flow-unit{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.script-flow-unit .flow-num{position:absolute;top:-18px;right:50%;transform:translateX(50%);font-size:12px;font-weight:900;background:#d84f4f;color:white;border-radius:999px;min-width:22px;height:22px;align-items:center;justify-content:center;display:none}
+.script-flow-unit.revealed .flow-num{display:flex}
+@media(max-width:760px){.stroke-number-overlay{width:200px;height:200px}.stroke-number-overlay text{font-size:32px}}
+
+
 body.modal-open{overflow:hidden}
 @media(max-width:760px){.trace-modal-card{padding:12px}.trace-modal-head h3{font-size:20px}.trace-modal-word{font-size:26px}.trace-modal-word.rtl{font-size:30px}}
 
@@ -391,12 +430,53 @@ body.modal-open{overflow:hidden}
     <div class="trace-modal-head">
       <div>
         <h3>Wort groß nachzeichnen</h3>
-        <p>Ideal für Tablet und Handy mit Stift. Tippe in Arabisch, Chinesisch, Mandarin oder Japanisch auf ein Wort, dann kannst du die Zeichen groß nachfahren.</p>
+        <p>Ideal für Tablet und Handy mit Stift. Tippe in Arabisch, Chinesisch, Mandarin oder Japanisch auf ein Wort. Du kannst jetzt zuerst sehen, <b>wie es geschrieben wird</b>, und es danach groß nachfahren.</p>
       </div>
       <button id="closeWordTrace" type="button" class="btn">Schließen</button>
     </div>
     <div id="wordTraceDisplay" class="trace-modal-word"></div>
     <div id="wordTraceMeta" class="trace-modal-meta"></div>
+
+    <div class="writing-coach">
+      <div class="writing-coach-head">
+        <div>
+          <b>Schreibfolge / Schreibfluss ansehen</b>
+          <div id="writingCoachInfo" class="trace-modal-meta">Die App zeigt – je nach Schrift – Strichfolge oder Schreibfluss an.</div>
+        </div>
+        <div class="writer-char-nav">
+          <button id="writingPrevChar" type="button" class="btn">← Voriges Zeichen</button>
+          <div id="writingCharPill" class="writer-char-pill">1 / 1</div>
+          <button id="writingNextChar" type="button" class="btn">Nächstes Zeichen →</button>
+        </div>
+      </div>
+      <div class="writing-coach-actions">
+        <button id="writingReplay" type="button" class="btn primary">▶ Schreibweise zeigen</button>
+        <button id="strokeNumbersBtn" type="button" class="btn"># Strichnummern</button>
+        <button id="writingQuizBtn" type="button" class="btn">🎯 Schreibprüfung</button>
+        <button id="copybookBtn" type="button" class="btn">📓 Schreibheft</button>
+      </div>
+      <div class="writing-coach-view">
+        <div id="hanziWriterBox" class="hanzi-writer-box hidden"></div>
+        <div id="scriptFlowBox" class="script-flow-box hidden">
+          <div id="scriptFlowArrow" class="script-flow-arrow"></div>
+          <div id="scriptFlowWord" class="script-flow-word"></div>
+          <div id="scriptFlowHint" class="script-flow-hint"></div>
+        </div>
+      </div>
+      <div id="writingResult" class="writer-result">Noch keine Schreibprüfung gestartet.</div>
+      <div class="writer-note">Chinesisch/Mandarin und Kanji zeigen möglichst eine echte Strichfolge. Bei Arabisch zeigt die App zusätzlich den Schreibfluss von rechts nach links und die verbundenen Buchstabenformen.</div>
+      <div id="copybookPanel" class="copybook-panel hidden">
+        <div class="copybook-head">
+          <div><b>📓 Schreibheft</b><small>Oben mit deutlicher Vorlage beginnen, danach wird sie zeilenweise blasser. Die letzten Zeilen sind frei.</small></div>
+        </div>
+        <canvas id="copybookCanvas" width="1100" height="760" aria-label="Schreibheft mit mehreren Übungszeilen"></canvas>
+        <div class="copybook-actions">
+          <button id="copybookClear" type="button" class="btn">⟲ Heft leeren</button>
+          <button id="copybookGuideToggle" type="button" class="btn">Vorlagen ausblenden</button>
+        </div>
+      </div>
+    </div>
+
     <div class="trace-stage-tabs">
       <button type="button" class="trace-stage-btn active" data-trace-mode="look">1 · Ansehen</button>
       <button type="button" class="trace-stage-btn" data-trace-mode="trace">2 · Nachfahren</button>
@@ -415,6 +495,7 @@ body.modal-open{overflow:hidden}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7/dist/hanzi-writer.min.js"></script>
 <script>
 (() => {
 const courses = {
@@ -1070,6 +1151,136 @@ function addNextButton(box){const a=document.createElement("div");a.className="a
 
 const SCRIPT_TRACE_LANGS=new Set(["ar","zh","ja","cmn"]);
 let modalTraceWord="", modalTraceMeta="", modalTraceStrokes=[], modalTraceActive=null, modalTraceShowGuide=true, modalTraceMode="look";
+let writingUnits=[], writingIndex=0, writingTimer=null, writerInstance=null, writerCharData=null, strokeNumbersVisible=false, writerQuizActive=false, copybookStrokes=[], copybookActive=null, copybookShowGuides=true;
+function graphemeUnits(text){
+  const s=String(text||'').trim();
+  try{if(Intl.Segmenter){return [...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(s)].map(x=>x.segment)}}catch(e){}
+  return [...s];
+}
+function setWriterResult(text,kind=''){
+  const el=$('writingResult'); el.textContent=text; el.className='writer-result'+(kind?' '+kind:'');
+}
+function scoreLabel(score){return score>=85?'Sehr sicher':score>=65?'Schon gut':'Noch einmal langsam üben'}
+function clearStrokeNumbers(){
+  const old=$('hanziWriterBox').querySelector('.stroke-number-overlay'); if(old) old.remove();
+}
+function renderStrokeNumbers(data){
+  clearStrokeNumbers(); if(!strokeNumbersVisible||!data||!Array.isArray(data.medians))return;
+  const hz=$('hanziWriterBox'),svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 220 220');svg.classList.add('stroke-number-overlay');
+  const pad=14, span=220-pad*2;
+  data.medians.forEach((med,i)=>{if(!med||!med.length)return;const p=med[0],x=pad+(p[0]/1024)*span,y=220-pad-(p[1]/1024)*span;const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',Math.max(12,Math.min(208,x)));t.setAttribute('y',Math.max(24,Math.min(212,y)));t.setAttribute('text-anchor','middle');t.textContent=String(i+1);svg.appendChild(t)});
+  hz.appendChild(svg);
+}
+function pointNearGlyph(maskCtx,x,y,r=20){
+  const c=maskCtx.canvas,x0=Math.max(0,Math.floor(x-r)),y0=Math.max(0,Math.floor(y-r)),x1=Math.min(c.width,Math.ceil(x+r)),y1=Math.min(c.height,Math.ceil(y+r));
+  const data=maskCtx.getImageData(x0,y0,Math.max(1,x1-x0),Math.max(1,y1-y0)).data;for(let i=3;i<data.length;i+=4)if(data[i]>40)return true;return false;
+}
+function evaluateFreeDrawing(){
+  if(!modalTraceStrokes.length){setWriterResult('Noch keine Linien gezeichnet. Schreibe das Wort zuerst frei und starte dann erneut die Prüfung.','mid');return}
+  const c=$('wordTraceCanvas'),off=document.createElement('canvas');off.width=c.width;off.height=c.height;const ctx=off.getContext('2d');
+  ctx.clearRect(0,0,off.width,off.height);ctx.fillStyle='#000';let family=writingFontFamily();ctx.font=`${wordTraceFontSize(modalTraceWord)}px ${family}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction=courses[lang].rtl?'rtl':'ltr';ctx.fillText(modalTraceWord,off.width/2,off.height/2+10);
+  let pts=[];modalTraceStrokes.forEach(st=>{for(let i=0;i<st.length;i+=Math.max(1,Math.floor(st.length/60)))pts.push(st[i])});
+  let on=0;pts.forEach(p=>{if(pointNearGlyph(ctx,p.x,p.y,26))on++});const adherence=pts.length?on/pts.length:0;
+  const img=ctx.getImageData(0,0,off.width,off.height).data,targets=[];for(let y=20;y<off.height;y+=26)for(let x=20;x<off.width;x+=26){if(img[(y*off.width+x)*4+3]>40)targets.push({x,y})}
+  let covered=0;targets.forEach(t=>{let ok=false;for(const p of pts){const dx=p.x-t.x,dy=p.y-t.y;if(dx*dx+dy*dy<42*42){ok=true;break}}if(ok)covered++});const coverage=targets.length?covered/targets.length:0;
+  const score=Math.max(0,Math.min(100,Math.round((adherence*.65+coverage*.35)*100)));
+  setWriterResult(`${scoreLabel(score)} · Formtreffer ${score} %. Das ist eine Näherung der Form, keine kalligrafische Benotung.`,score>=85?'good':score>=65?'mid':'bad');
+}
+function startHanziQuiz(){
+  const ch=currentWritingUnit(); if(!(window.HanziWriter&&isHanziChar(ch))){modalTraceMode='free';$$('.trace-stage-btn').forEach(x=>x.classList.toggle('active',x.dataset.traceMode==='free'));modalTraceShowGuide=false;drawModalTrace();setWriterResult('Schreibe die Form unten frei und tippe danach erneut auf „Schreibprüfung“. Die App vergleicht deine Linien dann mit der Vorlage.','mid');return}
+  clearWritingPlayback();clearStrokeNumbers();writerQuizActive=true;const hz=$('hanziWriterBox');hz.classList.remove('hidden');$('scriptFlowBox').classList.add('hidden');hz.innerHTML='';const host=document.createElement('div');host.style.width='220px';host.style.height='220px';hz.appendChild(host);
+  setWriterResult('Zeichne das Zeichen jetzt direkt im oberen Prüf-Feld. Die Reihenfolge und ungefähre Position der Striche werden geprüft.');
+  loadHanziData(ch).then(data=>{writerCharData=data;writerInstance=window.HanziWriter.create(host,ch,{width:220,height:220,padding:14,showCharacter:false,showOutline:true,showHintAfterMisses:2,highlightOnComplete:true,charDataLoader:(char,onComplete)=>onComplete(data)});let correct=0,totalMistakes=0;writerInstance.quiz({onMistake:d=>{totalMistakes=d.totalMistakes;setWriterResult(`Strich ${d.strokeNum+1}: noch einmal. Bisher ${d.totalMistakes} Korrektur${d.totalMistakes===1?'':'en'}.`,'mid')},onCorrectStroke:d=>{correct++;totalMistakes=d.totalMistakes;setWriterResult(`✓ Strich ${d.strokeNum+1} passt. Noch ${d.strokesRemaining} Strich${d.strokesRemaining===1?'':'e'}.`,'good')},onComplete:d=>{writerQuizActive=false;const strokes=(data.strokes||[]).length,score=Math.max(0,Math.min(100,Math.round(100*strokes/(strokes+(d.totalMistakes||0)))));setWriterResult(`${scoreLabel(score)} · ${strokes} Striche abgeschlossen · ${d.totalMistakes||0} Korrekturen · Übungswert ${score} %.`,score>=85?'good':score>=65?'mid':'bad');const w=(wordBanks[lang]||[]).find(x=>x.target===modalTraceWord);if(w&&score>=70){setMastery(w.id,'transferred');renderMastery()}}});}).catch(()=>{writerQuizActive=false;setWriterResult('Für dieses Zeichen konnte die Strichprüfung nicht geladen werden. Nutze die freie Formprüfung darunter.','mid')});
+}
+function startWritingQuiz(){
+  const ch=currentWritingUnit();
+  if((lang==='zh'||lang==='cmn'||lang==='ja')&&isHanziChar(ch)){startHanziQuiz();return}
+  if(modalTraceMode==='free'&&modalTraceStrokes.length){evaluateFreeDrawing();return}
+  modalTraceMode='free';$$('.trace-stage-btn').forEach(x=>x.classList.toggle('active',x.dataset.traceMode==='free'));modalTraceShowGuide=false;drawModalTrace();setWriterResult('Schreibe die Form unten jetzt frei. Wenn du fertig bist, tippe nochmals auf „Schreibprüfung“.','mid');
+}
+function drawCopybookBackground(){
+  const c=$('copybookCanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+  const rows=5,rowH=c.height/rows;ctx.lineWidth=1;const word=modalTraceWord||'';ctx.font=`${lang==='ar'?74:lang==='ja'||lang==='zh'||lang==='cmn'?68:54}px ${writingFontFamily()}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction=courses[lang].rtl?'rtl':'ltr';
+  for(let r=0;r<rows;r++){const top=r*rowH;ctx.strokeStyle='rgba(100,115,130,.18)';ctx.beginPath();ctx.moveTo(0,top);ctx.lineTo(c.width,top);ctx.stroke();ctx.beginPath();ctx.moveTo(0,top+rowH);ctx.lineTo(c.width,top+rowH);ctx.stroke();ctx.setLineDash([7,8]);ctx.beginPath();ctx.moveTo(0,top+rowH/2);ctx.lineTo(c.width,top+rowH/2);ctx.stroke();ctx.setLineDash([]);
+    if((lang==='zh'||lang==='cmn'||lang==='ja')){for(let x=0;x<c.width;x+=rowH){ctx.strokeStyle='rgba(100,115,130,.10)';ctx.strokeRect(x,top,rowH,rowH)}}
+    if(copybookShowGuides&&r<3){ctx.globalAlpha=[.30,.15,.07][r];ctx.fillStyle='#56636e';const reps=(lang==='ar')?2:3;for(let k=0;k<reps;k++){const x=(k+.5)*c.width/reps;ctx.fillText(word,x,top+rowH/2+4)}ctx.globalAlpha=1}
+  }
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#5b7cfa';ctx.lineWidth=8;ctx.lineCap='round';ctx.lineJoin='round';copybookStrokes.forEach(st=>{if(!st.length)return;ctx.beginPath();ctx.moveTo(st[0].x,st[0].y);for(let i=1;i<st.length;i++)ctx.lineTo(st[i].x,st[i].y);ctx.stroke()});
+}
+function copybookPos(ev){const c=$('copybookCanvas'),r=c.getBoundingClientRect();return{x:(ev.clientX-r.left)*c.width/r.width,y:(ev.clientY-r.top)*c.height/r.height}}
+function initCopybook(){
+ const c=$('copybookCanvas');c.addEventListener('pointerdown',ev=>{if($('copybookPanel').classList.contains('hidden'))return;ev.preventDefault();c.setPointerCapture(ev.pointerId);copybookActive=[copybookPos(ev)];copybookStrokes.push(copybookActive);drawCopybookBackground()});c.addEventListener('pointermove',ev=>{if(!copybookActive)return;ev.preventDefault();copybookActive.push(copybookPos(ev));drawCopybookBackground()});const end=()=>copybookActive=null;c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+ $('copybookClear').addEventListener('click',()=>{copybookStrokes=[];copybookActive=null;drawCopybookBackground()});$('copybookGuideToggle').addEventListener('click',()=>{copybookShowGuides=!copybookShowGuides;$('copybookGuideToggle').textContent=copybookShowGuides?'Vorlagen ausblenden':'Vorlagen einblenden';drawCopybookBackground()});
+}
+function toggleCopybook(){const p=$('copybookPanel'),show=p.classList.contains('hidden');p.classList.toggle('hidden',!show);if(show){copybookStrokes=[];copybookActive=null;copybookShowGuides=true;$('copybookGuideToggle').textContent='Vorlagen ausblenden';drawCopybookBackground();p.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+function clearWritingPlayback(){ if(writingTimer){clearTimeout(writingTimer); writingTimer=null;} }
+function splitWritingUnits(word){
+  if(!word) return [];
+  return graphemeUnits(word).filter(ch=>!/[\s‌‍،,.!?;:]/.test(ch));
+}
+function isHanziChar(ch){return /[㐀-䶿一-鿿豈-﫿]/.test(ch)}
+function isKanaChar(ch){return /[぀-ゟ゠-ヿ]/.test(ch)}
+function isArabicChar(ch){return /[؀-ۿݐ-ݿࢠ-ࣿ]/.test(ch)}
+function currentWritingUnit(){return writingUnits[writingIndex]||modalTraceWord||""}
+function updateWritingNav(){
+  const total=Math.max(1,writingUnits.length||1), label=(lang==='ar'?'Buchstabe':'Zeichen');
+  $('writingCharPill').textContent=`${label} ${Math.min(writingIndex+1,total)} / ${total}`;
+  $('writingPrevChar').disabled=total<=1; $('writingNextChar').disabled=total<=1;
+}
+function setWritingInfo(txt){ $('writingCoachInfo').textContent=txt; }
+function writingFontFamily(){
+  if(lang==='ar') return '"Noto Naskh Arabic","Segoe UI",Tahoma,Arial,sans-serif';
+  if(lang==='zh'||lang==='cmn') return '"Noto Sans CJK SC","Microsoft YaHei","PingFang SC","Hiragino Sans GB","Segoe UI",sans-serif';
+  if(lang==='ja') return '"Noto Sans JP","Yu Gothic","Hiragino Kaku Gothic ProN","Segoe UI",sans-serif';
+  return '"Segoe UI",Arial,sans-serif';
+}
+function renderFallbackFlow(word, hint, rtl=false){
+  clearWritingPlayback();
+  $('hanziWriterBox').classList.add('hidden');
+  const box=$('scriptFlowBox'), wordBox=$('scriptFlowWord'), hintBox=$('scriptFlowHint'), arrow=$('scriptFlowArrow');
+  box.classList.remove('hidden'); wordBox.innerHTML=''; wordBox.className='script-flow-word'+(rtl?' rtl':''); wordBox.style.fontFamily=writingFontFamily();
+  hintBox.textContent=hint; arrow.textContent=rtl?'⇢ rechts nach links ⇠':'links nach rechts';
+  const units=splitWritingUnits(word); if(!units.length) return;
+  const seq=rtl?units.slice():units.slice();
+  seq.forEach((ch,idx)=>{const s=document.createElement('span');s.className='script-flow-unit';const n=document.createElement('span');n.className='flow-num';n.textContent=String(idx+1);const g=document.createElement('span');g.textContent=ch;s.append(n,g);wordBox.appendChild(s)});
+  let i=0; const spans=[...wordBox.children];
+  function step(){ spans.forEach((sp,idx)=>{sp.classList.toggle('revealed', idx<=i); sp.classList.toggle('active', idx===i)}); if(i<spans.length-1){i++; writingTimer=setTimeout(step, rtl?700:620)} }
+  step();
+}
+function loadHanziData(ch){
+  const url=`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(ch)}.json`;
+  return fetch(url).then(r=>{if(!r.ok) throw new Error('no-data'); return r.json()});
+}
+function renderHanziWriterChar(ch){
+  clearWritingPlayback();
+  const hz=$('hanziWriterBox'); hz.classList.remove('hidden'); $('scriptFlowBox').classList.add('hidden'); hz.innerHTML='';
+  const host=document.createElement('div'); host.style.width='220px'; host.style.height='220px'; hz.appendChild(host);
+  setWritingInfo(`Zeichen ${writingIndex+1} von ${writingUnits.length}: erst die Strichfolge ansehen, dann auf den Nachzeichnungsstufen üben.`);
+  if(!(window.HanziWriter && isHanziChar(ch))){
+    renderFallbackFlow(ch, isKanaChar(ch)?'Für dieses japanische Kana steht kein Strichdatensatz bereit. Die App zeigt dir deshalb die Form groß und du kannst sie direkt nachfahren.':'Für dieses Zeichen steht gerade keine Strichfolge bereit. Du kannst es direkt groß nachfahren.', false); return;
+  }
+  loadHanziData(ch).then(data=>{
+    writerCharData=data;
+    writerInstance=window.HanziWriter.create(host, ch, {width:220,height:220,padding:14,strokeAnimationSpeed:1,delayBetweenStrokes:180,delayBetweenLoops:900,outlineColor:'#c7d1dd',strokeColor:'#304a91',radicalColor:'#d84f4f',showOutline:true,charDataLoader:(char,onComplete)=>onComplete(data)});
+    renderStrokeNumbers(data); writerInstance.animateCharacter();
+  }).catch(()=>{writerCharData=null;renderFallbackFlow(ch, 'Für dieses Zeichen steht gerade keine Strichfolge-Datei bereit. Du kannst die Form aber sofort nachfahren.', false)});
+}
+function renderArabicFlow(word){
+  renderFallbackFlow(word, 'Arabisch schreibt sich von rechts nach links. Die App zeigt den Schreibfluss des Wortes und die verbundenen Buchstabenformen. Anschließend kannst du das Wort selbst nachfahren.', true);
+  setWritingInfo('Arabisch: erst den Schreibfluss beobachten, dann die verbundene Form selbst schreiben.');
+}
+function showWritingCoach(){
+  writingUnits=splitWritingUnits(modalTraceWord); writingIndex=0; updateWritingNav(); replayWritingCoach();
+}
+function replayWritingCoach(){
+  const unit=currentWritingUnit();
+  if(lang==='ar'){ renderArabicFlow(modalTraceWord); }
+  else if(lang==='zh'||lang==='cmn'||lang==='ja'){
+    if(isHanziChar(unit)) renderHanziWriterChar(unit); else renderFallbackFlow(unit, isKanaChar(unit)?'Dieses Kana wird groß gezeigt. Beobachte die Form und übe sie danach direkt auf der Nachzeichenfläche.':'Zeichen groß ansehen und direkt nachfahren.', false);
+  } else {
+    renderFallbackFlow(modalTraceWord, 'Dieses Wort kann direkt nachgefahren werden.', false);
+  }
+}
 function supportsWordTrace(code=lang){return SCRIPT_TRACE_LANGS.has(code)}
 function wordTraceFontSize(word){
   const len=(word||"").length;
@@ -1080,12 +1291,12 @@ function wordTraceFontSize(word){
 }
 function openWordTrace(word,meta=""){
   if(!supportsWordTrace(lang) || !word) return;
-  modalTraceWord=String(word).trim(); modalTraceMeta=meta||""; modalTraceStrokes=[]; modalTraceActive=null; modalTraceShowGuide=true; modalTraceMode="look";
+  modalTraceWord=String(word).trim(); modalTraceMeta=meta||""; modalTraceStrokes=[]; modalTraceActive=null; modalTraceShowGuide=true; modalTraceMode="look"; writerCharData=null; strokeNumbersVisible=false; writerQuizActive=false; copybookStrokes=[]; copybookActive=null; copybookShowGuides=true; $('copybookPanel').classList.add('hidden'); setWriterResult('Noch keine Schreibprüfung gestartet.'); $('strokeNumbersBtn').textContent='# Strichnummern';
   const m=$("wordTraceModal"); m.classList.remove("hidden"); m.setAttribute("aria-hidden","false"); document.body.classList.add("modal-open");
   const d=$("wordTraceDisplay"); d.textContent=modalTraceWord; d.className="trace-modal-word"+(courses[lang].rtl?" rtl":""); if(courses[lang].rtl) d.dir="rtl"; else d.removeAttribute("dir");
-  $("wordTraceMeta").textContent=modalTraceMeta || ""; $("wordTraceGuideToggle").textContent="Vorlage ausblenden"; $$(".trace-stage-btn").forEach(x=>x.classList.toggle("active",x.dataset.traceMode==="look")); drawModalTrace();
+  $("wordTraceMeta").textContent=modalTraceMeta || ""; $("wordTraceGuideToggle").textContent="Vorlage ausblenden"; $$(".trace-stage-btn").forEach(x=>x.classList.toggle("active",x.dataset.traceMode==="look")); drawModalTrace(); showWritingCoach();
 }
-function closeWordTrace(){ const m=$("wordTraceModal"); m.classList.add("hidden"); m.setAttribute("aria-hidden","true"); document.body.classList.remove("modal-open"); }
+function closeWordTrace(){ clearWritingPlayback(); try{if(writerInstance&&writerQuizActive)writerInstance.cancelQuiz()}catch(e){} writerQuizActive=false; writerInstance=null; writerCharData=null; clearStrokeNumbers(); const m=$("wordTraceModal"); m.classList.add("hidden"); m.setAttribute("aria-hidden","true"); document.body.classList.remove("modal-open"); }
 function modalTracePos(ev){ const c=$("wordTraceCanvas"),r=c.getBoundingClientRect(); return {x:(ev.clientX-r.left)*c.width/r.width,y:(ev.clientY-r.top)*c.height/r.height}; }
 function drawModalTrace(){
   const c=$("wordTraceCanvas"),ctx=c.getContext("2d");
@@ -1113,6 +1324,9 @@ function initWordTraceCanvas(){
  $("wordTraceGuideToggle").addEventListener("click",()=>{ modalTraceShowGuide=!modalTraceShowGuide; $("wordTraceGuideToggle").textContent=modalTraceShowGuide?"Vorlage ausblenden":"Vorlage einblenden"; drawModalTrace(); });
  
  $$(".trace-stage-btn").forEach(b=>b.addEventListener("click",()=>{modalTraceMode=b.dataset.traceMode;$$(`.trace-stage-btn`).forEach(x=>x.classList.toggle("active",x===b));if(modalTraceMode==="free")modalTraceShowGuide=false;else modalTraceShowGuide=true;drawModalTrace();if(modalTraceMode==="check"&&modalTraceWord){const w=(wordBanks[lang]||[]).find(x=>x.target===modalTraceWord);if(w){setMastery(w.id,"transferred");renderMastery()}}}));
+ $("writingReplay").addEventListener("click",replayWritingCoach);
+ $("writingPrevChar").addEventListener("click",()=>{ if(writingUnits.length>1){ writingIndex=(writingIndex-1+writingUnits.length)%writingUnits.length; updateWritingNav(); replayWritingCoach(); }});
+ $("writingNextChar").addEventListener("click",()=>{ if(writingUnits.length>1){ writingIndex=(writingIndex+1)%writingUnits.length; updateWritingNav(); replayWritingCoach(); }});
  $("closeWordTrace").addEventListener("click",closeWordTrace);
  $("wordTraceModal").addEventListener("click",ev=>{ if(ev.target.id==="wordTraceModal") closeWordTrace(); });
  window.addEventListener("keydown",ev=>{ if(ev.key==="Escape" && !$("wordTraceModal").classList.contains("hidden")) closeWordTrace(); });
@@ -1510,6 +1724,7 @@ $("installBtn").addEventListener("click",async()=>{if(!deferredPrompt)return;def
 if("serviceWorker" in navigator && location.protocol!=="file:"){navigator.serviceWorker.register("./sw.js").catch(()=>{})}
 initTraceCanvas();
 initWordTraceCanvas();
+initCopybook();
 initStartScreen();
 })();
 </script>
