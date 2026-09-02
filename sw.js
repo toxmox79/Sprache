@@ -1,11 +1,12 @@
-const CACHE="bb-languages-v12-europe";
+const CACHE="bb-languages-v14-native-pronunciation";
 const CORE=["./","./index.html","./manifest.json","./icon-192.png","./icon-512.png","./icon-maskable-192.png","./icon-maskable-512.png","./apple-touch-icon.png","./favicon-32.png","./favicon-16.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",e=>{
  if(e.request.method!=="GET")return;
  const u=new URL(e.request.url);
- const external=u.hostname==="raw.githubusercontent.com"||u.hostname==="cdn.jsdelivr.net";
+ if(u.hostname==="en.wiktionary.org"){e.respondWith(fetch(e.request));return}
+ const external=u.hostname==="raw.githubusercontent.com"||u.hostname==="cdn.jsdelivr.net"||u.hostname==="unpkg.com";
  if(external){
   e.respondWith(caches.open(CACHE).then(async c=>{
    const hit=await c.match(e.request);if(hit)return hit;

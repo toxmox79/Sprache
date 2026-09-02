@@ -1,16 +1,17 @@
-BIRKENBIHL-SPRACHENLERN-PWA – VERSION 12
+BIRKENBIHL-SPRACHENLERN-PWA – VERSION 14
 
-24 Sprachen insgesamt.
+24 Sprachen.
 
-Neu hinzugefügt:
-Französisch, Portugiesisch, Niederländisch, Polnisch, Tschechisch,
-Dänisch, Norwegisch (Bokmål), Schwedisch, Finnisch, Ungarisch,
-Griechisch, Bulgarisch und Ukrainisch.
-
-Zusätzlich:
-- Muttersprache und Lernsprache sind durchsuchbar.
-- Neue europäische Sprachen besitzen jeweils 4 sprachspezifische Startlektionen.
-- Die Kursmaschine erweitert weiterhin auf 120 Lektionen.
-- Wortbank-Verknüpfung für alle neuen Sprachen.
-- Spanische Wortbank auf words_es_translated.csv korrigiert.
-- Bestehendes Festigungs- und Schriftstudio bleibt erhalten.
+Neu in v14:
+- Die geschriebene Aussprache richtet sich nach der gewählten Muttersprache.
+- IPA/Pinyin/Romaji dienen nur noch intern als Grundlage, soweit nötig.
+- Beispiele:
+  Muttersprache Deutsch -> deutsch lesbare Lautannäherung.
+  Muttersprache Polnisch -> polnisch vertraute Lautzeichen.
+  Muttersprache Russisch/Ukrainisch/Bulgarisch -> kyrillische Aussprachehilfe.
+  Muttersprache Griechisch -> griechische Aussprachehilfe.
+  Muttersprache Arabisch -> arabische Aussprachehilfe.
+  Muttersprache Japanisch -> möglichst Katakana.
+  Muttersprache Chinesisch/Mandarin -> Pinyin-orientierte Aussprachehilfe.
+- Bezeichnungen wie „Aussprache / Pronunciation / Prononciation / 发音 …“ wechseln ebenfalls mit der Muttersprache.
+- Der 🔊-Originalklang bleibt die maßgebliche Kontrolle.

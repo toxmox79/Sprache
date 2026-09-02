@@ -278,6 +278,13 @@ body.modal-open{overflow:hidden}
 .lang-family{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700}
 @media(max-width:700px){.language-toolbar{align-items:stretch}.language-search{min-width:100%}}
 
+
+.pronunciation-line{margin-top:6px;padding:6px 8px;border-radius:10px;background:rgba(91,124,250,.08);font-size:11.5px;line-height:1.35;color:#37435a}
+.pronunciation-line b{color:#263b8d}
+.pronunciation-line.loading{color:var(--muted);font-style:italic}
+.pronunciation-line.unavailable{background:rgba(120,130,140,.06);color:var(--muted)}
+.pronunciation-help{margin-top:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.24);font-size:10.5px;line-height:1.45;color:var(--muted)}
+
 </style>
 </head>
 <body>
@@ -396,6 +403,7 @@ body.modal-open{overflow:hidden}
             </div>
           </div>
           <div id="wordFieldInfo" class="vocab-progress"></div>
+          <div class="pronunciation-help"><b>Aussprache:</b> Die Lautung wird so umgeschrieben, dass sie in deiner gewählten Muttersprache möglichst intuitiv lesbar ist. Die Schreibweise ist eine Lernhilfe – mit 🔊 hörst du immer den maßgeblichen Originalklang.</div>
           <div id="wordGrid" class="word-grid"></div>
           <div class="source-note">Die große Wortbank wird beim ersten Online-Aufruf aus dem offenen Polyglot-Dictionaries/Wiktionary-Datensatz geladen und anschließend vom Browser zwischengespeichert. Die handgebauten Dekodier- und Strukturlektionen funktionieren auch ohne Wortbank.</div>
         </section>
@@ -556,6 +564,8 @@ body.modal-open{overflow:hidden}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7/dist/hanzi-writer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/zh-lx/pinyin-pro@3.29.3/dist/pinyin-pro.js"></script>
+<script src="https://unpkg.com/wanakana@5.3.1"></script>
 <script>
 (() => {
 const courses = {
@@ -1273,309 +1283,418 @@ const DATA_ROOT_RAW="https://raw.githubusercontent.com/appsinacup/polyglot-dicti
 const DATA_ROOT_CDN="https://cdn.jsdelivr.net/gh/appsinacup/polyglot-dictionaries@main/1000_words/";
 const ESSENTIAL=("be have do say go can get make know think take see come want look use find give tell work call try ask need feel become leave put mean keep let begin seem help talk turn start show hear play run move live believe bring happen write provide sit stand lose pay meet include continue set learn change lead understand watch follow stop create speak read allow add spend grow open walk win offer remember love consider appear buy wait serve send expect build stay fall cut reach remain suggest raise pass sell require report decide pull return explain hope develop carry break receive agree support hit produce eat cover catch draw choose cause point listen realize place close involve increase improve join pick wear drive arrive born friend family mother father brother sister child man woman people person name home house room door window table chair bed kitchen bathroom food water bread milk coffee tea meat fish fruit apple banana vegetable money shop store market price restaurant hotel street road car bus train station airport city country school teacher student book word question answer time day week month year morning afternoon evening today tomorrow yesterday now later early late good bad big small long short new old young happy sad tired sick hot cold fast slow easy hard important possible different same right left near far here there where when why how what who which this that some many much more less very always never often sometimes again together without with for from to in on under over before after because if but and or not yes no please thanks sorry hello goodbye").split(/\s+/);
 const essentialRank=new Map(ESSENTIAL.map((w,i)=>[w,i]));
+
 const wordBanks={}, bankPromises={}, wordGermanVisible={};
-let wordQuizMode="current", wordQuizIndex=0, stageOverride=null;
 
+/* ===== Aussprache in der gewählten Muttersprache ===== */
+const PRON_CACHE_KEY="bb_pronunciation_native_v2";
+const RAW_IPA_CACHE_KEY="bb_pronunciation_raw_ipa_v1";
+let pronunciationCache={},rawIpaCache={};
+try{pronunciationCache=JSON.parse(localStorage.getItem(PRON_CACHE_KEY)||"{}")||{}}catch(e){pronunciationCache={}}
+try{rawIpaCache=JSON.parse(localStorage.getItem(RAW_IPA_CACHE_KEY)||"{}")||{}}catch(e){rawIpaCache={}}
 
-const MASTERY_STAGES=[
- {id:"decoded",icon:"①",label:"dekodiert"},{id:"heard",icon:"②",label:"gehört"},{id:"understood",icon:"③",label:"ohne Krücke"},
- {id:"recognized",icon:"④",label:"wiedererkannt"},{id:"linked",icon:"⑤",label:"verknüpft"},{id:"transferred",icon:"⑥",label:"übertragen"},{id:"used",icon:"⑦",label:"selbst verwendet"}
-];
-const REINFORCE_MODES=[
- ["crutch","🔊 Krücken-Test"],["puzzle","🧩 Hör-Puzzle"],["decode","🧱 Dekodier-Puzzle"],["visual","🖼 Bedeutung"],
- ["memory","💡 Gedankenbrücke"],["cloze","🕳 Lückensatz"],["sentence","🔀 Satzlabor"],["network","🧠 ABC / KaWa"],
- ["story","📖 Mini-Geschichte"],["chorus","🗣 Chor-Sprechen"]
-];
-let reinforceMode="crutch", reinforceIndex=0, reinforceSelection=[], mnemonicEmoji="💡", mnemonicDrawing=null;
-let memoryDrawStrokes=[], memoryActiveStroke=null;
-let mediaRecorder=null, mediaChunks=[], mediaStream=null, recordedAudioUrl=null;
-const EMOJI_MAP={
- apple:"🍎",banana:"🍌",food:"🍽️",water:"💧",coffee:"☕",tea:"🍵",milk:"🥛",bread:"🍞",meat:"🥩",fish:"🐟",fruit:"🍓",vegetable:"🥕",
- house:"🏠",home:"🏠",room:"🚪",door:"🚪",window:"🪟",bed:"🛏️",school:"🏫",book:"📖",teacher:"🧑‍🏫",student:"🧑‍🎓",work:"💼",
- car:"🚗",bus:"🚌",train:"🚆",airport:"✈️",city:"🏙️",country:"🌍",street:"🛣️",money:"💰",shop:"🛍️",market:"🛒",restaurant:"🍴",hotel:"🏨",
- mother:"👩",father:"👨",family:"👪",friend:"🧑‍🤝‍🧑",child:"🧒",man:"👨",woman:"👩",people:"👥",person:"🧍",
- happy:"😊",sad:"😢",tired:"😴",sick:"🤒",hot:"🔥",cold:"❄️",good:"👍",bad:"👎",love:"❤️",time:"⏰",day:"☀️",night:"🌙",morning:"🌅",evening:"🌆",
- yes:"✅",no:"❌",question:"❓",answer:"💬",phone:"📱",music:"🎵",dog:"🐕",cat:"🐈",sun:"☀️",rain:"🌧️",tree:"🌳",flower:"🌸"
+const WIKI_LANG_NAMES={
+ de:"German",en:"English",tr:"Turkish",it:"Italian",es:"Spanish",ro:"Romanian",ar:"Arabic",
+ zh:"Chinese",cmn:"Chinese",ja:"Japanese",ru:"Russian",fr:"French",pt:"Portuguese",nl:"Dutch",
+ pl:"Polish",cs:"Czech",da:"Danish",nb:"Norwegian Bokmål",sv:"Swedish",fi:"Finnish",hu:"Hungarian",
+ el:"Greek",bg:"Bulgarian",uk:"Ukrainian"
 };
-function masteryRoot(){if(!saved.mastery)saved.mastery={};if(!saved.mastery[lang])saved.mastery[lang]={};return saved.mastery[lang]}
-function masteryFor(id){const r=masteryRoot();if(!r[id])r[id]={stages:{},mnemonic:"",emoji:"",drawing:"",sentences:[]};return r[id]}
-function setMastery(id,stage,val=true){if(!id)return;const m=masteryFor(id);m.stages[stage]=val?1:0;save()}
-function stageCount(id){const m=saved.mastery?.[lang]?.[id];if(!m||!m.stages)return 0;return MASTERY_STAGES.filter(s=>m.stages[s.id]).length}
-function lessonMasteryWords(){return currentWords().slice(0,25)}
-function lessonStageStats(){const words=lessonMasteryWords();return MASTERY_STAGES.map(s=>({s,count:words.filter(w=>masteryFor(w.id).stages[s.id]).length,total:words.length}))}
-function currentReinforceWord(){const pool=currentWords();if(!pool.length)return null;reinforceIndex=((reinforceIndex%pool.length)+pool.length)%pool.length;return pool[reinforceIndex]}
-function markCurrentWord(stage){const w=currentReinforceWord();if(w){setMastery(w.id,stage);renderMastery();renderProgress()}}
-function phraseParts(p){const c=courses[lang];if(c.translit)return {original:p[0],translit:p[1],analysis:p[2],literal:p[3],natural:p[4]};return {original:p[0],analysis:p[1],literal:p[2],natural:p[3]}}
-function lessonPhrases(){return courses[lang].lessons[lessonIndex].phrases.map(phraseParts)}
-function splitTarget(text){text=String(text||"").trim();if(!text)return[];if(lang==="zh"||lang==="cmn"||lang==="ja")return [...text].filter(x=>x.trim());return text.split(/\s+/).filter(Boolean)}
-function visualFor(w){const key=(w?.english||"").toLowerCase().trim();return EMOJI_MAP[key]||({noun:"🧱",verb:"⚡",adj:"🎨",adv:"🧭",pron:"👤"}[w?.pos]||"🔹")}
-function escapeAttr(s){return escapeHtml(s).replace(/`/g,"&#96;")}
-function renderMastery(){
- const strip=$("masteryStrip"),summary=$("masterySummary");if(!strip)return;strip.innerHTML="";
- const stats=lessonStageStats();stats.forEach(({s,count,total})=>{const d=document.createElement("div");d.className="mastery-step"+(total&&count===total?" on":"");d.innerHTML=`<b>${s.icon}</b>${s.label}<br>${count}/${total}`;strip.appendChild(d)});
- const words=lessonMasteryWords(),avg=words.length?Math.round(words.reduce((a,w)=>a+stageCount(w.id),0)/(words.length*MASTERY_STAGES.length)*100):0;
- summary.innerHTML=`Festigung dieser Lektion: <strong>${avg}%</strong>. Ein Wort gilt nicht schon nach einer richtigen Auswahl als „fertig“ – die sieben Schritte zeigen, wie tief es bereits verankert ist.`;
-}
-function renderReinforceTabs(){const box=$("reinforceTabs");box.innerHTML="";REINFORCE_MODES.forEach(([id,label])=>{const b=document.createElement("button");b.type="button";b.className="reinforce-tab"+(reinforceMode===id?" active":"");b.textContent=label;b.addEventListener("click",()=>{reinforceMode=id;reinforceSelection=[];renderReinforce()});box.appendChild(b)})}
-function nextReinforce(){reinforceIndex++;reinforceSelection=[];renderReinforce()}
-function exerciseHead(title,help){return `<div class="exercise-title">${title}</div><div class="exercise-help">${help}</div>`}
-function renderReinforce(){
- renderReinforceTabs();renderMastery();const box=$("reinforceBox");box.innerHTML="";
- if(!wordBanks[lang]||!currentWords().length){box.innerHTML=exerciseHead("Wortbank wird geladen","Sobald die Wörter verfügbar sind, erscheinen hier die gehirn-gerechten Festigungsübungen.");return}
- ({crutch:renderCrutch,puzzle:renderListenPuzzle,decode:renderDecodePuzzle,visual:renderVisual,memory:renderMemory,cloze:renderCloze,sentence:renderSentenceLab,network:renderKnowledgeNet,story:renderStory,chorus:renderChorus}[reinforceMode]||renderCrutch)(box)
-}
-function renderCrutch(box){
- const w=currentReinforceWord(),pool=wordBanks[lang]||[];box.innerHTML=exerciseHead("Krücken-Test","Nur hören – keine Schrift und keine Dekodierung. Wenn die Bedeutung direkt auftaucht, kann die Krücke für dieses Wort langsam weg.");
- const audio=document.createElement("div");audio.className="audio-only";const ab=document.createElement("button");ab.className="audio-orb";ab.type="button";ab.textContent="🔊";ab.addEventListener("click",()=>{speech(w.target);setMastery(w.id,"heard");renderMastery()});audio.appendChild(ab);box.appendChild(audio);
- const choices=shuffle([w,...shuffle(pool.filter(x=>x.id!==w.id&&x.de!==w.de)).slice(0,3)]);const cg=document.createElement("div");cg.className="choices";choices.forEach(x=>{const b=document.createElement("button");b.className="choice";b.type="button";b.textContent=x.de;b.addEventListener("click",()=>{[...cg.children].forEach(y=>y.disabled=true);const ok=x.id===w.id;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Direkt verstanden – Krücke kann schwächer werden.":`Noch nicht vertraut. Die Bedeutung ist: ${w.de}`;box.appendChild(f);if(ok){setMastery(w.id,"understood");markWord(w.id,true)}else markWord(w.id,false);renderMastery();renderProgress()});cg.appendChild(b)});box.appendChild(cg);addNextButton(box)
-}
-function renderListenPuzzle(box){
- const ph=lessonPhrases()[reinforceIndex%lessonPhrases().length],parts=splitTarget(ph.original);box.innerHTML=exerciseHead("Hör-Puzzle","Höre den Satz und setze seine Klang-Bausteine in die richtige Reihenfolge. Erst danach wird der Originalsatz eingeblendet.");
- const a=document.createElement("button");a.className="btn primary";a.textContent="🔊 Satz nur hören";a.onclick=()=>speech(ph.original);box.appendChild(a);
- if(parts.length<2){const w=currentReinforceWord();box.insertAdjacentHTML("beforeend",`<div class="exercise-big ${courses[lang].rtl?"rtl":""}">${escapeHtml(w.target)}</div>`);addNextButton(box);return}
- const answer=document.createElement("div");answer.className="answer-line";const bank=document.createElement("div");bank.className="chunk-bank";const shuffled=shuffle(parts.map((x,i)=>({x,i})));let chosen=[];
- shuffled.forEach(obj=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=obj.x;b.onclick=()=>{if(b.classList.contains("used"))return;b.classList.add("used");chosen.push(obj);const s=document.createElement("span");s.className="chunk-btn";s.textContent=obj.x;answer.appendChild(s);if(chosen.length===parts.length){const built=chosen.map(o=>o.x).join((lang==="zh"||lang==="cmn"||lang==="ja")?"":" ");const expected=parts.join((lang==="zh"||lang==="cmn"||lang==="ja")?"":" ");const f=document.createElement("div");f.className="feedback";f.textContent=built===expected?"✓ Reihenfolge erkannt.":`Fast – Original: ${ph.original}`;f.style.color=built===expected?"var(--ok)":"var(--danger)";box.appendChild(f);if(built===expected){currentWords().slice(0,3).forEach(w=>setMastery(w.id,"recognized"));renderMastery()}}};bank.appendChild(b)});box.append(answer,bank);addNextButton(box)
-}
-function renderDecodePuzzle(box){
- const s=courses[lang].lessons[lessonIndex].special,items=s.items.filter(x=>x!=="→"&&x!=="=");box.innerHTML=exerciseHead("Dekodier-Puzzle",`Baue die vertraute Struktur „${escapeHtml(s.title)}“ aus ihren Teilen wieder auf. Es geht um Muster, nicht um stumpfes Auswendiglernen.`);
- const answer=document.createElement("div");answer.className="answer-line";const bank=document.createElement("div");bank.className="chunk-bank";let chosen=[];shuffle(items.map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=o.x;b.onclick=()=>{if(b.classList.contains("used"))return;b.classList.add("used");chosen.push(o);const ch=document.createElement("span");ch.className="chunk-btn";ch.textContent=o.x;answer.appendChild(ch);if(chosen.length===items.length){const ok=chosen.every((x,i)=>x.i===i);const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Struktur korrekt zusammengesetzt.":"Noch einmal anders kombinieren – die ursprüngliche Reihenfolge steht im Musterbereich darüber.";box.appendChild(f);if(ok)currentWords().slice(0,5).forEach(w=>setMastery(w.id,"decoded"));renderMastery()}};bank.appendChild(b)});box.append(answer,bank);addNextButton(box)
-}
-function renderVisual(box){
- const w=currentReinforceWord(),pool=wordBanks[lang]||[];let options=[w,...shuffle(pool.filter(x=>x.id!==w.id&&visualFor(x)!==visualFor(w))).slice(0,3)];box.innerHTML=exerciseHead("Bedeutung ohne Übersetzungs-Umweg","Wo möglich, verbindet die App Klang und Bedeutung direkt über ein Bildsymbol. Das Wort in deiner Muttersprache wird erst nach der Wahl gezeigt.");
- const top=document.createElement("div");top.className="audio-only";const ab=document.createElement("button");ab.className="audio-orb";ab.textContent="🔊";ab.onclick=()=>speech(w.target);top.appendChild(ab);box.appendChild(top);
- const g=document.createElement("div");g.className="visual-choices";shuffle(options).forEach(x=>{const b=document.createElement("button");b.className="visual-choice";b.innerHTML=`<span class="emo">${visualFor(x)}</span><small>${escapeHtml(x.english||shortMeta(x))}</small>`;b.onclick=()=>{[...g.children].forEach(y=>y.disabled=true);const ok=x.id===w.id;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?`✓ ${w.target} ↔ ${visualFor(w)} · ${w.de}`:`Das gesuchte Wort bedeutet: ${w.de}`;box.appendChild(f);if(ok)setMastery(w.id,"recognized");renderMastery()};g.appendChild(b)});box.appendChild(g);addNextButton(box)
-}
-function renderMemory(box){
- const w=currentReinforceWord(),m=masteryFor(w.id);mnemonicEmoji=m.emoji||"💡";box.innerHTML=exerciseHead("Meine Gedankenbrücke","Eine persönliche, auch völlig alberne Assoziation ist wertvoller als eine fremde Musterlösung. Klang, Bild, Geschichte oder Gefühl dürfen sich mischen.");
- const title=document.createElement("div");title.className="exercise-big"+(courses[lang].rtl?" rtl":"");title.textContent=w.target+"  →  "+w.de;box.appendChild(title);
- const grid=document.createElement("div");grid.className="mnemonic-grid";const left=document.createElement("div");const ta=document.createElement("textarea");ta.className="memory-textarea";ta.placeholder="Meine Eselsbrücke / Geschichte / Klang-Assoziation …";ta.value=m.mnemonic||"";left.appendChild(ta);
- const eb=document.createElement("div");eb.className="emoji-bank";["💡","😂","❤️","🎵","🧠","🏠","🚗","🍎","🌊","🔥","🌟","🤪"].forEach(e=>{const b=document.createElement("button");b.className="emoji-btn";b.textContent=e;if(e===mnemonicEmoji)b.style.outline="2px solid var(--accent)";b.onclick=()=>{mnemonicEmoji=e;renderMemory(box)};eb.appendChild(b)});left.appendChild(eb);
- const saveBtn=document.createElement("button");saveBtn.className="btn primary";saveBtn.textContent="Gedankenbrücke speichern";saveBtn.onclick=()=>{const mm=masteryFor(w.id);mm.mnemonic=ta.value.trim();mm.emoji=mnemonicEmoji;const cv=$("memoryCanvas");try{mm.drawing=cv.toDataURL("image/webp",.45)}catch(e){};mm.stages.linked=1;save();renderMastery();const v=document.createElement("div");v.className="memory-preview";v.textContent="✓ Gespeichert. Diese persönliche Verbindung erscheint bei späteren Wiederholungen wieder.";left.appendChild(v)};left.appendChild(saveBtn);
- const right=document.createElement("div");const c=document.createElement("canvas");c.id="memoryCanvas";c.width=560;c.height=300;c.className="memory-canvas";right.appendChild(c);const clr=document.createElement("button");clr.className="mini-btn";clr.textContent="Skizze löschen";clr.onclick=()=>{memoryDrawStrokes=[];drawMemoryCanvas(m.drawing?null:null)};right.appendChild(clr);grid.append(left,right);box.appendChild(grid);setTimeout(()=>initMemoryCanvas(m.drawing),0);addNextButton(box)
-}
-function drawMemoryCanvas(bgData){const c=$("memoryCanvas");if(!c)return;const ctx=c.getContext("2d");ctx.fillStyle="#f5f7f8";ctx.fillRect(0,0,c.width,c.height);if(bgData){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,c.width,c.height);im.src=bgData}ctx.strokeStyle="#5b7cfa";ctx.lineWidth=7;ctx.lineCap="round";memoryDrawStrokes.forEach(st=>{if(!st.length)return;ctx.beginPath();ctx.moveTo(st[0].x,st[0].y);for(let i=1;i<st.length;i++)ctx.lineTo(st[i].x,st[i].y);ctx.stroke()})}
-function initMemoryCanvas(bg){const c=$("memoryCanvas");if(!c)return;memoryDrawStrokes=[];drawMemoryCanvas(bg);const pos=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}};c.onpointerdown=e=>{e.preventDefault();c.setPointerCapture(e.pointerId);memoryActiveStroke=[pos(e)];memoryDrawStrokes.push(memoryActiveStroke);drawMemoryCanvas(bg)};c.onpointermove=e=>{if(!memoryActiveStroke)return;e.preventDefault();memoryActiveStroke.push(pos(e));drawMemoryCanvas(bg)};c.onpointerup=c.onpointercancel=()=>{memoryActiveStroke=null}}
-function renderCloze(box){
- const phs=lessonPhrases(),ph=phs[reinforceIndex%phs.length],parts=splitTarget(ph.original);if(parts.length<2){reinforceIndex++;return renderCloze(box)}const gap=Math.abs(reinforceIndex)%parts.length,answer=parts[gap],shown=parts.map((x,i)=>i===gap?"______":x).join((lang==="zh"||lang==="cmn"||lang==="ja")?"":" ");
- box.innerHTML=exerciseHead("Audio-Lückensatz","Höre zuerst den ganzen Satz. Fülle danach die Lücke aus dem Klanggedächtnis – nicht aus einer Grammatikregel.");const play=document.createElement("button");play.className="btn primary";play.textContent="🔊 Ganzen Satz hören";play.onclick=()=>speech(ph.original);box.appendChild(play);const line=document.createElement("div");line.className="cloze-line";line.textContent=shown;if(courses[lang].rtl)line.dir="rtl";box.appendChild(line);
- const distract=shuffle(currentWords().map(w=>w.target).filter(x=>x!==answer)).slice(0,3);const g=document.createElement("div");g.className="chunk-bank";shuffle([answer,...distract]).forEach(x=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=x;b.onclick=()=>{[...g.children].forEach(y=>y.disabled=true);const ok=x===answer;line.textContent=ph.original;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Aus dem Klang rekonstruiert.":`Gesucht war: ${answer}`;box.appendChild(f);if(ok)currentWords().slice(0,3).forEach(w=>setMastery(w.id,"understood"));renderMastery()};g.appendChild(b)});box.appendChild(g);addNextButton(box)
-}
-function renderSentenceLab(box){
- const l=courses[lang].lessons[lessonIndex],pat=l.patterns[reinforceIndex%l.patterns.length],w=currentReinforceWord();box.innerHTML=exerciseHead("Satz weiterdenken","Kein vorgegebener einzig richtiger Satz: Nimm das bekannte Muster und mache daraus etwas Eigenes. Genau hier wird aus Wiedererkennen produktives Können.");
- const p=document.createElement("div");p.className="exercise-big"+(courses[lang].rtl?" rtl":"");p.textContent=pat[0];box.appendChild(p);const hint=document.createElement("div");hint.className="exercise-help";hint.textContent=pat[1];box.appendChild(hint);const chips=document.createElement("div");chips.className="chunk-bank";currentWords().slice(0,10).forEach(x=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=x.target;b.onclick=()=>{inp.value+=(inp.value?" ":"")+x.target};chips.appendChild(b)});box.appendChild(chips);const inp=document.createElement("textarea");inp.className="sentence-input";inp.placeholder="Mein eigener Satz …";box.appendChild(inp);const sv=document.createElement("button");sv.className="btn primary";sv.textContent="Eigenen Satz speichern";sv.onclick=()=>{const v=inp.value.trim();if(!v)return;const m=masteryFor(w.id);m.sentences=m.sentences||[];m.sentences.push({text:v,date:Date.now()});m.stages.transferred=1;m.stages.used=1;save();renderMastery();sv.textContent="✓ gespeichert"};box.appendChild(sv);addNextButton(box)
-}
-const ALPHABETS={de:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",en:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",it:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",es:"ABCDEFGHIJKLMNÑOPQRSTUVWXYZ",ro:"AĂÂBCDEFGHIÎJKLMNOPQRSȘTȚUVWXYZ",tr:"ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ",ru:"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ",ar:"ابتثجحخدذرزسشصضطظعغفقكلمنهوي"};
-function knowledgeKey(){return `${lang}:${lessonIndex}`}
-function renderKnowledgeNet(box){
- const topic=TOPICS[lessonIndex%TOPICS.length];if(!saved.knowledgeNet)saved.knowledgeNet={};const k=knowledgeKey(),data=saved.knowledgeNet[k]||{items:[],history:[]};saved.knowledgeNet[k]=data;
- box.innerHTML=exerciseHead("ABC / KaWa – Wissensnetz wachsen lassen","Nicht A bis Z abarbeiten. Springe frei zu einem Buchstaben oder notiere bei asiatischen Schriften einfach spontane Begriffe. Leere Stellen sind ausdrücklich erlaubt.");const wrap=document.createElement("div");wrap.className="knowledge-net";const center=document.createElement("div");center.className="net-center";center.textContent=topic;const area=document.createElement("div");
- const alphabet=ALPHABETS[lang];if(alphabet){const lb=document.createElement("div");lb.className="letter-bank";shuffle([...alphabet]).slice(0,18).forEach(letter=>{const b=document.createElement("button");b.className="letter-btn";b.textContent=letter;b.onclick=()=>{inp.value=letter+" – ";inp.focus()};lb.appendChild(b)});area.appendChild(lb)}
- const inp=document.createElement("input");inp.className="assoc-input";inp.style.minHeight="46px";inp.placeholder=alphabet?"z. B. M – …":"Ein Begriff, Zeichen oder eine Assoziation …";area.appendChild(inp);const add=document.createElement("button");add.className="btn primary";add.textContent="Assoziation hinzufügen";add.onclick=()=>{const v=inp.value.trim();if(!v)return;data.items.push(v);inp.value="";save();renderKnowledgeNet(box);currentWords().slice(0,5).forEach(w=>setMastery(w.id,"linked"));renderMastery()};area.appendChild(add);const list=document.createElement("div");list.className="assoc-list";data.items.forEach(v=>{const s=document.createElement("span");s.className="assoc-chip";s.textContent=v;list.appendChild(s)});area.appendChild(list);
- const snap=document.createElement("button");snap.className="mini-btn";snap.textContent="Heute als Wissensstand speichern";snap.onclick=()=>{data.history.push({date:Date.now(),count:data.items.length});save();renderKnowledgeNet(box)};area.appendChild(snap);const last=data.history[data.history.length-2]||data.history[0];const growth=document.createElement("div");growth.className="growth-box";growth.textContent=last?`Früher: ${last.count} Begriffe · heute: ${data.items.length} · Wachstum: ${data.items.length-last.count>=0?"+":""}${data.items.length-last.count}`:`Heute sind ${data.items.length} Begriffe im Wissensnetz. Speichere später erneut, um das Wachstum zu sehen.`;area.appendChild(growth);wrap.append(center,area);box.appendChild(wrap)
-}
-function renderStory(box){
- const all=[];for(let i=Math.max(0,lessonIndex-2);i<=lessonIndex;i++)courses[lang].lessons[i].phrases.forEach(p=>all.push(phraseParts(p)));const story=all.slice(Math.max(0,all.length-5)).map(x=>x.original).join(" ");const meanings=all.slice(Math.max(0,all.length-5)).map(x=>x.natural).filter(Boolean);box.innerHTML=exerciseHead("Mini-Geschichte","Mehrere vertraute Sätze werden zu einem kleinen Hörblock. Erst hören, dann Text aufdecken. Der Sinn steht vor der Einzelwortkontrolle.");
- const play=document.createElement("button");play.className="btn primary";play.textContent="🔊 Geschichte hören";play.onclick=()=>speech(story);box.appendChild(play);const sc=document.createElement("div");sc.className="story-card story-hidden";sc.textContent=story;if(courses[lang].rtl)sc.dir="rtl";box.appendChild(sc);const reveal=document.createElement("button");reveal.className="btn";reveal.textContent="Text aufdecken";reveal.onclick=()=>{sc.classList.remove("story-hidden");reveal.disabled=true};box.appendChild(reveal);
- if(meanings.length){const q=document.createElement("div");q.className="story-q";q.textContent="Welche Bedeutung kam in der Geschichte vor?";box.appendChild(q);const correct=meanings[reinforceIndex%meanings.length],other=courses[lang].coreLessons.flatMap(x=>x.phrases).map(phraseParts).map(x=>x.natural).filter(x=>x&&x!==correct);const cg=document.createElement("div");cg.className="choices";shuffle([correct,...shuffle(other).slice(0,2)]).forEach(x=>{const b=document.createElement("button");b.className="choice";b.textContent=x;b.onclick=()=>{[...cg.children].forEach(y=>y.disabled=true);const ok=x===correct;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Sinnzusammenhang verstanden.":`Diese Aussage kam vor: ${correct}`;box.appendChild(f);if(ok)currentWords().slice(0,5).forEach(w=>setMastery(w.id,"understood"));renderMastery()};cg.appendChild(b)});box.appendChild(cg)}addNextButton(box)
-}
-function speakWithVolume(text,volume,rateMul=1){if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=courses[lang].voice;u.rate=(courses[lang].rate||.86)*rateMul;u.volume=volume;speechSynthesis.cancel();speechSynthesis.speak(u)}
-function renderChorus(box){
- const ph=lessonPhrases()[reinforceIndex%lessonPhrases().length];box.innerHTML=exerciseHead("Chor-Sprechen","Die Vorlage wird Schritt für Schritt leiser. Sprich gleichzeitig mit – erst getragen von der Stimme, später selbständiger. Keine Punktzahl für Akzent.");const tx=document.createElement("div");tx.className="exercise-big"+(courses[lang].rtl?" rtl":"");tx.textContent=ph.original;box.appendChild(tx);const r=document.createElement("div");r.className="chorus-rounds";[["1 · Vorlage laut",1],["2 · mittel",.65],["3 · leise",.32],["4 · ich allein",0]].forEach(([label,v])=>{const b=document.createElement("button");b.className="chorus-btn";b.textContent=label;b.onclick=()=>{if(v)speakWithVolume(ph.original,v,.92);else speechSynthesis.cancel();currentWords().slice(0,3).forEach(w=>setMastery(w.id,"heard"));renderMastery()};r.appendChild(b)});box.appendChild(r);
- const actions=document.createElement("div");actions.className="actions";const rec=document.createElement("button");rec.className="btn primary";rec.textContent="🎙 Aufnahme starten";const stop=document.createElement("button");stop.className="btn";stop.textContent="■ Stop";stop.disabled=true;const play=document.createElement("button");play.className="btn";play.textContent="▶ Meine Aufnahme";play.disabled=!recordedAudioUrl;const state=document.createElement("div");state.className="record-state";state.textContent="Die Aufnahme bleibt nur in dieser Sitzung.";rec.onclick=async()=>{try{mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});mediaChunks=[];mediaRecorder=new MediaRecorder(mediaStream);mediaRecorder.ondataavailable=e=>{if(e.data.size)mediaChunks.push(e.data)};mediaRecorder.onstop=()=>{const blob=new Blob(mediaChunks,{type:mediaRecorder.mimeType||"audio/webm"});if(recordedAudioUrl)URL.revokeObjectURL(recordedAudioUrl);recordedAudioUrl=URL.createObjectURL(blob);play.disabled=false;mediaStream?.getTracks().forEach(t=>t.stop());state.textContent="Aufnahme fertig – höre dich neben der Vorlage an.";currentWords().slice(0,3).forEach(w=>setMastery(w.id,"used"));renderMastery()};mediaRecorder.start();rec.disabled=true;stop.disabled=false;state.textContent="● Aufnahme läuft …";state.classList.add("recording")}catch(e){state.textContent="Mikrofon konnte nicht geöffnet werden."}};stop.onclick=()=>{if(mediaRecorder&&mediaRecorder.state!=="inactive")mediaRecorder.stop();rec.disabled=false;stop.disabled=true;state.classList.remove("recording")};play.onclick=()=>{if(recordedAudioUrl)new Audio(recordedAudioUrl).play()};actions.append(rec,stop,play);box.append(actions,state);addNextButton(box)
-}
-function addNextButton(box){const a=document.createElement("div");a.className="actions";const n=document.createElement("button");n.className="btn";n.textContent="Nächster Impuls →";n.onclick=nextReinforce;a.appendChild(n);box.appendChild(a)}
 
-const SCRIPT_TRACE_LANGS=new Set(["ar","zh","ja","cmn"]);
-let modalTraceWord="", modalTraceMeta="", modalTraceStrokes=[], modalTraceActive=null, modalTraceShowGuide=true, modalTraceMode="look";
-let writingUnits=[], writingIndex=0, writingTimer=null, writerInstance=null, writerCharData=null, strokeNumbersVisible=false, writerQuizActive=false, copybookStrokes=[], copybookActive=null, copybookShowGuides=true;
-function graphemeUnits(text){
-  const s=String(text||'').trim();
-  try{if(Intl.Segmenter){return [...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(s)].map(x=>x.segment)}}catch(e){}
-  return [...s];
+const PRON_UI={
+ de:{label:"Aussprache",loading:"wird geladen …",listen:"über 🔊 anhören"},
+ en:{label:"Pronunciation",loading:"loading …",listen:"listen with 🔊"},
+ tr:{label:"Telaffuz",loading:"yükleniyor …",listen:"🔊 ile dinle"},
+ it:{label:"Pronuncia",loading:"caricamento …",listen:"ascolta con 🔊"},
+ es:{label:"Pronunciación",loading:"cargando …",listen:"escuchar con 🔊"},
+ ro:{label:"Pronunție",loading:"se încarcă …",listen:"ascultă cu 🔊"},
+ ar:{label:"النطق",loading:"جارٍ التحميل …",listen:"استمع عبر 🔊"},
+ zh:{label:"发音",loading:"加载中 …",listen:"点击 🔊 收听"},
+ cmn:{label:"发音",loading:"加载中 …",listen:"点击 🔊 收听"},
+ ja:{label:"発音",loading:"読み込み中 …",listen:"🔊で聞く"},
+ ru:{label:"Произношение",loading:"загрузка …",listen:"слушать через 🔊"},
+ fr:{label:"Prononciation",loading:"chargement …",listen:"écouter avec 🔊"},
+ pt:{label:"Pronúncia",loading:"a carregar …",listen:"ouvir com 🔊"},
+ nl:{label:"Uitspraak",loading:"laden …",listen:"luister met 🔊"},
+ pl:{label:"Wymowa",loading:"ładowanie …",listen:"posłuchaj przez 🔊"},
+ cs:{label:"Výslovnost",loading:"načítání …",listen:"poslechni přes 🔊"},
+ da:{label:"Udtale",loading:"indlæser …",listen:"lyt med 🔊"},
+ nb:{label:"Uttale",loading:"laster …",listen:"lytt med 🔊"},
+ sv:{label:"Uttal",loading:"laddar …",listen:"lyssna med 🔊"},
+ fi:{label:"Ääntäminen",loading:"ladataan …",listen:"kuuntele 🔊"},
+ hu:{label:"Kiejtés",loading:"betöltés …",listen:"hallgasd meg 🔊"},
+ el:{label:"Προφορά",loading:"φόρτωση …",listen:"άκουσε με 🔊"},
+ bg:{label:"Произношение",loading:"зареждане …",listen:"чуй с 🔊"},
+ uk:{label:"Вимова",loading:"завантаження …",listen:"послухай через 🔊"}
+};
+
+const pronElementWords=new WeakMap();
+let pronunciationObserver=null;
+
+function pronUI(code=nativeLanguage){return PRON_UI[code]||PRON_UI.de}
+function savePronunciationCache(){
+ try{localStorage.setItem(PRON_CACHE_KEY,JSON.stringify(pronunciationCache))}catch(e){}
+ try{localStorage.setItem(RAW_IPA_CACHE_KEY,JSON.stringify(rawIpaCache))}catch(e){}
 }
-function setWriterResult(text,kind=''){
-  const el=$('writingResult'); el.textContent=text; el.className='writer-result'+(kind?' '+kind:'');
+function pronKey(code,word,native=nativeLanguage){return `${native}|${code}|${String(word||"").trim().toLocaleLowerCase()}`}
+function rawIpaKey(code,word){return `${code}|${String(word||"").trim().toLocaleLowerCase()}`}
+function onlyKana(s){return /^[\u3040-\u309f\u30a0-\u30ffー・\s]+$/.test(String(s||""))}
+function cleanIPA(s){
+ s=String(s||"").replace(/\s+/g," ").trim();
+ if(!s)return "";
+ const m=s.match(/\/[^/]{1,160}\/|\[[^\]]{1,160}\]/);
+ return (m?m[0]:s).trim();
 }
-function scoreLabel(score){return score>=85?'Sehr sicher':score>=65?'Schon gut':'Noch einmal langsam üben'}
-function clearStrokeNumbers(){
-  const old=$('hanziWriterBox').querySelector('.stroke-number-overlay'); if(old) old.remove();
+function stripIPA(s){
+ return String(s||"")
+  .replace(/^[/\[]|[/\]]$/g,"")
+  .replace(/[()]/g,"")
+  .replace(/[ːˑ]/g,"")
+  .replace(/[ʰʷʲˠ]/g,"")
+  .replace(/\u0361/g,"")
+  .replace(/[˥˦˧˨˩]+/g,"")
+  .replace(/\s+/g," ")
+  .trim();
 }
-function renderStrokeNumbers(data){
-  clearStrokeNumbers(); if(!strokeNumbersVisible||!data||!Array.isArray(data.medians))return;
-  const hz=$('hanziWriterBox'),svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 220 220');svg.classList.add('stroke-number-overlay');
-  const pad=14, span=220-pad*2;
-  data.medians.forEach((med,i)=>{if(!med||!med.length)return;const p=med[0],x=pad+(p[0]/1024)*span,y=220-pad-(p[1]/1024)*span;const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',Math.max(12,Math.min(208,x)));t.setAttribute('y',Math.max(24,Math.min(212,y)));t.setAttribute('text-anchor','middle');t.textContent=String(i+1);svg.appendChild(t)});
-  hz.appendChild(svg);
+function regexEscape(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}
+
+const IPA_BASE={
+ "tʃ":"ch","dʒ":"j","ts":"ts","dz":"dz","aɪ":"ai","aʊ":"au","eɪ":"ei","oʊ":"ou","ɔɪ":"oi",
+ "p":"p","b":"b","t":"t","d":"d","k":"k","g":"g","ɡ":"g","f":"f","v":"v","θ":"th","ð":"dh",
+ "s":"s","z":"z","ʃ":"sh","ʒ":"zh","ç":"hy","x":"kh","χ":"kh","h":"h","m":"m","n":"n",
+ "ŋ":"ng","ɲ":"ny","l":"l","ɫ":"l","r":"r","ɾ":"r","ɹ":"r","ʀ":"r","ʁ":"r","j":"y","w":"w",
+ "i":"i","ɪ":"i","e":"e","ɛ":"e","æ":"a","a":"a","ɑ":"a","ɐ":"a","ɒ":"o","ɔ":"o","o":"o",
+ "ʊ":"u","u":"u","ə":"e","ɜ":"er","ɚ":"er","ʌ":"a","y":"ü","ø":"ö","œ":"ö","ɯ":"u","ɤ":"e",
+ "ɨ":"i","ɵ":"ö","ɘ":"e","ɞ":"ö","ɶ":"ö","q":"k","ɣ":"g","β":"v","ɸ":"f","ɕ":"sh","ʑ":"zh",
+ "ʂ":"sh","ʐ":"zh","ɟ":"g","c":"k","ɖ":"d","ʈ":"t","ɳ":"n","ɭ":"l","ʔ":"","ˈ":"´","ˌ":"",
+ ".":"-"," ":" "
+};
+
+const IPA_OVERRIDES={
+ de:{
+  "tʃ":"tsch","dʒ":"dsch","ts":"z","ʃ":"sch","ʒ":"sch","ɕ":"sch","ʑ":"dsch","j":"j","w":"u",
+  "v":"w","θ":"ß","ð":"d","x":"ch","χ":"ch","ç":"ch","ɲ":"nj","ŋ":"ng","s":"ss","z":"s",
+  "ɪ":"i","ɛ":"ä","æ":"ä","ɑ":"a","ɒ":"o","ɔ":"o","ʊ":"u","ə":"e","ɜ":"ö","ɚ":"ör","ʌ":"a"
+ },
+ en:{
+  "tʃ":"ch","dʒ":"j","ʃ":"sh","ʒ":"zh","j":"y","x":"kh","ç":"hy","ɲ":"ny","ŋ":"ng",
+  "i":"ee","ɪ":"ih","e":"ay","ɛ":"eh","æ":"a","ɑ":"ah","ɔ":"aw","o":"oh","ʊ":"uh","u":"oo","ə":"uh","ɜ":"er","ʌ":"uh"
+ },
+ tr:{
+  "tʃ":"ç","dʒ":"c","ʃ":"ş","ʒ":"j","j":"y","x":"h","χ":"h","ç":"h","θ":"s","ð":"d","ɲ":"ny",
+  "ɯ":"ı","y":"ü","ø":"ö","œ":"ö"
+ },
+ it:{
+  "tʃ":"ci","dʒ":"gi","ʃ":"sci","ʒ":"j","j":"i","ɲ":"gn","x":"ch","χ":"ch","θ":"t","ð":"d"
+ },
+ es:{
+  "tʃ":"ch","dʒ":"y","ʃ":"sh","ʒ":"y","j":"y","x":"j","χ":"j","ç":"j","θ":"z","ð":"d","ɲ":"ñ"
+ },
+ ro:{
+  "tʃ":"ci","dʒ":"gi","ʃ":"ș","ʒ":"j","j":"i","x":"h","χ":"h","ç":"h","ɲ":"ni","ts":"ț"
+ },
+ fr:{
+  "tʃ":"tch","dʒ":"dj","ʃ":"ch","ʒ":"j","j":"y","ɲ":"gn","x":"kh","χ":"kh","θ":"s","ð":"d",
+  "y":"u","ø":"eu","œ":"eu","ə":"e"
+ },
+ pt:{
+  "tʃ":"tch","dʒ":"dj","ʃ":"ch","ʒ":"j","j":"i","ɲ":"nh","x":"rr","χ":"rr","θ":"s","ð":"d"
+ },
+ nl:{
+  "tʃ":"tsj","dʒ":"dzj","ʃ":"sj","ʒ":"zj","j":"j","x":"ch","χ":"ch","ç":"ch","ɲ":"nj"
+ },
+ pl:{
+  "tʃ":"cz","dʒ":"dż","ʃ":"sz","ʒ":"ż","j":"j","x":"ch","χ":"ch","ç":"ś","ɲ":"ń","w":"ł","v":"w","θ":"s","ð":"d"
+ },
+ cs:{
+  "tʃ":"č","dʒ":"dž","ʃ":"š","ʒ":"ž","j":"j","x":"ch","χ":"ch","ç":"ch","ɲ":"ň","w":"u","θ":"s","ð":"d"
+ },
+ da:{
+  "tʃ":"tj","dʒ":"dj","ʃ":"sj","ʒ":"j","j":"j","x":"kh","χ":"kh","ç":"hj","ɲ":"nj","θ":"th","ð":"d"
+ },
+ nb:{
+  "tʃ":"tsj","dʒ":"dsj","ʃ":"sj","ʒ":"sj","j":"j","x":"kh","χ":"kh","ç":"kj","ɲ":"nj","θ":"th","ð":"d"
+ },
+ sv:{
+  "tʃ":"tj","dʒ":"dj","ʃ":"sj","ʒ":"j","j":"j","x":"ch","χ":"ch","ç":"tj","ɲ":"nj","θ":"t","ð":"d"
+ },
+ fi:{
+  "tʃ":"tš","dʒ":"dž","ʃ":"š","ʒ":"ž","j":"j","x":"h","χ":"h","ç":"h","ɲ":"nj","θ":"s","ð":"d"
+ },
+ hu:{
+  "tʃ":"cs","dʒ":"dzs","ʃ":"s","ʒ":"zs","j":"j","x":"h","χ":"h","ç":"h","ɲ":"ny","s":"sz","θ":"sz","ð":"d"
+ }
+};
+
+const IPA_GREEK={
+ "tʃ":"τσ","dʒ":"τζ","ts":"τσ","dz":"τζ","ʃ":"σ","ʒ":"ζ","j":"γ","w":"ου","x":"χ","χ":"χ","ç":"χ",
+ "θ":"θ","ð":"δ","ɲ":"νι","ŋ":"νγκ","p":"π","b":"μπ","t":"τ","d":"ντ","k":"κ","g":"γκ","ɡ":"γκ",
+ "f":"φ","v":"β","s":"σ","z":"ζ","h":"χ","m":"μ","n":"ν","l":"λ","r":"ρ","ɾ":"ρ","ɹ":"ρ","ʁ":"ρ",
+ "i":"ι","ɪ":"ι","e":"ε","ɛ":"ε","æ":"α","a":"α","ɑ":"α","ɐ":"α","ɒ":"ο","ɔ":"ο","o":"ο","ʊ":"ου","u":"ου",
+ "ə":"ε","ɜ":"ερ","ʌ":"α","y":"ι","ø":"ε","œ":"ε","ɯ":"ου","ɤ":"ε","ɨ":"ι","ˈ":"´","ˌ":""," ":" ",".":"-"
+};
+const IPA_CYRILLIC_RU={
+ "tʃ":"ч","dʒ":"дж","ts":"ц","dz":"дз","ʃ":"ш","ʒ":"ж","j":"й","w":"у","x":"х","χ":"х","ç":"х",
+ "θ":"с","ð":"д","ɲ":"нь","ŋ":"нг","p":"п","b":"б","t":"т","d":"д","k":"к","g":"г","ɡ":"г","f":"ф","v":"в",
+ "s":"с","z":"з","h":"х","m":"м","n":"н","l":"л","r":"р","ɾ":"р","ɹ":"р","ʁ":"р",
+ "i":"и","ɪ":"и","e":"э","ɛ":"э","æ":"а","a":"а","ɑ":"а","ɐ":"а","ɒ":"о","ɔ":"о","o":"о","ʊ":"у","u":"у",
+ "ə":"э","ɜ":"эр","ʌ":"а","y":"ю","ø":"ё","œ":"ё","ɯ":"у","ɤ":"э","ɨ":"ы","ˈ":"´","ˌ":""," ":" ",".":"-"
+};
+const IPA_CYRILLIC_UK={...IPA_CYRILLIC_RU,"i":"і","ɪ":"и","ɨ":"и","g":"ґ","ɡ":"ґ","h":"г"};
+const IPA_CYRILLIC_BG={...IPA_CYRILLIC_RU,"ɨ":"ъ","ə":"ъ"};
+
+const IPA_ARABIC={
+ "tʃ":"تش","dʒ":"ج","ts":"تس","dz":"دز","ʃ":"ش","ʒ":"ژ","j":"ي","w":"و","x":"خ","χ":"خ","ç":"ه",
+ "θ":"ث","ð":"ذ","ɲ":"ني","ŋ":"نغ","p":"پ","b":"ب","t":"ت","d":"د","k":"ك","g":"گ","ɡ":"گ","f":"ف","v":"ڤ",
+ "s":"س","z":"ز","h":"ه","m":"م","n":"ن","l":"ل","r":"ر","ɾ":"ر","ɹ":"ر","ʁ":"غ",
+ "i":"ي","ɪ":"ِ","e":"ي","ɛ":"َ","æ":"ا","a":"ا","ɑ":"ا","ɐ":"ا","ɒ":"و","ɔ":"و","o":"و","ʊ":"ُ","u":"و",
+ "ə":"َ","ɜ":"ر","ʌ":"َ","y":"يو","ø":"و","œ":"و","ɯ":"و","ɤ":"َ","ɨ":"ِ","ˈ":"","ˌ":""," ":" ",".":"-"
+};
+
+function mapForNative(code){
+ if(code==="el")return IPA_GREEK;
+ if(code==="ru")return IPA_CYRILLIC_RU;
+ if(code==="uk")return IPA_CYRILLIC_UK;
+ if(code==="bg")return IPA_CYRILLIC_BG;
+ if(code==="ar")return IPA_ARABIC;
+ return {...IPA_BASE,...(IPA_OVERRIDES[code]||{})};
 }
-function pointNearGlyph(maskCtx,x,y,r=20){
-  const c=maskCtx.canvas,x0=Math.max(0,Math.floor(x-r)),y0=Math.max(0,Math.floor(y-r)),x1=Math.min(c.width,Math.ceil(x+r)),y1=Math.min(c.height,Math.ceil(y+r));
-  const data=maskCtx.getImageData(x0,y0,Math.max(1,x1-x0),Math.max(1,y1-y0)).data;for(let i=3;i<data.length;i+=4)if(data[i]>40)return true;return false;
+const ipaRegexCache={};
+function ipaToMappedText(ipa,native=nativeLanguage){
+ let src=stripIPA(ipa);
+ if(!src)return "";
+ const map=mapForNative(native);
+ let rx=ipaRegexCache[native];
+ if(!rx){
+  const keys=Object.keys(map).sort((a,b)=>b.length-a.length).map(regexEscape);
+  rx=ipaRegexCache[native]=new RegExp(keys.join("|"),"g");
+ }
+ let out=src.replace(rx,m=>map[m]??m)
+   .replace(/[̩̯̃]/g,"")
+   .replace(/\s*-\s*/g,"-")
+   .replace(/\s+/g," ")
+   .trim();
+ if(native==="ja" && window.wanakana?.toKatakana){
+  const latin=ipaToMappedTextLatinForJapanese(src);
+  try{out=window.wanakana.toKatakana(latin)}catch(e){}
+ }
+ return out;
 }
-function evaluateFreeDrawing(){
-  if(!modalTraceStrokes.length){setWriterResult('Noch keine Linien gezeichnet. Schreibe das Wort zuerst frei und starte dann erneut die Prüfung.','mid');return}
-  const c=$('wordTraceCanvas'),off=document.createElement('canvas');off.width=c.width;off.height=c.height;const ctx=off.getContext('2d');
-  ctx.clearRect(0,0,off.width,off.height);ctx.fillStyle='#000';let family=writingFontFamily();ctx.font=`${wordTraceFontSize(modalTraceWord)}px ${family}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction=courses[lang].rtl?'rtl':'ltr';ctx.fillText(modalTraceWord,off.width/2,off.height/2+10);
-  let pts=[];modalTraceStrokes.forEach(st=>{for(let i=0;i<st.length;i+=Math.max(1,Math.floor(st.length/60)))pts.push(st[i])});
-  let on=0;pts.forEach(p=>{if(pointNearGlyph(ctx,p.x,p.y,26))on++});const adherence=pts.length?on/pts.length:0;
-  const img=ctx.getImageData(0,0,off.width,off.height).data,targets=[];for(let y=20;y<off.height;y+=26)for(let x=20;x<off.width;x+=26){if(img[(y*off.width+x)*4+3]>40)targets.push({x,y})}
-  let covered=0;targets.forEach(t=>{let ok=false;for(const p of pts){const dx=p.x-t.x,dy=p.y-t.y;if(dx*dx+dy*dy<42*42){ok=true;break}}if(ok)covered++});const coverage=targets.length?covered/targets.length:0;
-  const score=Math.max(0,Math.min(100,Math.round((adherence*.65+coverage*.35)*100)));
-  setWriterResult(`${scoreLabel(score)} · Formtreffer ${score} %. Das ist eine Näherung der Form, keine kalligrafische Benotung.`,score>=85?'good':score>=65?'mid':'bad');
+function ipaToMappedTextLatinForJapanese(src){
+ const map={...IPA_BASE,"tʃ":"ch","dʒ":"j","ʃ":"sh","ʒ":"j","j":"y","x":"h","χ":"h","ç":"h","θ":"s","ð":"z","ɲ":"ny","ŋ":"n","ɾ":"r","ɹ":"r","ʁ":"r","ɜ":"a","ə":"a","æ":"a","ɔ":"o","ʊ":"u","ɪ":"i","y":"yu","ø":"e","œ":"e","ˈ":"","ˌ":""," ":" ",".":"-"};
+ const keys=Object.keys(map).sort((a,b)=>b.length-a.length).map(regexEscape);
+ const rx=new RegExp(keys.join("|"),"g");
+ return stripIPA(src).replace(rx,m=>map[m]??m).replace(/[̩̯̃]/g,"").replace(/\s+/g," ").trim();
 }
-function startHanziQuiz(){
-  const ch=currentWritingUnit(); if(!(window.HanziWriter&&isHanziChar(ch))){modalTraceMode='free';$$('.trace-stage-btn').forEach(x=>x.classList.toggle('active',x.dataset.traceMode==='free'));modalTraceShowGuide=false;drawModalTrace();setWriterResult('Schreibe die Form unten frei und tippe danach erneut auf „Schreibprüfung“. Die App vergleicht deine Linien dann mit der Vorlage.','mid');return}
-  clearWritingPlayback();clearStrokeNumbers();writerQuizActive=true;const hz=$('hanziWriterBox');hz.classList.remove('hidden');$('scriptFlowBox').classList.add('hidden');hz.innerHTML='';const host=document.createElement('div');host.style.width='220px';host.style.height='220px';hz.appendChild(host);
-  setWriterResult('Zeichne das Zeichen jetzt direkt im oberen Prüf-Feld. Die Reihenfolge und ungefähre Position der Striche werden geprüft.');
-  loadHanziData(ch).then(data=>{writerCharData=data;writerInstance=window.HanziWriter.create(host,ch,{width:220,height:220,padding:14,showCharacter:false,showOutline:true,showHintAfterMisses:2,highlightOnComplete:true,charDataLoader:(char,onComplete)=>onComplete(data)});let correct=0,totalMistakes=0;writerInstance.quiz({onMistake:d=>{totalMistakes=d.totalMistakes;setWriterResult(`Strich ${d.strokeNum+1}: noch einmal. Bisher ${d.totalMistakes} Korrektur${d.totalMistakes===1?'':'en'}.`,'mid')},onCorrectStroke:d=>{correct++;totalMistakes=d.totalMistakes;setWriterResult(`✓ Strich ${d.strokeNum+1} passt. Noch ${d.strokesRemaining} Strich${d.strokesRemaining===1?'':'e'}.`,'good')},onComplete:d=>{writerQuizActive=false;const strokes=(data.strokes||[]).length,score=Math.max(0,Math.min(100,Math.round(100*strokes/(strokes+(d.totalMistakes||0)))));setWriterResult(`${scoreLabel(score)} · ${strokes} Striche abgeschlossen · ${d.totalMistakes||0} Korrekturen · Übungswert ${score} %.`,score>=85?'good':score>=65?'mid':'bad');const w=(wordBanks[lang]||[]).find(x=>x.target===modalTraceWord);if(w&&score>=70){setMastery(w.id,'transferred');renderMastery()}}});}).catch(()=>{writerQuizActive=false;setWriterResult('Für dieses Zeichen konnte die Strichprüfung nicht geladen werden. Nutze die freie Formprüfung darunter.','mid')});
-}
-function startWritingQuiz(){
-  const ch=currentWritingUnit();
-  if((lang==='zh'||lang==='cmn'||lang==='ja')&&isHanziChar(ch)){startHanziQuiz();return}
-  if(modalTraceMode==='free'&&modalTraceStrokes.length){evaluateFreeDrawing();return}
-  modalTraceMode='free';$$('.trace-stage-btn').forEach(x=>x.classList.toggle('active',x.dataset.traceMode==='free'));modalTraceShowGuide=false;drawModalTrace();setWriterResult('Schreibe die Form unten jetzt frei. Wenn du fertig bist, tippe nochmals auf „Schreibprüfung“.','mid');
-}
-function drawCopybookBackground(){
-  const c=$('copybookCanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
-  const rows=5,rowH=c.height/rows;ctx.lineWidth=1;const word=modalTraceWord||'';ctx.font=`${lang==='ar'?74:lang==='ja'||lang==='zh'||lang==='cmn'?68:54}px ${writingFontFamily()}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction=courses[lang].rtl?'rtl':'ltr';
-  for(let r=0;r<rows;r++){const top=r*rowH;ctx.strokeStyle='rgba(100,115,130,.18)';ctx.beginPath();ctx.moveTo(0,top);ctx.lineTo(c.width,top);ctx.stroke();ctx.beginPath();ctx.moveTo(0,top+rowH);ctx.lineTo(c.width,top+rowH);ctx.stroke();ctx.setLineDash([7,8]);ctx.beginPath();ctx.moveTo(0,top+rowH/2);ctx.lineTo(c.width,top+rowH/2);ctx.stroke();ctx.setLineDash([]);
-    if((lang==='zh'||lang==='cmn'||lang==='ja')){for(let x=0;x<c.width;x+=rowH){ctx.strokeStyle='rgba(100,115,130,.10)';ctx.strokeRect(x,top,rowH,rowH)}}
-    if(copybookShowGuides&&r<3){ctx.globalAlpha=[.30,.15,.07][r];ctx.fillStyle='#56636e';const reps=(lang==='ar')?2:3;for(let k=0;k<reps;k++){const x=(k+.5)*c.width/reps;ctx.fillText(word,x,top+rowH/2+4)}ctx.globalAlpha=1}
+
+const PINYIN_ACCENTS={
+ "ā":["a",1],"á":["a",2],"ǎ":["a",3],"à":["a",4],
+ "ē":["e",1],"é":["e",2],"ě":["e",3],"è":["e",4],
+ "ī":["i",1],"í":["i",2],"ǐ":["i",3],"ì":["i",4],
+ "ō":["o",1],"ó":["o",2],"ǒ":["o",3],"ò":["o",4],
+ "ū":["u",1],"ú":["u",2],"ǔ":["u",3],"ù":["u",4],
+ "ǖ":["ü",1],"ǘ":["ü",2],"ǚ":["ü",3],"ǜ":["ü",4],"ü":["ü",0]
+};
+function pinyinToneNumbers(pinyin){
+ return String(pinyin||"").split(/\s+/).map(syl=>{
+  let tone=0,base="";
+  for(const ch of syl){
+   if(PINYIN_ACCENTS[ch]){base+=PINYIN_ACCENTS[ch][0];tone=PINYIN_ACCENTS[ch][1]||tone}
+   else base+=ch;
   }
-  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#5b7cfa';ctx.lineWidth=8;ctx.lineCap='round';ctx.lineJoin='round';copybookStrokes.forEach(st=>{if(!st.length)return;ctx.beginPath();ctx.moveTo(st[0].x,st[0].y);for(let i=1;i<st.length;i++)ctx.lineTo(st[i].x,st[i].y);ctx.stroke()});
-}
-function copybookPos(ev){const c=$('copybookCanvas'),r=c.getBoundingClientRect();return{x:(ev.clientX-r.left)*c.width/r.width,y:(ev.clientY-r.top)*c.height/r.height}}
-function initCopybook(){
- const c=$('copybookCanvas');c.addEventListener('pointerdown',ev=>{if($('copybookPanel').classList.contains('hidden'))return;ev.preventDefault();c.setPointerCapture(ev.pointerId);copybookActive=[copybookPos(ev)];copybookStrokes.push(copybookActive);drawCopybookBackground()});c.addEventListener('pointermove',ev=>{if(!copybookActive)return;ev.preventDefault();copybookActive.push(copybookPos(ev));drawCopybookBackground()});const end=()=>copybookActive=null;c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
- $('copybookClear').addEventListener('click',()=>{copybookStrokes=[];copybookActive=null;drawCopybookBackground()});$('copybookGuideToggle').addEventListener('click',()=>{copybookShowGuides=!copybookShowGuides;$('copybookGuideToggle').textContent=copybookShowGuides?'Vorlagen ausblenden':'Vorlagen einblenden';drawCopybookBackground()});
-}
-function toggleCopybook(){const p=$('copybookPanel'),show=p.classList.contains('hidden');p.classList.toggle('hidden',!show);if(show){copybookStrokes=[];copybookActive=null;copybookShowGuides=true;$('copybookGuideToggle').textContent='Vorlagen ausblenden';drawCopybookBackground();p.scrollIntoView({behavior:'smooth',block:'nearest'})}}
-function clearWritingPlayback(){ if(writingTimer){clearTimeout(writingTimer); writingTimer=null;} }
-function splitWritingUnits(word){
-  if(!word) return [];
-  return graphemeUnits(word).filter(ch=>!/[\s‌‍،,.!?;:]/.test(ch));
-}
-function isHanziChar(ch){return /[㐀-䶿一-鿿豈-﫿]/.test(ch)}
-function isKanaChar(ch){return /[぀-ゟ゠-ヿ]/.test(ch)}
-function isArabicChar(ch){return /[؀-ۿݐ-ݿࢠ-ࣿ]/.test(ch)}
-function currentWritingUnit(){return writingUnits[writingIndex]||modalTraceWord||""}
-function updateWritingNav(){
-  const total=Math.max(1,writingUnits.length||1), label=(lang==='ar'?'Buchstabe':'Zeichen');
-  $('writingCharPill').textContent=`${label} ${Math.min(writingIndex+1,total)} / ${total}`;
-  $('writingPrevChar').disabled=total<=1; $('writingNextChar').disabled=total<=1;
-}
-function setWritingInfo(txt){ $('writingCoachInfo').textContent=txt; }
-function writingFontFamily(){
-  if(lang==='ar') return '"Noto Naskh Arabic","Segoe UI",Tahoma,Arial,sans-serif';
-  if(lang==='zh'||lang==='cmn') return '"Noto Sans CJK SC","Microsoft YaHei","PingFang SC","Hiragino Sans GB","Segoe UI",sans-serif';
-  if(lang==='ja') return '"Noto Sans JP","Yu Gothic","Hiragino Kaku Gothic ProN","Segoe UI",sans-serif';
-  return '"Segoe UI",Arial,sans-serif';
-}
-function renderFallbackFlow(word, hint, rtl=false){
-  clearWritingPlayback();
-  $('hanziWriterBox').classList.add('hidden');
-  const box=$('scriptFlowBox'), wordBox=$('scriptFlowWord'), hintBox=$('scriptFlowHint'), arrow=$('scriptFlowArrow');
-  box.classList.remove('hidden'); wordBox.innerHTML=''; wordBox.className='script-flow-word'+(rtl?' rtl':''); wordBox.style.fontFamily=writingFontFamily();
-  hintBox.textContent=hint; arrow.textContent=rtl?'⇢ rechts nach links ⇠':'links nach rechts';
-  const units=splitWritingUnits(word); if(!units.length) return;
-  const seq=rtl?units.slice():units.slice();
-  seq.forEach((ch,idx)=>{const s=document.createElement('span');s.className='script-flow-unit';const n=document.createElement('span');n.className='flow-num';n.textContent=String(idx+1);const g=document.createElement('span');g.textContent=ch;s.append(n,g);wordBox.appendChild(s)});
-  let i=0; const spans=[...wordBox.children];
-  function step(){ spans.forEach((sp,idx)=>{sp.classList.toggle('revealed', idx<=i); sp.classList.toggle('active', idx===i)}); if(i<spans.length-1){i++; writingTimer=setTimeout(step, rtl?700:620)} }
-  step();
-}
-function loadHanziData(ch){
-  const url=`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(ch)}.json`;
-  return fetch(url).then(r=>{if(!r.ok) throw new Error('no-data'); return r.json()});
-}
-function renderHanziWriterChar(ch){
-  clearWritingPlayback();
-  const hz=$('hanziWriterBox'); hz.classList.remove('hidden'); $('scriptFlowBox').classList.add('hidden'); hz.innerHTML='';
-  const host=document.createElement('div'); host.style.width='220px'; host.style.height='220px'; hz.appendChild(host);
-  setWritingInfo(`Zeichen ${writingIndex+1} von ${writingUnits.length}: erst die Strichfolge ansehen, dann auf den Nachzeichnungsstufen üben.`);
-  if(!(window.HanziWriter && isHanziChar(ch))){
-    renderFallbackFlow(ch, isKanaChar(ch)?'Für dieses japanische Kana steht kein Strichdatensatz bereit. Die App zeigt dir deshalb die Form groß und du kannst sie direkt nachfahren.':'Für dieses Zeichen steht gerade keine Strichfolge bereit. Du kannst es direkt groß nachfahren.', false); return;
-  }
-  loadHanziData(ch).then(data=>{
-    writerCharData=data;
-    writerInstance=window.HanziWriter.create(host, ch, {width:220,height:220,padding:14,strokeAnimationSpeed:1,delayBetweenStrokes:180,delayBetweenLoops:900,outlineColor:'#c7d1dd',strokeColor:'#304a91',radicalColor:'#d84f4f',showOutline:true,charDataLoader:(char,onComplete)=>onComplete(data)});
-    renderStrokeNumbers(data); writerInstance.animateCharacter();
-  }).catch(()=>{writerCharData=null;renderFallbackFlow(ch, 'Für dieses Zeichen steht gerade keine Strichfolge-Datei bereit. Du kannst die Form aber sofort nachfahren.', false)});
-}
-function renderArabicFlow(word){
-  $('scriptFlowBox').classList.toggle('hide-flow-numbers',!strokeNumbersVisible);
-  renderFallbackFlow(word, 'Arabisch schreibt sich von rechts nach links. Die App zeigt den Schreibfluss des Wortes und die verbundenen Buchstabenformen. Anschließend kannst du das Wort selbst nachfahren.', true);
-  setWritingInfo('Arabisch: erst den Schreibfluss beobachten, dann die verbundene Form selbst schreiben.');
-}
-function showWritingCoach(){
-  writingUnits=splitWritingUnits(modalTraceWord); writingIndex=0; updateWritingNav(); replayWritingCoach();
-}
-function replayWritingCoach(){
-  const unit=currentWritingUnit();
-  if(lang==='ar'){ renderArabicFlow(modalTraceWord); }
-  else if(lang==='zh'||lang==='cmn'||lang==='ja'){
-    if(isHanziChar(unit)) renderHanziWriterChar(unit); else renderFallbackFlow(unit, isKanaChar(unit)?'Dieses Kana wird groß gezeigt. Beobachte die Form und übe sie danach direkt auf der Nachzeichenfläche.':'Zeichen groß ansehen und direkt nachfahren.', false);
-  } else {
-    renderFallbackFlow(modalTraceWord, 'Dieses Wort kann direkt nachgefahren werden.', false);
-  }
-}
-function supportsWordTrace(code=lang){return SCRIPT_TRACE_LANGS.has(code)}
-function wordTraceFontSize(word){
-  const len=(word||"").length;
-  if(lang==="ar") return len>8?180:len>4?220:300;
-  if(lang==="zh"||lang==="cmn") return len>4?170:220;
-  if(lang==="ja") return len>8?135:len>4?180:220;
-  return 220;
-}
-function openWordTrace(word,meta=""){
-  if(!supportsWordTrace(lang) || !word) return;
-  modalTraceWord=String(word).trim(); modalTraceMeta=meta||""; modalTraceStrokes=[]; modalTraceActive=null; modalTraceShowGuide=true; modalTraceMode="look"; writerCharData=null; strokeNumbersVisible=(lang==='zh'||lang==='cmn'||lang==='ja'||lang==='ar'); writerQuizActive=false; copybookStrokes=[]; copybookActive=null; copybookShowGuides=true; $('copybookPanel').classList.add('hidden'); setWriterResult('Noch keine Schreibprüfung gestartet.'); $('strokeNumbersBtn').textContent=strokeNumbersVisible?'# Nummern ausblenden':'# Strichnummern';
-  const m=$("wordTraceModal"); m.classList.remove("hidden"); m.setAttribute("aria-hidden","false"); document.body.classList.add("modal-open");
-  const d=$("wordTraceDisplay"); d.textContent=modalTraceWord; d.className="trace-modal-word"+(courses[lang].rtl?" rtl":""); if(courses[lang].rtl) d.dir="rtl"; else d.removeAttribute("dir");
-  $("wordTraceMeta").textContent=modalTraceMeta || ""; $("wordTraceGuideToggle").textContent="Vorlage ausblenden"; $$(".trace-stage-btn").forEach(x=>x.classList.toggle("active",x.dataset.traceMode==="look")); drawModalTrace(); showWritingCoach();
-}
-function closeWordTrace(){ clearWritingPlayback(); try{if(writerInstance&&writerQuizActive)writerInstance.cancelQuiz()}catch(e){} writerQuizActive=false; writerInstance=null; writerCharData=null; clearStrokeNumbers(); const m=$("wordTraceModal"); m.classList.add("hidden"); m.setAttribute("aria-hidden","true"); document.body.classList.remove("modal-open"); }
-function modalTracePos(ev){ const c=$("wordTraceCanvas"),r=c.getBoundingClientRect(); return {x:(ev.clientX-r.left)*c.width/r.width,y:(ev.clientY-r.top)*c.height/r.height}; }
-function drawModalTrace(){
-  const c=$("wordTraceCanvas"),ctx=c.getContext("2d");
-  ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle="#eef3f7"; ctx.fillRect(0,0,c.width,c.height);
-  ctx.strokeStyle="rgba(90,105,120,.16)"; ctx.lineWidth=2; ctx.setLineDash([10,12]); ctx.beginPath(); ctx.moveTo(48,c.height/2); ctx.lineTo(c.width-48,c.height/2); ctx.stroke(); ctx.setLineDash([]);
-  if(modalTraceShowGuide && modalTraceWord){
-    let family='"Segoe UI", Arial, sans-serif';
-    if(lang==="ar") family='"Noto Naskh Arabic","Segoe UI",Tahoma,Arial,sans-serif';
-    else if(lang==="zh"||lang==="cmn") family='"Noto Sans CJK SC","Microsoft YaHei","PingFang SC","Hiragino Sans GB","Segoe UI",sans-serif';
-    else if(lang==="ja") family='"Noto Sans JP","Yu Gothic","Hiragino Kaku Gothic ProN","Segoe UI",sans-serif';
-    ctx.font=`${wordTraceFontSize(modalTraceWord)}px ${family}`; ctx.textAlign='center'; ctx.textBaseline='middle'; const alpha=modalTraceMode==='check'?.72:modalTraceMode==='look'?.34:modalTraceMode==='trace'?.20:modalTraceMode==='faint'?.07:0; ctx.fillStyle=`rgba(76,91,105,${alpha})`; ctx.direction=courses[lang].rtl?'rtl':'ltr';
-    if(alpha>0)ctx.fillText(modalTraceWord,c.width/2,c.height/2+10);
-  }
-  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#5b7cfa"; ctx.lineWidth=12; ctx.lineCap="round"; ctx.lineJoin="round";
-  modalTraceStrokes.forEach(st=>{ if(!st.length) return; ctx.beginPath(); ctx.moveTo(st[0].x,st[0].y); for(let i=1;i<st.length;i++) ctx.lineTo(st[i].x,st[i].y); ctx.stroke(); });
-}
-function initWordTraceCanvas(){
- const c=$("wordTraceCanvas");
- c.addEventListener("pointerdown",ev=>{ if($("wordTraceModal").classList.contains("hidden")||modalTraceMode==="look"||modalTraceMode==="check") return; ev.preventDefault(); c.setPointerCapture(ev.pointerId); modalTraceActive=[modalTracePos(ev)]; modalTraceStrokes.push(modalTraceActive); drawModalTrace(); });
- c.addEventListener("pointermove",ev=>{ if(!modalTraceActive) return; ev.preventDefault(); modalTraceActive.push(modalTracePos(ev)); drawModalTrace(); });
- const end=()=>{ modalTraceActive=null; }; c.addEventListener("pointerup",end); c.addEventListener("pointercancel",end);
- $("wordTraceUndo").addEventListener("click",()=>{ modalTraceStrokes.pop(); modalTraceActive=null; drawModalTrace(); });
- $("wordTraceClear").addEventListener("click",()=>{ modalTraceStrokes=[]; modalTraceActive=null; drawModalTrace(); });
- $("wordTraceSpeak").addEventListener("click",()=>{ if(modalTraceWord) speech(modalTraceWord); });
- $("wordTraceGuideToggle").addEventListener("click",()=>{ modalTraceShowGuide=!modalTraceShowGuide; $("wordTraceGuideToggle").textContent=modalTraceShowGuide?"Vorlage ausblenden":"Vorlage einblenden"; drawModalTrace(); });
- 
- $$(".trace-stage-btn").forEach(b=>b.addEventListener("click",()=>{modalTraceMode=b.dataset.traceMode;$$(`.trace-stage-btn`).forEach(x=>x.classList.toggle("active",x===b));if(modalTraceMode==="free")modalTraceShowGuide=false;else modalTraceShowGuide=true;drawModalTrace();if(modalTraceMode==="check"&&modalTraceWord){const w=(wordBanks[lang]||[]).find(x=>x.target===modalTraceWord);if(w){setMastery(w.id,"transferred");renderMastery()}}}));
- $("strokeNumbersBtn").addEventListener("click",()=>{
-   strokeNumbersVisible=!strokeNumbersVisible;
-   $("strokeNumbersBtn").textContent=strokeNumbersVisible?'# Nummern ausblenden':'# Strichnummern';
-   if(lang==='ar'){$('scriptFlowBox').classList.toggle('hide-flow-numbers',!strokeNumbersVisible);replayWritingCoach();}
-   else if(writerCharData)renderStrokeNumbers(writerCharData);
-   else replayWritingCoach();
+  return {base,tone};
  });
- $("writingQuizBtn").addEventListener("click",startWritingQuiz);
- $("copybookBtn").addEventListener("click",toggleCopybook);
- $("writingReplay").addEventListener("click",replayWritingCoach);
- $("writingPrevChar").addEventListener("click",()=>{ if(writingUnits.length>1){ writingIndex=(writingIndex-1+writingUnits.length)%writingUnits.length; updateWritingNav(); replayWritingCoach(); }});
- $("writingNextChar").addEventListener("click",()=>{ if(writingUnits.length>1){ writingIndex=(writingIndex+1)%writingUnits.length; updateWritingNav(); replayWritingCoach(); }});
- $("closeWordTrace").addEventListener("click",closeWordTrace);
- $("wordTraceModal").addEventListener("click",ev=>{ if(ev.target.id==="wordTraceModal") closeWordTrace(); });
- window.addEventListener("keydown",ev=>{ if(ev.key==="Escape" && !$("wordTraceModal").classList.contains("hidden")) closeWordTrace(); });
+}
+const PINYIN_INITIALS={
+ de:[["zh","dsch"],["ch","tsch"],["sh","sch"],["q","tsch"],["x","sch"],["j","dsch"],["c","ts"],["z","ds"],["r","r"],["y","j"],["w","u"]],
+ en:[["zh","j"],["ch","ch"],["sh","sh"],["q","ch"],["x","sh"],["j","j"],["c","ts"],["z","dz"],["r","r"],["y","y"],["w","w"]],
+ tr:[["zh","c"],["ch","ç"],["sh","ş"],["q","ç"],["x","ş"],["j","c"],["c","ts"],["z","dz"],["r","r"],["y","y"],["w","v"]],
+ it:[["zh","gi"],["ch","ci"],["sh","sci"],["q","ci"],["x","sci"],["j","gi"],["c","z"],["z","dz"],["r","r"],["y","i"],["w","u"]],
+ es:[["zh","y"],["ch","ch"],["sh","sh"],["q","ch"],["x","sh"],["j","y"],["c","ts"],["z","ds"],["r","r"],["y","y"],["w","u"]],
+ ro:[["zh","gi"],["ch","ci"],["sh","ș"],["q","ci"],["x","ș"],["j","gi"],["c","ț"],["z","dz"],["r","r"],["y","i"],["w","u"]],
+ fr:[["zh","dj"],["ch","tch"],["sh","ch"],["q","tch"],["x","ch"],["j","dj"],["c","ts"],["z","dz"],["r","r"],["y","y"],["w","ou"]],
+ pt:[["zh","dj"],["ch","tch"],["sh","ch"],["q","tch"],["x","ch"],["j","dj"],["c","ts"],["z","dz"],["r","r"],["y","i"],["w","u"]],
+ nl:[["zh","dzj"],["ch","tsj"],["sh","sj"],["q","tsj"],["x","sj"],["j","dzj"],["c","ts"],["z","dz"],["r","r"],["y","j"],["w","w"]],
+ pl:[["zh","dż"],["ch","cz"],["sh","sz"],["q","cz"],["x","ś"],["j","dź"],["c","c"],["z","dz"],["r","r"],["y","j"],["w","ł"]],
+ cs:[["zh","dž"],["ch","č"],["sh","š"],["q","č"],["x","š"],["j","dž"],["c","c"],["z","dz"],["r","r"],["y","j"],["w","u"]],
+ hu:[["zh","dzs"],["ch","cs"],["sh","s"],["q","cs"],["x","s"],["j","dzs"],["c","c"],["z","dz"],["r","r"],["y","j"],["w","v"]],
+ fi:[["zh","dž"],["ch","tš"],["sh","š"],["q","tš"],["x","š"],["j","dž"],["c","ts"],["z","dz"],["r","r"],["y","j"],["w","v"]]
+};
+function adaptPinyin(pinyin,native=nativeLanguage){
+ const syllables=pinyinToneNumbers(pinyin);
+ if(native==="zh"||native==="cmn")return pinyin;
+ const adapt=(base)=>{
+  let s=base;
+  const arr=PINYIN_INITIALS[native]||PINYIN_INITIALS.en;
+  for(const [from,to] of arr){
+   if(s.startsWith(from)){s=to+s.slice(from.length);break}
+  }
+  if(native==="de")s=s.replace(/ao/g,"au").replace(/ou/g,"ou").replace(/ang/g,"ang").replace(/ong/g,"ung");
+  return s;
+ };
+ let latin=syllables.map(x=>adapt(x.base)+(x.tone?`⁽${x.tone}⁾`:"")).join(" ");
+ if(native==="ru"||native==="uk"||native==="bg"){
+  return latinToCyrillicCue(latin,native);
+ }
+ if(native==="el")return latinToGreekCue(latin);
+ if(native==="ar")return latinToArabicCue(latin);
+ if(native==="ja"&&window.wanakana?.toKatakana){
+  try{return window.wanakana.toKatakana(latin.replace(/⁽[1-4]⁾/g,""))}catch(e){}
+ }
+ return latin;
+}
+function adaptRomaji(romaji,native=nativeLanguage){
+ let s=String(romaji||"").trim();
+ if(native==="ja")return window.wanakana?.toKatakana?window.wanakana.toKatakana(s):s;
+ const maps={
+  de:[["shi","schi"],["chi","tschi"],["ji","dschi"],["tsu","tsu"],["sha","scha"],["sho","scho"],["shu","schu"],["yo","jo"],["ya","ja"],["yu","ju"]],
+  tr:[["shi","şi"],["chi","çi"],["ji","ci"],["sha","şa"],["sho","şo"],["shu","şu"],["yo","yo"],["ya","ya"],["yu","yu"]],
+  pl:[["shi","szi"],["chi","czi"],["ji","dżi"],["sha","sza"],["sho","szo"],["shu","szu"],["yo","jo"],["ya","ja"],["yu","ju"]],
+  cs:[["shi","ši"],["chi","či"],["ji","dži"],["sha","ša"],["sho","šo"],["shu","šu"],["yo","jo"],["ya","ja"],["yu","ju"]],
+  hu:[["shi","si"],["chi","csi"],["ji","dzsi"],["sha","sa"],["sho","so"],["shu","su"],["yo","jo"],["ya","ja"],["yu","ju"]],
+  ro:[["shi","și"],["chi","ci"],["ji","gi"],["sha","șa"],["sho","șo"],["shu","șu"]],
+  fr:[["shi","chi"],["chi","tchi"],["ji","dji"]],
+  nl:[["shi","sji"],["chi","tsji"],["ji","dzji"]],
+  fi:[["shi","ši"],["chi","tši"],["ji","dži"]]
+ };
+ for(const [a,b] of (maps[native]||[]))s=s.replaceAll(a,b);
+ if(native==="ru"||native==="uk"||native==="bg")return latinToCyrillicCue(s,native);
+ if(native==="el")return latinToGreekCue(s);
+ if(native==="ar")return latinToArabicCue(s);
+ return s;
+}
+function latinToCyrillicCue(s,native){
+ const uk=native==="uk";
+ const map=[
+  ["shch","щ"],["sch","ш"],["sh","ш"],["zh","ж"],["ch","ч"],["dzh","дж"],["dz","дз"],["kh","х"],["ts","ц"],
+  ["ya","я"],["yu","ю"],["yo","ё"],["ye",uk?"є":"е"],["yi",uk?"ї":"и"],
+  ["a","а"],["b","б"],["v","в"],["g",uk?"ґ":"г"],["d","д"],["e","е"],["z","з"],["i",uk?"і":"и"],["y","й"],
+  ["k","к"],["l","л"],["m","м"],["n","н"],["o","о"],["p","п"],["r","р"],["s","с"],["t","т"],["u","у"],["f","ф"],["h",uk?"г":"х"],["j","ж"],["w","у"],["c","к"],["q","к"],["x","кс"]
+ ];
+ let out=s.toLowerCase();
+ for(const [a,b] of map)out=out.replaceAll(a,b);
+ return out;
+}
+function latinToGreekCue(s){
+ const map=[["sh","σ"],["ch","τσ"],["zh","ζ"],["j","τζ"],["th","θ"],["dh","δ"],["kh","χ"],["ts","τσ"],["dz","τζ"],["ny","νι"],["ng","νγκ"],
+ ["a","α"],["b","μπ"],["v","β"],["g","γκ"],["d","ντ"],["e","ε"],["z","ζ"],["i","ι"],["y","ι"],["k","κ"],["l","λ"],["m","μ"],["n","ν"],["o","ο"],["p","π"],["r","ρ"],["s","σ"],["t","τ"],["u","ου"],["f","φ"],["h","χ"],["w","ου"]];
+ let out=s.toLowerCase();for(const [a,b] of map)out=out.replaceAll(a,b);return out;
+}
+function latinToArabicCue(s){
+ const map=[["sh","ش"],["ch","تش"],["zh","ژ"],["j","ج"],["th","ث"],["dh","ذ"],["kh","خ"],["gh","غ"],["ts","تس"],["dz","دز"],["ny","ني"],["ng","نغ"],
+ ["a","ا"],["b","ب"],["v","ڤ"],["g","گ"],["d","د"],["e","ي"],["z","ز"],["i","ي"],["y","ي"],["k","ك"],["l","ل"],["m","م"],["n","ن"],["o","و"],["p","پ"],["r","ر"],["s","س"],["t","ت"],["u","و"],["f","ف"],["h","ه"],["w","و"]];
+ let out=s.toLowerCase();for(const [a,b] of map)out=out.replaceAll(a,b);return out;
+}
+function findLanguageHeading(doc,languageName){
+ const headings=[...doc.querySelectorAll("h2,h3")];
+ let h=headings.find(x=>(x.id||"")===languageName);
+ if(!h)h=headings.find(x=>x.textContent.trim().replace(/\[.*?\]/g,"").trim()===languageName);
+ return h||null;
+}
+function findIPAInSection(doc,languageName){
+ const heading=findLanguageHeading(doc,languageName);
+ if(!heading)return "";
+ const tag=heading.tagName;
+ let node=heading.nextElementSibling;
+ while(node){
+  if(node.tagName===tag)break;
+  const ipa=node.matches?.(".IPA")?node:node.querySelector?.(".IPA");
+  if(ipa){const txt=cleanIPA(ipa.textContent);if(txt)return txt}
+  node=node.nextElementSibling;
+ }
+ return "";
+}
+async function wiktionaryIPA(word,code=lang){
+ const key=rawIpaKey(code,word);
+ if(rawIpaCache[key])return rawIpaCache[key];
+ const languageName=WIKI_LANG_NAMES[code];
+ if(!languageName)return "";
+ const title=encodeURIComponent(String(word||"").trim().replace(/ /g,"_"));
+ if(!title)return "";
+ try{
+  const url=`https://en.wiktionary.org/w/rest.php/v1/page/${title}/html`;
+  const r=await fetch(url,{headers:{"Accept":"text/html"}});
+  if(!r.ok)return "";
+  const source=await r.text();
+  const doc=new DOMParser().parseFromString(source,"text/html");
+  const ipa=findIPAInSection(doc,languageName);
+  if(ipa){rawIpaCache[key]=ipa;savePronunciationCache()}
+  return ipa;
+ }catch(e){return ""}
+}
+function instantNativePronunciation(word,code=lang){
+ const text=String(word||"").trim();
+ if(!text)return null;
+ try{
+  if((code==="zh"||code==="cmn")&&window.pinyinPro?.pinyin){
+   const p=window.pinyinPro.pinyin(text,{toneType:"symbol",type:"string"});
+   if(p&&p!==text)return {value:adaptPinyin(p,nativeLanguage),source:"pinyin"};
+  }
+ }catch(e){}
+ try{
+  if(code==="ja"&&onlyKana(text)&&window.wanakana?.toRomaji){
+   const r=window.wanakana.toRomaji(text);
+   if(r&&r!==text)return {value:adaptRomaji(r,nativeLanguage),source:"romaji"};
+  }
+ }catch(e){}
+ return null;
+}
+async function writtenPronunciation(word,code=lang){
+ const instant=instantNativePronunciation(word,code);
+ if(instant?.value)return instant;
+ const key=pronKey(code,word,nativeLanguage);
+ if(pronunciationCache[key])return pronunciationCache[key];
+ const ipa=await wiktionaryIPA(word,code);
+ if(!ipa)return {value:"",source:""};
+ const value=ipaToMappedText(ipa,nativeLanguage);
+ const result={value,source:"ipa"};
+ if(value){pronunciationCache[key]=result;savePronunciationCache()}
+ return result;
+}
+function setPronunciationElement(el,result){
+ if(!el)return;
+ const ui=pronUI();
+ el.classList.remove("loading","unavailable");
+ el.dir=nativeLanguage==="ar"?"rtl":"ltr";
+ if(result?.value){
+  el.innerHTML=`<b>${escapeHtml(ui.label)}:</b> ${escapeHtml(result.value)}`;
+ }else{
+  el.classList.add("unavailable");
+  el.innerHTML=`<b>${escapeHtml(ui.label)}:</b> ${escapeHtml(ui.listen)}`;
+ }
+}
+async function loadPronunciationElement(el,word,code=lang){
+ if(!el||el.dataset.pronLoaded==="1")return;
+ el.dataset.pronLoaded="1";
+ const ui=pronUI();
+ const immediate=instantNativePronunciation(word,code);
+ if(immediate){setPronunciationElement(el,immediate);return}
+ el.classList.add("loading");
+ el.innerHTML=`<b>${escapeHtml(ui.label)}:</b> ${escapeHtml(ui.loading)}`;
+ const result=await writtenPronunciation(word,code);
+ setPronunciationElement(el,result);
+}
+function initPronunciationObserver(){
+ if(pronunciationObserver)return;
+ if("IntersectionObserver" in window){
+  pronunciationObserver=new IntersectionObserver(entries=>{
+   entries.forEach(entry=>{
+    if(!entry.isIntersecting)return;
+    pronunciationObserver.unobserve(entry.target);
+    const w=pronElementWords.get(entry.target);
+    if(w)loadPronunciationElement(entry.target,w.target,w.code);
+   })
+  },{rootMargin:"240px 0px"});
+ }
+}
+function attachPronunciation(el,word,code=lang){
+ initPronunciationObserver();
+ const immediate=instantNativePronunciation(word,code);
+ if(immediate){setPronunciationElement(el,immediate);el.dataset.pronLoaded="1";return}
+ const cached=pronunciationCache[pronKey(code,word,nativeLanguage)];
+ if(cached){setPronunciationElement(el,cached);el.dataset.pronLoaded="1";return}
+ pronElementWords.set(el,{target:word,code});
+ if(pronunciationObserver)pronunciationObserver.observe(el);
+ else loadPronunciationElement(el,word,code);
 }
 
 function levelFor(i){return LEVELS.find(x=>i>=x.from&&i<=x.to)||LEVELS[LEVELS.length-1]}
@@ -1714,6 +1833,7 @@ function renderWordField(){
   const top=document.createElement("div");top.className="word-top";
   const tx=document.createElement("div"),tw=document.createElement("div");tw.className="word-target"+(courses[lang].rtl?" rtl":"");tw.textContent=w.target;if(courses[lang].rtl)tw.dir="rtl";if(supportsWordTrace(lang)){tw.classList.add("script-clickable");tw.title="Groß zum Nachzeichnen öffnen";tw.tabIndex=0;tw.setAttribute("role","button");tw.addEventListener("click",()=>openWordTrace(w.target,`→ ${w.de}${w.sense?" · "+w.sense:""}`));tw.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();openWordTrace(w.target,`→ ${w.de}${w.sense?" · "+w.sense:""}`)}});}tx.appendChild(tw);
   if(show){const de=document.createElement("div");de.className="word-de";de.textContent="→ "+w.de;tx.appendChild(de)}
+  const pron=document.createElement("div");pron.className="pronunciation-line loading";const pui=pronUI();pron.innerHTML=`<b>${escapeHtml(pui.label)}:</b> ${escapeHtml(pui.loading)}`;tx.appendChild(pron);attachPronunciation(pron,w.target,lang);
   const meta=document.createElement("div");meta.className="word-meta";meta.textContent=shortMeta(w);tx.appendChild(meta);
   const sp=document.createElement("button");sp.type="button";sp.className="sound";sp.textContent="🔊";sp.addEventListener("click",()=>{speech(w.target);setMastery(w.id,"heard");renderMastery()});top.append(tx,sp);card.appendChild(top);
   const ac=document.createElement("div");ac.className="word-actions";

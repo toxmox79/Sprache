@@ -8,7 +8,7 @@
   "display": "standalone",
   "background_color": "#e8eef3",
   "theme_color": "#e8eef3",
-  "description": "Birkenbihl-orientierte Lern-PWA mit 24 Sprachen, Dekodierung, Hörtraining, Festigung und Schriftstudio.",
+  "description": "Birkenbihl-orientierte Lern-PWA mit 24 Sprachen und Aussprachehilfe in der gewählten Muttersprache.",
   "icons": [
     {
       "src": "icon-192.png",
