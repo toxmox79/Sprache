@@ -422,7 +422,7 @@ body.modal-open{overflow:hidden}
             </div>
           </div>
           <div id="wordFieldInfo" class="vocab-progress"></div>
-          <div class="pronunciation-help"><b>Aussprache:</b> Die Lautung wird so umgeschrieben, dass sie in deiner gewählten Muttersprache möglichst intuitiv lesbar ist. Die Schreibweise ist eine Lernhilfe – mit 🔊 hörst du immer den maßgeblichen Originalklang.</div>
+          <div class="pronunciation-help"><b>Klangschrift:</b> Sie zeigt möglichst lesbar, wie das Wort klingt – angepasst an deine Muttersprache. Betonung wird hervorgehoben (z. B. KA-nis). Steht nur „—“, gibt es keine ausreichend sichere Umschrift; 🔊 bleibt immer die Referenz.</div>
           <div id="wordGrid" class="word-grid"></div>
           <div class="source-note">Die große Wortbank wird beim ersten Online-Aufruf aus dem offenen Polyglot-Dictionaries/Wiktionary-Datensatz geladen und anschließend vom Browser zwischengespeichert. Die handgebauten Dekodier- und Strukturlektionen funktionieren auch ohne Wortbank.</div>
         </section>
@@ -1303,7 +1303,7 @@ const essentialRank=new Map(ESSENTIAL.map((w,i)=>[w,i]));
 const wordBanks={}, bankPromises={}, wordGermanVisible={}, translationLookups={};
 
 /* ===== Aussprache in der gewählten Muttersprache ===== */
-const PRON_CACHE_KEY="bb_pronunciation_native_v2";
+const PRON_CACHE_KEY="bb_pronunciation_native_v3";
 const RAW_IPA_CACHE_KEY="bb_pronunciation_raw_ipa_v1";
 let pronunciationCache={},rawIpaCache={};
 try{pronunciationCache=JSON.parse(localStorage.getItem(PRON_CACHE_KEY)||"{}")||{}}catch(e){pronunciationCache={}}
@@ -1317,7 +1317,7 @@ const WIKI_LANG_NAMES={
 };
 
 const PRON_UI={
- de:{label:"Aussprache",loading:"wird geladen …",listen:"über 🔊 anhören"},
+ de:{label:"Klangschrift",loading:"wird ermittelt …",listen:"keine sichere Klangschrift"},
  en:{label:"Pronunciation",loading:"loading …",listen:"listen with 🔊"},
  tr:{label:"Telaffuz",loading:"yükleniyor …",listen:"🔊 ile dinle"},
  it:{label:"Pronuncia",loading:"caricamento …",listen:"ascolta con 🔊"},
@@ -1388,7 +1388,7 @@ const IPA_BASE={
 const IPA_OVERRIDES={
  de:{
   "tʃ":"tsch","dʒ":"dsch","ts":"z","ʃ":"sch","ʒ":"sch","ɕ":"sch","ʑ":"dsch","j":"j","w":"u",
-  "v":"w","θ":"ß","ð":"d","x":"ch","χ":"ch","ç":"ch","ɲ":"nj","ŋ":"ng","s":"ss","z":"s",
+  "v":"w","θ":"th","ð":"dh","x":"ch","χ":"ch","ç":"ch","ɲ":"nj","ŋ":"ng","s":"s","z":"s",
   "ɪ":"i","ɛ":"ä","æ":"ä","ɑ":"a","ɒ":"o","ɔ":"o","ʊ":"u","ə":"e","ɜ":"ö","ɚ":"ör","ʌ":"a"
  },
  en:{
@@ -1475,20 +1475,41 @@ function mapForNative(code){
  return {...IPA_BASE,...(IPA_OVERRIDES[code]||{})};
 }
 const ipaRegexCache={};
-function ipaToMappedText(ipa,native=nativeLanguage){
- let src=stripIPA(ipa);
- if(!src)return "";
+function ipaMapPiece(src,native){
  const map=mapForNative(native);
  let rx=ipaRegexCache[native];
  if(!rx){
-  const keys=Object.keys(map).sort((a,b)=>b.length-a.length).map(regexEscape);
+  const keys=Object.keys(map).filter(k=>k!=="ˈ"&&k!=="ˌ").sort((a,b)=>b.length-a.length).map(regexEscape);
   rx=ipaRegexCache[native]=new RegExp(keys.join("|"),"g");
  }
- let out=src.replace(rx,m=>map[m]??m)
-   .replace(/[̩̯̃]/g,"")
-   .replace(/\s*-\s*/g,"-")
-   .replace(/\s+/g," ")
-   .trim();
+ return String(src||"").replace(rx,m=>map[m]??m).replace(/[̩̯̃]/g,"").replace(/\s+/g," ").trim();
+}
+function emphasizeStressStart(s){
+ const vowels="aeiouyäöüAEIOUYÄÖÜαεηιουωΑΕΗΙΟΥΩаеёиоуыэюяіїєАЕЁИОУЫЭЮЯІЇЄ";
+ const chars=[...String(s||"")];
+ let vowel=-1;
+ for(let i=0;i<chars.length;i++){if(vowels.includes(chars[i])){vowel=i;break}}
+ if(vowel<0)return String(s||"").toUpperCase();
+ let end=vowel+1;
+ while(end<chars.length&&vowels.includes(chars[end]))end++;
+ return chars.slice(0,end).join("").toUpperCase()+chars.slice(end).join("");
+}
+function ipaToMappedText(ipa,native=nativeLanguage){
+ let src=stripIPA(ipa);
+ if(!src)return "";
+ const stressPos=src.indexOf("ˈ");
+ src=src.replace(/ˈ|ˌ/g,"");
+ let out;
+ if(stressPos>=0){
+  const raw=stripIPA(ipa).replace(/ˌ/g,"");
+  const parts=raw.split("ˈ");
+  const before=ipaMapPiece(parts[0]||"",native);
+  const after=ipaMapPiece(parts.slice(1).join("")||"",native);
+  out=(before?before.replace(/-$/,"")+"-":"")+emphasizeStressStart(after);
+ }else{
+  out=ipaMapPiece(src,native);
+ }
+ out=out.replace(/\s*-\s*/g,"-").replace(/\s+/g," ").replace(/^-|-$/g,"").trim();
  if(native==="ja" && window.wanakana?.toKatakana){
   const latin=ipaToMappedTextLatinForJapanese(src);
   try{out=window.wanakana.toKatakana(latin)}catch(e){}
@@ -1637,9 +1658,142 @@ async function wiktionaryIPA(word,code=lang){
   return ipa;
  }catch(e){return ""}
 }
+
+function greekGraphemes(text){
+ const out=[];
+ for(const ch of String(text||"").normalize("NFD")){
+  if(/\p{M}/u.test(ch)){
+   if(out.length&&(ch==="\u0301"||ch==="\u0342"))out[out.length-1].stress=true;
+   continue;
+  }
+  if(/[\u0370-\u03ff\u1f00-\u1fff]/u.test(ch))out.push({b:ch.toLocaleLowerCase("el"),stress:false});
+ }
+ return out;
+}
+function greekFrontVowelAt(g,i){
+ const b=g[i]?.b||"",n=g[i+1]?.b||"",pair=b+n;
+ return b==="ε"||b==="η"||b==="ι"||b==="υ"||pair==="αι"||pair==="ει"||pair==="οι"||pair==="υι";
+}
+function greekPhones(text){
+ const g=greekGraphemes(text),phones=[];
+ const V=(s,stress=false)=>phones.push({s,v:true,stress});
+ const C=s=>phones.push({s,v:false,stress:false});
+ const voiceless=new Set(["θ","κ","ξ","π","σ","ς","τ","φ","χ","ψ"]);
+ for(let i=0;i<g.length;){
+  const b=g[i].b,n=g[i+1]?.b||"",pair=b+n,stress=!!(g[i].stress||g[i+1]?.stress);
+  if(pair==="αι"){V("e",stress);i+=2;continue}
+  if(pair==="ει"||pair==="οι"||pair==="υι"){V("i",stress);i+=2;continue}
+  if(pair==="ου"){V("u",stress);i+=2;continue}
+  if(pair==="αυ"||pair==="ευ"||pair==="ηυ"){
+   V(pair[0]==="α"?"a":pair[0]==="ε"?"e":"i",stress);
+   const next=g[i+2]?.b||"";
+   C(voiceless.has(next)?"f":"v");i+=2;continue
+  }
+  if(pair==="μπ"){C(i===0?"b":"mb");i+=2;continue}
+  if(pair==="ντ"){C(i===0?"d":"nd");i+=2;continue}
+  if(pair==="γκ"){C(i===0?"g":"ng");i+=2;continue}
+  if(pair==="γγ"){C("ng");i+=2;continue}
+  if(pair==="τσ"){C("ts");i+=2;continue}
+  if(pair==="τζ"){C("dz");i+=2;continue}
+
+  if(b==="α"){V("a",g[i].stress);i++;continue}
+  if(b==="ε"){V("e",g[i].stress);i++;continue}
+  if(b==="η"||b==="ι"||b==="υ"){V("i",g[i].stress);i++;continue}
+  if(b==="ο"||b==="ω"){V("o",g[i].stress);i++;continue}
+
+  const singles={
+   "β":"v","δ":"ð","ζ":"z","θ":"θ","κ":"k","λ":"l","μ":"m","ν":"n","ξ":"ks",
+   "π":"p","ρ":"r","σ":"s","ς":"s","τ":"t","φ":"f","ψ":"ps"
+  };
+  if(b==="γ"){
+   C(greekFrontVowelAt(g,i+1)?"j":"ɣ");i++;continue
+  }
+  if(b==="χ"){
+   C(greekFrontVowelAt(g,i+1)?"ç":"x");i++;continue
+  }
+  if(singles[b])C(singles[b]);
+  i++;
+ }
+ return phones;
+}
+const GREEK_ONSETS=new Set([
+ "st","sk","sp","str","skr","tr","dr","kr","gr","pr","br","fr","vr",
+ "pl","bl","fl","kl","gl","θr","xr","çr","ps","ks","ts","dz"
+]);
+function greekSyllabify(phones){
+ const vowels=[];
+ phones.forEach((p,i)=>{if(p.v)vowels.push(i)});
+ if(!vowels.length)return phones.length?[phones]:[];
+ const bounds=[0];
+ for(let n=0;n<vowels.length-1;n++){
+  const a=vowels[n],b=vowels[n+1],gap=phones.slice(a+1,b);
+  let onset=gap.length?1:0;
+  for(let k=0;k<gap.length;k++){
+   const suffix=gap.slice(k).map(p=>p.s).join("");
+   if(GREEK_ONSETS.has(suffix)){onset=gap.length-k;break}
+  }
+  bounds.push(b-onset);
+ }
+ bounds.push(phones.length);
+ const out=[];
+ for(let i=0;i<bounds.length-1;i++){
+  const syl=phones.slice(bounds[i],bounds[i+1]);
+  if(syl.length)out.push(syl);
+ }
+ return out;
+}
+function greekPhoneNative(phone,native=nativeLanguage){
+ // Multi-segment phones used by Greek orthography.
+ const special={
+  de:{mb:"mb",nd:"nd",ng:"ng",ks:"ks",ps:"ps",ts:"ts",dz:"ds"},
+  en:{mb:"mb",nd:"nd",ng:"ng",ks:"ks",ps:"ps",ts:"ts",dz:"dz"},
+  tr:{mb:"mb",nd:"nd",ng:"ng",ks:"ks",ps:"ps",ts:"ts",dz:"dz"},
+  it:{mb:"mb",nd:"nd",ng:"ng",ks:"cs",ps:"ps",ts:"z",dz:"z"},
+  es:{mb:"mb",nd:"nd",ng:"ng",ks:"ks",ps:"ps",ts:"ts",dz:"ds"},
+  pl:{mb:"mb",nd:"nd",ng:"ng",ks:"ks",ps:"ps",ts:"c",dz:"dz"},
+  cs:{mb:"mb",nd:"nd",ng:"ng",ks:"ks",ps:"ps",ts:"c",dz:"dz"},
+  hu:{mb:"mb",nd:"nd",ng:"ng",ks:"ksz",ps:"psz",ts:"c",dz:"dz"}
+ };
+ if((special[native]||{})[phone])return special[native][phone];
+ const map=mapForNative(native);
+ if(map[phone]!=null)return map[phone];
+ if(phone==="mb"||phone==="nd"||phone==="ng"||phone==="ks"||phone==="ps"||phone==="ts"||phone==="dz")return phone;
+ return phone;
+}
+function greekNativeCue(text,native=nativeLanguage){
+ // Very common greeting has a contracted modern pronunciation.
+ const raw=String(text||"").trim().normalize("NFC").toLocaleLowerCase("el");
+ if(/^γεια[!;,.?]*$/u.test(raw)){
+  if(native==="de")return "JA";
+  if(native==="en")return "YA";
+ }
+ const phones=greekPhones(text);
+ const syllables=greekSyllabify(phones);
+ if(!syllables.length)return "";
+ const noCase=new Set(["ar","ja","zh","cmn"]);
+ return syllables.map(syl=>{
+  let s=syl.map(p=>greekPhoneNative(p.s,native)).join("");
+  const stressed=syl.some(p=>p.v&&p.stress);
+  if(stressed){
+   if(noCase.has(native))s="´"+s;
+   else s=s.toLocaleUpperCase(native==="tr"?"tr":undefined);
+  }
+  return s;
+ }).join("-");
+}
+function localTargetPronunciation(word,code=lang){
+ if(code==="el"){
+  const cue=greekNativeCue(word,nativeLanguage);
+  if(cue)return {value:cue,source:"local-greek"};
+ }
+ return null;
+}
+
 function instantNativePronunciation(word,code=lang){
  const text=String(word||"").trim();
  if(!text)return null;
+ const local=localTargetPronunciation(text,code);
+ if(local?.value)return local;
  try{
   if((code==="zh"||code==="cmn")&&window.pinyinPro?.pinyin){
    const p=window.pinyinPro.pinyin(text,{toneType:"symbol",type:"string"});
@@ -1676,7 +1830,8 @@ function setPronunciationElement(el,result){
   el.innerHTML=`<b>${escapeHtml(ui.label)}:</b> ${escapeHtml(result.value)}`;
  }else{
   el.classList.add("unavailable");
-  el.innerHTML=`<b>${escapeHtml(ui.label)}:</b> ${escapeHtml(ui.listen)}`;
+  el.innerHTML=`<b>${escapeHtml(ui.label)}:</b> —`;
+  el.title=ui.listen||"";
  }
 }
 async function loadPronunciationElement(el,word,code=lang){
@@ -2472,8 +2627,28 @@ function analysisMeaningMap(analysis){
 function literalMeaningTokens(literal){
  return String(literal||"").trim().split(/\s*·\s*|\s+/).map(x=>x.trim()).filter(Boolean);
 }
+
+const CORE_DECODE_OVERRIDES_DE={
+ el:{
+  "τι":"was","κάνεις":"machst du","καλά":"gut","ευχαριστώ":"ich danke",
+  "γεια":"hallo","σου":"dir","με":"mich","λένε":"nennen sie",
+  "είμαι":"ich bin","από":"aus","τη":"die","γερμανία":"Deutschland",
+  "πού":"wo","μένεις":"wohnst du","μένω":"ich wohne","στο":"in dem",
+  "βερολίνο":"Berlin","δουλεύω":"ich arbeite","εδώ":"hier",
+  "θέλω":"ich will","νερό":"Wasser","να":"zu","φάω":"ich esse",
+  "έναν":"einen","καφέ":"Kaffee","παρακαλώ":"bitte",
+  "μπορώ":"ich kann","πληρώσω":"ich bezahle","κάρτα":"Karte",
+  "χθες":"gestern","έβρεχε":"es regnete","αύριο":"morgen","θα":"werde",
+  "πάω":"ich gehe","στην":"in die","πόλη":"Stadt","σήμερα":"heute",
+  "δεν":"nicht","έχω":"ich habe","χρόνο":"Zeit","ίσως":"vielleicht","αργότερα":"später"
+ }
+};
 function meaningForDecodeToken(token,index,tokens,analysis,literal){
  const key=decodeNorm(token);
+ if(nativeLanguage==="de"){
+  const override=CORE_DECODE_OVERRIDES_DE[lang]?.[key];
+  if(override)return {text:override,native:true};
+ }
  const lookup=translationLookups[lang];
  if(lookup&&key&&lookup.has(key))return {text:lookup.get(key),native:true};
 
@@ -2490,7 +2665,7 @@ function meaningForDecodeToken(token,index,tokens,analysis,literal){
  }
  return {text:"…",native:false};
 }
-function renderWordByWordDecode(container,original,translit,analysis,literal){
+function renderWordByWordDecode(container,original,translit,analysis,literal,natural=""){
  const tokens=phraseWordTokens(original,analysis,translit);
  if(!tokens.length)return;
 
@@ -2532,7 +2707,7 @@ function renderWordByWordDecode(container,original,translit,analysis,literal){
  wrap.appendChild(grid);
 
  const summary=document.createElement("div");summary.className="decode-summary";
- summary.textContent=`Satz wörtlich: ${literal}`;
+ summary.textContent=(natural&&natural===literal)?`Satzbedeutung: ${natural}`:`Satz wörtlich: ${literal}`;
  wrap.appendChild(summary);
  container.appendChild(wrap);
 }
@@ -2552,7 +2727,7 @@ function renderPhrases(){
   txt.appendChild(o);
   if(c.translit && views.translit){const t=document.createElement("div");t.className="translit";t.textContent=translit;txt.appendChild(t)}
   if(views.analysis){const a=document.createElement("div");a.className="analysis";a.textContent=analysis;txt.appendChild(a)}
-  if(views.literal){renderWordByWordDecode(txt,original,translit,analysis,literal)}
+  if(views.literal){renderWordByWordDecode(txt,original,translit,analysis,literal,natural)}
   if(views.natural){const n=document.createElement("div");n.className="natural";n.textContent="→ "+natural;txt.appendChild(n)}
   const b=document.createElement("button");b.type="button";b.className="sound";b.textContent="🔊";b.setAttribute("aria-label","Satz anhören");b.addEventListener("click",()=>speech(original));
   card.append(txt,b);box.appendChild(card)

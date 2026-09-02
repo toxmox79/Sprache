@@ -1,4 +1,4 @@
-const CACHE="bb-languages-v17-full-decode";
+const CACHE="bb-languages-v18-soundscript";
 const CORE=[
  "./","./index.html","./manifest.json",
  "./icon-192.png","./icon-512.png","./icon-maskable-192.png","./icon-maskable-512.png",
