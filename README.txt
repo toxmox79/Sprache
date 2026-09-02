@@ -22,3 +22,16 @@ NEU V6:
 - eigene Sprache wird aus Lernsprachen ausgeblendet
 - Wortbank übersetzt nach Möglichkeit direkt in die gewählte Ausgangssprache
 - Groß-Nachzeichnen für Arabisch, Chinesisch, Mandarin und Japanisch
+
+
+VERSION 8 – FESTIGUNGSSTUDIO
+- 7-stufiger Lernpfad: dekodiert, gehört, ohne Krücke verstanden, wiedererkannt, verknüpft, übertragen, selbst verwendet
+- Krücken-Test nur über Hören
+- Hör- und Dekodier-Puzzles
+- visuelle Bedeutungszuordnung
+- persönliche Gedankenbrücken mit Text, Emoji und Stiftskizze
+- Audio-Lückensätze und Satzlabor
+- ABC/KaWa-Wissensnetz mit Verlauf
+- Mini-Geschichten/Hörblöcke
+- Chor-Sprechen mit optionaler lokaler Mikrofonaufnahme
+- Schrifttraining: ansehen, nachfahren, blass, frei, Original prüfen
