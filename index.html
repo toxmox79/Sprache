@@ -304,6 +304,26 @@ body.modal-open{overflow:hidden}
  .decode-token{min-width:0;max-width:none;width:auto}
 }
 
+
+.sentence-chunk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+.sentence-chunk-card{padding:14px;border-radius:18px;background:var(--surface);box-shadow:var(--out);position:relative}
+.sentence-chunk-target{font-size:20px;font-weight:900;line-height:1.35;padding-right:50px}
+.sentence-chunk-target.rtl{direction:rtl;text-align:right;padding-right:0;padding-left:50px}
+.sentence-chunk-meaning{margin-top:7px;font-size:13px;font-weight:750;line-height:1.4;color:#3b4650}
+.sentence-chunk-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.sentence-chunk-sound{position:absolute;right:12px;top:12px}
+.sentence-chunk-card.rtl .sentence-chunk-sound{right:auto;left:12px}
+.chunk-tokens{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.chunk-token{font-size:10.5px;padding:4px 7px;border-radius:999px;background:rgba(91,124,250,.09);color:#33487f;font-weight:750}
+.lexicon-details{margin-top:17px;border-radius:18px;background:rgba(255,255,255,.18);border:1px solid rgba(90,105,120,.08)}
+.lexicon-details>summary{cursor:pointer;padding:13px 15px;font-weight:900;color:#394655;list-style:none}
+.lexicon-details>summary::-webkit-details-marker{display:none}
+.lexicon-details>summary span{font-size:11px;color:var(--muted);font-weight:650}
+.lexicon-inner{padding:0 13px 13px}
+.sentence-quiz-audio{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
+.sentence-quiz-audio .audio-orb{width:68px;height:68px}
+.sentence-reveal{margin-top:10px;padding:10px;border-radius:13px;background:rgba(91,124,250,.07);font-weight:850;line-height:1.4}
+
 </style>
 </head>
 <body>
@@ -364,7 +384,7 @@ body.modal-open{overflow:hidden}
 
     <nav id="courseModeNav" class="course-mode-nav" aria-label="Lernbereiche">
       <button type="button" class="course-mode-btn active" data-course-mode="learn">📖 Lernen</button>
-      <button type="button" class="course-mode-btn" data-course-mode="words">🔤 Wörter</button>
+      <button type="button" class="course-mode-btn" data-course-mode="words">💬 Satzbausteine</button>
       <button type="button" class="course-mode-btn" data-course-mode="reinforce">🧠 Festigen</button>
       <button id="scriptModeBtn" type="button" class="course-mode-btn hidden" data-course-mode="script">✍️ Schrift</button>
       <button type="button" class="course-mode-btn" data-course-mode="routine">⏱ Routine</button>
@@ -377,7 +397,7 @@ body.modal-open{overflow:hidden}
         <div class="progress"><div id="progressBar"></div></div>
         <div id="stageChips" class="stage-chips"></div>
         <div class="lesson-select-wrap"><select id="lessonSelect" class="lesson-select" aria-label="Lektion auswählen"></select></div>
-        <button id="reviewBtn" type="button" class="btn review-btn">↻ Fällige Wörter <span id="dueCount">0</span></button>
+        <button id="reviewBtn" type="button" class="btn review-btn">↻ Fällige Sätze <span id="dueCount">0</span></button>
         <div id="bankStatus" class="bank-status">Wortbank: noch nicht geladen</div>
         <div id="lessonNav" class="nav"></div>
       </aside>
@@ -397,8 +417,8 @@ body.modal-open{overflow:hidden}
           <div class="course-stats">
             <div class="course-stat"><b id="statLessons">0/120</b><small>Lektionen abgeschlossen</small></div>
             <div class="course-stat"><b id="statEncountered">0/3000</b><small>Wörter begegnet</small></div>
-            <div class="course-stat"><b id="statSecure">0</b><small>Wörter gefestigt</small></div>
-            <div class="course-stat"><b id="statDue">0</b><small>zur Wiederholung fällig</small></div>
+            <div class="course-stat"><b id="statSecure">0</b><small>Sätze gefestigt</small></div>
+            <div class="course-stat"><b id="statDue">0</b><small>Sätze zur Wiederholung</small></div>
           </div>
         </section>
 
@@ -413,18 +433,28 @@ body.modal-open{overflow:hidden}
         <section class="card panel" id="wordSection">
           <div class="vocab-head">
             <div>
-              <h3 style="margin-bottom:4px">Wortfeld dieser Lektion</h3>
-              <div class="goal">25 neue Wörter bzw. Wortbedeutungen. Nicht als isolierte Vokabelkarten: erst Bedeutung sehen, dann hören, später ohne Deutsch wiedererkennen.</div>
+              <h3 style="margin-bottom:4px">Satzbausteine dieser Lektion</h3>
+              <div class="goal"><b>Kein neues Wort als isolierte Übung:</b> aktiv gelernt werden kurze, verstandene Sätze und Chunks. Einzelwörter bleiben nur zum Nachschlagen, für Aussprache und Schrifttraining.</div>
             </div>
             <div class="actions" style="margin-top:0">
-              <button id="listenWords" type="button" class="btn primary">▶ Wortfeld hören</button>
-              <button id="toggleWordGerman" type="button" class="btn">Bedeutung ausblenden</button>
+              <button id="listenWords" type="button" class="btn primary">▶ Sätze hören</button>
             </div>
           </div>
-          <div id="wordFieldInfo" class="vocab-progress"></div>
-          <div class="pronunciation-help"><b>Klangschrift:</b> Sie zeigt möglichst lesbar, wie das Wort klingt – angepasst an deine Muttersprache. Betonung wird hervorgehoben (z. B. KA-nis). Steht nur „—“, gibt es keine ausreichend sichere Umschrift; 🔊 bleibt immer die Referenz.</div>
-          <div id="wordGrid" class="word-grid"></div>
-          <div class="source-note">Die große Wortbank wird beim ersten Online-Aufruf aus dem offenen Polyglot-Dictionaries/Wiktionary-Datensatz geladen und anschließend vom Browser zwischengespeichert. Die handgebauten Dekodier- und Strukturlektionen funktionieren auch ohne Wortbank.</div>
+          <div id="sentenceChunkInfo" class="vocab-progress"></div>
+          <div id="sentenceChunkGrid" class="sentence-chunk-grid"></div>
+
+          <details class="lexicon-details">
+            <summary>🔎 Einzelwörter nachschlagen <span>– kein Vokabeltest</span></summary>
+            <div class="lexicon-inner">
+              <div class="actions" style="margin-top:0;margin-bottom:10px">
+                <button id="toggleWordGerman" type="button" class="btn">Bedeutung ausblenden</button>
+              </div>
+              <div id="wordFieldInfo" class="vocab-progress"></div>
+              <div class="pronunciation-help"><b>Klangschrift:</b> dient hier nur als Nachschlagehilfe. Der aktive Lernweg läuft über die Sätze oben; 🔊 bleibt die Referenz.</div>
+              <div id="wordGrid" class="word-grid"></div>
+              <div class="source-note">Die große Wortbank ist ein Lexikon im Hintergrund. Sie liefert Bedeutungen, Schrift- und Aussprachematerial, wird aber nicht mehr als isolierter Vokabeltest verwendet.</div>
+            </div>
+          </details>
         </section>
 
         <section class="card panel" id="patternsSection">
@@ -465,22 +495,22 @@ body.modal-open{overflow:hidden}
         </section>
 
         <section class="card panel" id="wordQuizSection">
-          <h3>Wortfeld-Transfer</h3>
+          <h3>Satz-Transfer</h3>
           <div class="quiz-mode-tabs">
             <button id="wordQuizCurrent" type="button" class="quiz-tab active">Diese Lektion</button>
-            <button id="wordQuizDue" type="button" class="quiz-tab">Fällige Wiederholung</button>
+            <button id="wordQuizDue" type="button" class="quiz-tab">Fällige Sätze</button>
           </div>
           <div id="wordQuizQuestion" class="quizq">Wortbank wird geladen …</div>
           <div id="wordQuizChoices" class="choices"></div>
           <div id="wordQuizFeedback" class="feedback" aria-live="polite"></div>
-          <div class="actions"><button id="nextWordQuiz" type="button" class="btn primary">Nächstes Wort</button></div>
+          <div class="actions"><button id="nextWordQuiz" type="button" class="btn primary">Nächster Satz</button></div>
         </section>
 
         <section class="card panel" id="reinforcementSection">
           <div class="lesson-head">
             <div>
               <h3>Birkenbihl-Festigungsstudio</h3>
-              <div class="goal">Nicht nur richtig oder falsch: verstehen, wiedererkennen, verknüpfen und schließlich selbst verwenden. Wähle die Übung, die gerade neugierig macht.</div>
+              <div class="goal">Kurze Sätze statt Vokabelkarten: hören, dekodieren, ohne Krücke verstehen, variieren und selbst verwenden. Einzelwörter tauchen nur als Bausteine innerhalb eines Satzes auf.</div>
             </div>
             <button id="randomReinforce" type="button" class="btn primary">🎲 Überrasch mich</button>
           </div>
@@ -491,7 +521,7 @@ body.modal-open{overflow:hidden}
         </section>
 
         <section class="card panel" id="miniTransferSection">
-          <h3>Mini-Transfer</h3>
+          <h3>Mini-Transfer · Satz wählen</h3>
           <div id="quizQuestion" class="quizq"></div>
           <div id="choices" class="choices"></div>
           <div id="feedback" class="feedback" aria-live="polite"></div>
@@ -1893,12 +1923,110 @@ const EMOJI_MAP={
  happy:"😊",sad:"😢",tired:"😴",sick:"🤒",hot:"🔥",cold:"❄️",good:"👍",bad:"👎",love:"❤️",time:"⏰",day:"☀️",night:"🌙",morning:"🌅",evening:"🌆",
  yes:"✅",no:"❌",question:"❓",answer:"💬",phone:"📱",music:"🎵",dog:"🐕",cat:"🐈",sun:"☀️",rain:"🌧️",tree:"🌳",flower:"🌸"
 };
+
+function sentenceHash(s){
+ let h=2166136261>>>0;
+ for(const ch of String(s||"")){h^=ch.codePointAt(0);h=Math.imul(h,16777619)}
+ return (h>>>0).toString(36);
+}
+function sentenceId(ph,lessonNo=lessonIndex,index=0){return `s:${lessonNo}:${index}:${sentenceHash(ph.original)}`}
+function sentenceItemsForLesson(lessonNo=lessonIndex){
+ const lesson=courses[lang]?.lessons?.[lessonNo];if(!lesson)return[];
+ return lesson.phrases.map((p,i)=>{const ph=phraseParts(p);return {...ph,id:sentenceId(ph,lessonNo,i),lessonNo,index:i}})
+}
+function allSentenceItems(){
+ const out=[];(courses[lang]?.lessons||[]).forEach((_,li)=>out.push(...sentenceItemsForLesson(li)));return out
+}
+function sentenceProgressStore(){
+ if(!saved.sentenceProgress)saved.sentenceProgress={};
+ if(!saved.sentenceProgress[lang])saved.sentenceProgress[lang]={};
+ return saved.sentenceProgress[lang]
+}
+function sentenceMasteryRoot(){
+ if(!saved.sentenceMastery)saved.sentenceMastery={};
+ if(!saved.sentenceMastery[lang])saved.sentenceMastery[lang]={};
+ return saved.sentenceMastery[lang]
+}
+function sentenceMasteryFor(id){
+ const r=sentenceMasteryRoot();if(!r[id])r[id]={stages:{},mnemonic:"",emoji:"",drawing:"",sentences:[]};return r[id]
+}
+function setSentenceMastery(id,stage,val=true){if(!id)return;sentenceMasteryFor(id).stages[stage]=val?1:0;save()}
+function sentenceStageCount(id){
+ const m=saved.sentenceMastery?.[lang]?.[id];if(!m?.stages)return 0;
+ return MASTERY_STAGES.filter(s=>m.stages[s.id]).length
+}
+function markSentence(item,good){
+ if(!item?.id)return;
+ const s=sentenceProgressStore(),old=s[item.id]||{score:0,due:0,seen:0};
+ old.score=good?Math.min(4,(old.score||0)+1):Math.max(0,(old.score||0)-1);
+ old.due=dayNo()+(good?[1,2,4,8,16][old.score]||16:0);old.seen=1;s[item.id]=old;
+ if(good)setSentenceMastery(item.id,"recognized");else save()
+}
+function dueSentences(){
+ const s=sentenceProgressStore(),today=dayNo();
+ return allSentenceItems().filter(x=>s[x.id]?.seen&&(s[x.id].due||0)<=today)
+}
+function currentReinforceSentence(){
+ const pool=sentenceItemsForLesson();if(!pool.length)return null;
+ reinforceIndex=((reinforceIndex%pool.length)+pool.length)%pool.length;return pool[reinforceIndex]
+}
+function markCurrentSentence(stage){
+ const ph=currentReinforceSentence();if(ph){setSentenceMastery(ph.id,stage);renderMastery();renderProgress()}
+}
+function sentenceMeaningPool(excludeId=""){
+ const seen=new Set(),arr=[],add=x=>{const v=String(x?.natural||"").trim();if(!v||x.id===excludeId||seen.has(v))return;seen.add(v);arr.push(v)};
+ sentenceItemsForLesson().forEach(add);
+ const c=courses[lang];
+ (c.coreLessons||[]).forEach((l,li)=>l.phrases.forEach((p,pi)=>{const ph=phraseParts(p);add({...ph,id:`core:${li}:${pi}:${sentenceHash(ph.original)}`})}));
+ allSentenceItems().slice(0,80).forEach(add);return arr
+}
+function sentenceTokenPool(){
+ const vals=[];sentenceItemsForLesson().forEach(ph=>phraseWordTokens(ph.original,ph.analysis,ph.translit).forEach(x=>vals.push(x)));
+ return [...new Set(vals)]
+}
+function sentenceVisualFor(ph){
+ const t=`${ph?.natural||""} ${ph?.literal||""}`.toLocaleLowerCase();
+ const rules=[
+  [/wasser|water|agua|eau|acqua|νερό|su\b/,"💧"],[/kaffee|coffee|café|caffè|καφέ/,"☕"],
+  [/essen|eat|manger|comer|mangiare|φα|jeść|jíst/,"🍽️"],[/haus|home|house|maison|casa|σπίτι/,"🏠"],
+  [/stadt|city|ville|ciudad|città|πόλη/,"🏙️"],[/arbeit|work|travail|trabaj|lavor|δουλ/,"💼"],
+  [/gut|good|bien|bene|καλά|dobr/,"👍"],[/danke|thank|merci|gracias|grazie|ευχαρισ/,"🙏"],
+  [/hallo|hello|bonjour|ciao|hola|γεια|cześć|ahoj/,"👋"],[/karte|card|carte|tarjeta|carta|κάρτα/,"💳"],
+  [/morgen|tomorrow|demain|mañana|domani|αύριο|jutro|zítra/,"🌅"],[/gestern|yesterday|hier|ayer|ieri|χθες|wczoraj|včera/,"↩️"]
+ ];
+ for(const [rx,e] of rules)if(rx.test(t))return e;return "💬"
+}
+function renderSentenceChunks(){
+ const grid=$("sentenceChunkGrid"),info=$("sentenceChunkInfo");if(!grid)return;
+ const items=sentenceItemsForLesson();grid.innerHTML="";
+ if(info)info.textContent=`${items.length} kurze Sätze/Chunks · aktiv gelernt wird immer im Zusammenhang`;
+ items.forEach(ph=>{
+  const card=document.createElement("article");card.className="sentence-chunk-card"+(courses[lang].rtl?" rtl":"");
+  const target=document.createElement("div");target.className="sentence-chunk-target"+(courses[lang].rtl?" rtl":"");target.textContent=ph.original;if(courses[lang].rtl)target.dir="rtl";
+  const meaning=document.createElement("div");meaning.className="sentence-chunk-meaning";meaning.textContent="→ "+(ph.natural||ph.literal||"");
+  const sound=document.createElement("button");sound.type="button";sound.className="sound sentence-chunk-sound";sound.textContent="🔊";sound.onclick=()=>{speech(ph.original);setSentenceMastery(ph.id,"heard");renderMastery()};
+  const tokens=document.createElement("div");tokens.className="chunk-tokens";phraseWordTokens(ph.original,ph.analysis,ph.translit).forEach(x=>{const s=document.createElement("span");s.className="chunk-token";s.textContent=x;tokens.appendChild(s)});
+  const actions=document.createElement("div");actions.className="sentence-chunk-actions",decode=document.createElement("button");decode.className="mini-btn";decode.type="button";decode.textContent="Wort für Wort";
+  decode.onclick=()=>{setCourseMode("learn");views.literal=true;renderControls();renderPhrases();$("decodeSection").scrollIntoView({behavior:"smooth",block:"start"})};actions.appendChild(decode);
+  card.append(target,meaning,sound,tokens,actions);grid.appendChild(card)
+ })
+}
+function listenCurrentSentences(){
+ const items=sentenceItemsForLesson();if(!items.length||!("speechSynthesis" in window))return;
+ let i=0;speechSynthesis.cancel();
+ const next=()=>{if(i>=items.length)return;const item=items[i++];setSentenceMastery(item.id,"heard");const u=new SpeechSynthesisUtterance(item.original);u.lang=courses[lang].voice;u.rate=(courses[lang].rate||.86)*.9;u.onend=()=>setTimeout(next,380);speechSynthesis.speak(u)};
+ renderMastery();next()
+}
+
 function masteryRoot(){if(!saved.mastery)saved.mastery={};if(!saved.mastery[lang])saved.mastery[lang]={};return saved.mastery[lang]}
 function masteryFor(id){const r=masteryRoot();if(!r[id])r[id]={stages:{},mnemonic:"",emoji:"",drawing:"",sentences:[]};return r[id]}
 function setMastery(id,stage,val=true){if(!id)return;const m=masteryFor(id);m.stages[stage]=val?1:0;save()}
 function stageCount(id){const m=saved.mastery?.[lang]?.[id];if(!m||!m.stages)return 0;return MASTERY_STAGES.filter(s=>m.stages[s.id]).length}
-function lessonMasteryWords(){return currentWords().slice(0,25)}
-function lessonStageStats(){const words=lessonMasteryWords();return MASTERY_STAGES.map(s=>({s,count:words.filter(w=>masteryFor(w.id).stages[s.id]).length,total:words.length}))}
+function lessonMasteryWords(){return sentenceItemsForLesson()}
+function lessonStageStats(){
+ const items=sentenceItemsForLesson();
+ return MASTERY_STAGES.map(s=>({s,count:items.filter(x=>sentenceMasteryFor(x.id).stages[s.id]).length,total:items.length}))
+}
 function currentReinforceWord(){const pool=currentWords();if(!pool.length)return null;reinforceIndex=((reinforceIndex%pool.length)+pool.length)%pool.length;return pool[reinforceIndex]}
 function markCurrentWord(stage){const w=currentReinforceWord();if(w){setMastery(w.id,stage);renderMastery();renderProgress()}}
 function phraseParts(p){const c=courses[lang];if(c.translit)return {original:p[0],translit:p[1],analysis:p[2],literal:p[3],natural:p[4]};return {original:p[0],analysis:p[1],literal:p[2],natural:p[3]}}
@@ -1909,56 +2037,83 @@ function escapeAttr(s){return escapeHtml(s).replace(/`/g,"&#96;")}
 function renderMastery(){
  const strip=$("masteryStrip"),summary=$("masterySummary");if(!strip)return;strip.innerHTML="";
  const stats=lessonStageStats();stats.forEach(({s,count,total})=>{const d=document.createElement("div");d.className="mastery-step"+(total&&count===total?" on":"");d.innerHTML=`<b>${s.icon}</b>${s.label}<br>${count}/${total}`;strip.appendChild(d)});
- const words=lessonMasteryWords(),avg=words.length?Math.round(words.reduce((a,w)=>a+stageCount(w.id),0)/(words.length*MASTERY_STAGES.length)*100):0;
- summary.innerHTML=`Festigung dieser Lektion: <strong>${avg}%</strong>. Ein Wort gilt nicht schon nach einer richtigen Auswahl als „fertig“ – die sieben Schritte zeigen, wie tief es bereits verankert ist.`;
+ const items=sentenceItemsForLesson(),avg=items.length?Math.round(items.reduce((a,x)=>a+sentenceStageCount(x.id),0)/(items.length*MASTERY_STAGES.length)*100):0;
+ summary.innerHTML=`Festigung dieser Lektion: <strong>${avg}%</strong>. Gemessen werden <b>kurze Sätze/Chunks</b>, nicht isolierte Vokabeln. Ein Satz wird erst sicher, wenn Klang, Bedeutung, Muster und eigene Verwendung zusammenkommen.`
 }
 function renderReinforceTabs(){const box=$("reinforceTabs");box.innerHTML="";REINFORCE_MODES.forEach(([id,label])=>{const b=document.createElement("button");b.type="button";b.className="reinforce-tab"+(reinforceMode===id?" active":"");b.textContent=label;b.addEventListener("click",()=>{reinforceMode=id;reinforceSelection=[];renderReinforce()});box.appendChild(b)})}
 function nextReinforce(){reinforceIndex++;reinforceSelection=[];renderReinforce()}
 function exerciseHead(title,help){return `<div class="exercise-title">${title}</div><div class="exercise-help">${help}</div>`}
 function renderReinforce(){
  renderReinforceTabs();renderMastery();const box=$("reinforceBox");box.innerHTML="";
- if(!wordBanks[lang]||!currentWords().length){box.innerHTML=exerciseHead("Wortbank wird geladen","Sobald die Wörter verfügbar sind, erscheinen hier die gehirn-gerechten Festigungsübungen.");return}
+ if(!sentenceItemsForLesson().length){box.innerHTML=exerciseHead("Keine Sätze verfügbar","Für diese Lektion stehen noch keine Satzbausteine bereit.");return}
  ({crutch:renderCrutch,puzzle:renderListenPuzzle,decode:renderDecodePuzzle,visual:renderVisual,memory:renderMemory,cloze:renderCloze,sentence:renderSentenceLab,network:renderKnowledgeNet,story:renderStory,chorus:renderChorus}[reinforceMode]||renderCrutch)(box)
 }
 function renderCrutch(box){
- const w=currentReinforceWord(),pool=wordBanks[lang]||[];box.innerHTML=exerciseHead("Krücken-Test","Nur hören – keine Schrift und keine Dekodierung. Wenn die Bedeutung direkt auftaucht, kann die Krücke für dieses Wort langsam weg.");
- const audio=document.createElement("div");audio.className="audio-only";const ab=document.createElement("button");ab.className="audio-orb";ab.type="button";ab.textContent="🔊";ab.addEventListener("click",()=>{speech(w.target);setMastery(w.id,"heard");renderMastery()});audio.appendChild(ab);box.appendChild(audio);
- const choices=shuffle([w,...shuffle(pool.filter(x=>x.id!==w.id&&x.de!==w.de)).slice(0,3)]);const cg=document.createElement("div");cg.className="choices";choices.forEach(x=>{const b=document.createElement("button");b.className="choice";b.type="button";b.textContent=x.de;b.addEventListener("click",()=>{[...cg.children].forEach(y=>y.disabled=true);const ok=x.id===w.id;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Direkt verstanden – Krücke kann schwächer werden.":`Noch nicht vertraut. Die Bedeutung ist: ${w.de}`;box.appendChild(f);if(ok){setMastery(w.id,"understood");markWord(w.id,true)}else markWord(w.id,false);renderMastery();renderProgress()});cg.appendChild(b)});box.appendChild(cg);addNextButton(box)
+ const ph=currentReinforceSentence();if(!ph)return;
+ box.innerHTML=exerciseHead("Krücken-Test · Satz verstehen","Nur hören – zunächst weder Schrift noch Dekodierung. Ziel ist, dass der Sinn des kurzen Satzes direkt auftaucht.");
+ const audio=document.createElement("div");audio.className="audio-only",ab=document.createElement("button");ab.className="audio-orb";ab.type="button";ab.textContent="🔊";ab.onclick=()=>{speech(ph.original);setSentenceMastery(ph.id,"heard");renderMastery()};audio.appendChild(ab);box.appendChild(audio);
+ const correct=ph.natural||ph.literal,others=shuffle(sentenceMeaningPool(ph.id)).filter(x=>x!==correct).slice(0,3),cg=document.createElement("div");cg.className="choices";
+ shuffle([correct,...others]).forEach(x=>{const b=document.createElement("button");b.className="choice";b.type="button";b.textContent=x;b.onclick=()=>{[...cg.children].forEach(y=>y.disabled=true);const ok=x===correct,reveal=document.createElement("div");reveal.className="sentence-reveal";reveal.textContent=ph.original;box.appendChild(reveal);const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Satz direkt verstanden – die Dekodier-Krücke kann schwächer werden.":`Gemeint ist: ${correct}`;box.appendChild(f);markSentence(ph,ok);if(ok)setSentenceMastery(ph.id,"understood");renderMastery();renderProgress()};cg.appendChild(b)});
+ box.appendChild(cg);addNextButton(box)
 }
 function renderListenPuzzle(box){
- const ph=lessonPhrases()[reinforceIndex%lessonPhrases().length],parts=splitTarget(ph.original);box.innerHTML=exerciseHead("Hör-Puzzle","Höre den Satz und setze seine Klang-Bausteine in die richtige Reihenfolge. Erst danach wird der Originalsatz eingeblendet.");
- const a=document.createElement("button");a.className="btn primary";a.textContent="🔊 Satz nur hören";a.onclick=()=>speech(ph.original);box.appendChild(a);
- if(parts.length<2){const w=currentReinforceWord();box.insertAdjacentHTML("beforeend",`<div class="exercise-big ${courses[lang].rtl?"rtl":""}">${escapeHtml(w.target)}</div>`);addNextButton(box);return}
- const answer=document.createElement("div");answer.className="answer-line";const bank=document.createElement("div");bank.className="chunk-bank";const shuffled=shuffle(parts.map((x,i)=>({x,i})));let chosen=[];
- shuffled.forEach(obj=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=obj.x;b.onclick=()=>{if(b.classList.contains("used"))return;b.classList.add("used");chosen.push(obj);const s=document.createElement("span");s.className="chunk-btn";s.textContent=obj.x;answer.appendChild(s);if(chosen.length===parts.length){const built=chosen.map(o=>o.x).join((lang==="zh"||lang==="cmn"||lang==="ja")?"":" ");const expected=parts.join((lang==="zh"||lang==="cmn"||lang==="ja")?"":" ");const f=document.createElement("div");f.className="feedback";f.textContent=built===expected?"✓ Reihenfolge erkannt.":`Fast – Original: ${ph.original}`;f.style.color=built===expected?"var(--ok)":"var(--danger)";box.appendChild(f);if(built===expected){currentWords().slice(0,3).forEach(w=>setMastery(w.id,"recognized"));renderMastery()}}};bank.appendChild(b)});box.append(answer,bank);addNextButton(box)
+ const ph=currentReinforceSentence(),parts=splitTarget(ph.original);
+ box.innerHTML=exerciseHead("Hör-Puzzle · kurzer Satz","Höre den ganzen Satz und setze seine Klang-Bausteine wieder zusammen. Nicht einzelne Wörter pauken – die Reihenfolge lebt im Satz.");
+ const a=document.createElement("button");a.className="btn primary";a.textContent="🔊 Satz nur hören";a.onclick=()=>{speech(ph.original);setSentenceMastery(ph.id,"heard");renderMastery()};box.appendChild(a);
+ if(parts.length<2){box.insertAdjacentHTML("beforeend",`<div class="exercise-big ${courses[lang].rtl?"rtl":""}">${escapeHtml(ph.original)}</div>`);addNextButton(box);return}
+ const answer=document.createElement("div");answer.className="answer-line";const bank=document.createElement("div");bank.className="chunk-bank",chosen=[];
+ shuffle(parts.map((x,i)=>({x,i}))).forEach(obj=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=obj.x;b.onclick=()=>{if(b.classList.contains("used"))return;b.classList.add("used");chosen.push(obj);const s=document.createElement("span");s.className="chunk-btn";s.textContent=obj.x;answer.appendChild(s);if(chosen.length===parts.length){const sep=(lang==="zh"||lang==="cmn"||lang==="ja")?"":" ",built=chosen.map(o=>o.x).join(sep),expected=parts.join(sep),ok=built===expected,f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Satzrhythmus und Reihenfolge erkannt.":`Original: ${ph.original}`;box.appendChild(f);if(ok){setSentenceMastery(ph.id,"recognized");markSentence(ph,true)}else markSentence(ph,false);renderMastery();renderProgress()}};bank.appendChild(b)});
+ box.append(answer,bank);addNextButton(box)
 }
 function renderDecodePuzzle(box){
- const s=courses[lang].lessons[lessonIndex].special,items=s.items.filter(x=>x!=="→"&&x!=="=");box.innerHTML=exerciseHead("Dekodier-Puzzle",`Baue die vertraute Struktur „${escapeHtml(s.title)}“ aus ihren Teilen wieder auf. Es geht um Muster, nicht um stumpfes Auswendiglernen.`);
- const answer=document.createElement("div");answer.className="answer-line";const bank=document.createElement("div");bank.className="chunk-bank";let chosen=[];shuffle(items.map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=o.x;b.onclick=()=>{if(b.classList.contains("used"))return;b.classList.add("used");chosen.push(o);const ch=document.createElement("span");ch.className="chunk-btn";ch.textContent=o.x;answer.appendChild(ch);if(chosen.length===items.length){const ok=chosen.every((x,i)=>x.i===i);const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Struktur korrekt zusammengesetzt.":"Noch einmal anders kombinieren – die ursprüngliche Reihenfolge steht im Musterbereich darüber.";box.appendChild(f);if(ok)currentWords().slice(0,5).forEach(w=>setMastery(w.id,"decoded"));renderMastery()}};bank.appendChild(b)});box.append(answer,bank);addNextButton(box)
+ const ph=currentReinforceSentence(),items=phraseWordTokens(ph.original,ph.analysis,ph.translit);
+ box.innerHTML=exerciseHead("Dekodier-Puzzle · Satzstruktur","Baue den vollständigen kurzen Satz aus seinen Wort-/Zeichenbausteinen. Danach kannst du ihn Wort für Wort mit der Bedeutung vergleichen.");
+ if(items.length<2){box.insertAdjacentHTML("beforeend",`<div class="exercise-big">${escapeHtml(ph.original)}</div>`);addNextButton(box);return}
+ const answer=document.createElement("div");answer.className="answer-line",bank=document.createElement("div");bank.className="chunk-bank",chosen=[];
+ shuffle(items.map((x,i)=>({x,i}))).forEach(o=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=o.x;b.onclick=()=>{if(b.classList.contains("used"))return;b.classList.add("used");chosen.push(o);const ch=document.createElement("span");ch.className="chunk-btn";ch.textContent=o.x;answer.appendChild(ch);if(chosen.length===items.length){const ok=chosen.every((x,i)=>x.i===i),f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Satz korrekt aufgebaut.":"Die Satzstruktur stimmt noch nicht – höre ihn noch einmal als Ganzes.";box.appendChild(f);if(ok)setSentenceMastery(ph.id,"decoded");renderMastery()}};bank.appendChild(b)});
+ box.append(answer,bank);
+ const reveal=document.createElement("button");reveal.className="btn";reveal.textContent="Dekodierung zeigen";reveal.onclick=()=>{const holder=document.createElement("div");renderWordByWordDecode(holder,ph.original,ph.translit,ph.analysis,ph.literal,ph.natural);box.appendChild(holder);reveal.disabled=true};box.appendChild(reveal);addNextButton(box)
 }
 function renderVisual(box){
- const w=currentReinforceWord(),pool=wordBanks[lang]||[];let options=[w,...shuffle(pool.filter(x=>x.id!==w.id&&visualFor(x)!==visualFor(w))).slice(0,3)];box.innerHTML=exerciseHead("Bedeutung ohne Übersetzungs-Umweg","Wo möglich, verbindet die App Klang und Bedeutung direkt über ein Bildsymbol. Das Wort in deiner Muttersprache wird erst nach der Wahl gezeigt.");
- const top=document.createElement("div");top.className="audio-only";const ab=document.createElement("button");ab.className="audio-orb";ab.textContent="🔊";ab.onclick=()=>speech(w.target);top.appendChild(ab);box.appendChild(top);
- const g=document.createElement("div");g.className="visual-choices";shuffle(options).forEach(x=>{const b=document.createElement("button");b.className="visual-choice";b.innerHTML=`<span class="emo">${visualFor(x)}</span><small>${escapeHtml(x.english||shortMeta(x))}</small>`;b.onclick=()=>{[...g.children].forEach(y=>y.disabled=true);const ok=x.id===w.id;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?`✓ ${w.target} ↔ ${visualFor(w)} · ${w.de}`:`Das gesuchte Wort bedeutet: ${w.de}`;box.appendChild(f);if(ok)setMastery(w.id,"recognized");renderMastery()};g.appendChild(b)});box.appendChild(g);addNextButton(box)
+ const ph=currentReinforceSentence();if(!ph)return;
+ const correct=ph.natural||ph.literal,others=shuffle(sentenceMeaningPool(ph.id)).filter(x=>x!==correct).slice(0,3);
+ box.innerHTML=exerciseHead("Situation erkennen","Höre einen kurzen Satz und wähle die passende Situation. Der Satz bleibt die Lerneinheit – nicht ein isoliertes Wort.");
+ const top=document.createElement("div");top.className="audio-only";const ab=document.createElement("button");ab.className="audio-orb";ab.textContent="🔊";ab.onclick=()=>{speech(ph.original);setSentenceMastery(ph.id,"heard");renderMastery()};top.appendChild(ab);box.appendChild(top);
+ const choices=[{v:correct,e:sentenceVisualFor(ph)},...others.map(v=>({v,e:sentenceVisualFor({natural:v})}))],g=document.createElement("div");g.className="visual-choices";
+ shuffle(choices).forEach(x=>{const b=document.createElement("button");b.className="visual-choice";b.innerHTML=`<span class="emo">${x.e}</span><small>${escapeHtml(x.v)}</small>`;b.onclick=()=>{[...g.children].forEach(y=>y.disabled=true);const ok=x.v===correct,f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Situation verstanden.":`Gemeint ist: ${correct}`;box.appendChild(f);if(ok){setSentenceMastery(ph.id,"recognized");markSentence(ph,true)}renderMastery();renderProgress()};g.appendChild(b)});
+ box.appendChild(g);addNextButton(box)
 }
 function renderMemory(box){
- const w=currentReinforceWord(),m=masteryFor(w.id);mnemonicEmoji=m.emoji||"💡";box.innerHTML=exerciseHead("Meine Gedankenbrücke","Eine persönliche, auch völlig alberne Assoziation ist wertvoller als eine fremde Musterlösung. Klang, Bild, Geschichte oder Gefühl dürfen sich mischen.");
- const title=document.createElement("div");title.className="exercise-big"+(courses[lang].rtl?" rtl":"");title.textContent=w.target+"  →  "+w.de;box.appendChild(title);
- const grid=document.createElement("div");grid.className="mnemonic-grid";const left=document.createElement("div");const ta=document.createElement("textarea");ta.className="memory-textarea";ta.placeholder="Meine Eselsbrücke / Geschichte / Klang-Assoziation …";ta.value=m.mnemonic||"";left.appendChild(ta);
+ const ph=currentReinforceSentence(),m=sentenceMasteryFor(ph.id);mnemonicEmoji=m.emoji||"💡";
+ box.innerHTML=exerciseHead("Gedankenbrücke für einen Satz","Verknüpfe den ganzen Satz oder einen auffälligen Chunk mit einer persönlichen Szene, einem Klang, Bild oder Gefühl. Das Wort bleibt in seinem Zusammenhang.");
+ const title=document.createElement("div");title.className="exercise-big"+(courses[lang].rtl?" rtl":"");title.textContent=ph.original;box.appendChild(title);
+ const meaning=document.createElement("div");meaning.className="exercise-help";meaning.textContent="→ "+(ph.natural||ph.literal||"");box.appendChild(meaning);
+ const grid=document.createElement("div");grid.className="mnemonic-grid",left=document.createElement("div"),ta=document.createElement("textarea");ta.className="memory-textarea";ta.placeholder="Meine Szene / Eselsbrücke zu diesem Satz …";ta.value=m.mnemonic||"";left.appendChild(ta);
  const eb=document.createElement("div");eb.className="emoji-bank";["💡","😂","❤️","🎵","🧠","🏠","🚗","🍎","🌊","🔥","🌟","🤪"].forEach(e=>{const b=document.createElement("button");b.className="emoji-btn";b.textContent=e;if(e===mnemonicEmoji)b.style.outline="2px solid var(--accent)";b.onclick=()=>{mnemonicEmoji=e;renderMemory(box)};eb.appendChild(b)});left.appendChild(eb);
- const saveBtn=document.createElement("button");saveBtn.className="btn primary";saveBtn.textContent="Gedankenbrücke speichern";saveBtn.onclick=()=>{const mm=masteryFor(w.id);mm.mnemonic=ta.value.trim();mm.emoji=mnemonicEmoji;const cv=$("memoryCanvas");try{mm.drawing=cv.toDataURL("image/webp",.45)}catch(e){};mm.stages.linked=1;save();renderMastery();const v=document.createElement("div");v.className="memory-preview";v.textContent="✓ Gespeichert. Diese persönliche Verbindung erscheint bei späteren Wiederholungen wieder.";left.appendChild(v)};left.appendChild(saveBtn);
- const right=document.createElement("div");const c=document.createElement("canvas");c.id="memoryCanvas";c.width=560;c.height=300;c.className="memory-canvas";right.appendChild(c);const clr=document.createElement("button");clr.className="mini-btn";clr.textContent="Skizze löschen";clr.onclick=()=>{memoryDrawStrokes=[];drawMemoryCanvas(m.drawing?null:null)};right.appendChild(clr);grid.append(left,right);box.appendChild(grid);setTimeout(()=>initMemoryCanvas(m.drawing),0);addNextButton(box)
+ const saveBtn=document.createElement("button");saveBtn.className="btn primary";saveBtn.textContent="Satz-Gedankenbrücke speichern";saveBtn.onclick=()=>{const mm=sentenceMasteryFor(ph.id);mm.mnemonic=ta.value.trim();mm.emoji=mnemonicEmoji;const cv=$("memoryCanvas");try{mm.drawing=cv.toDataURL("image/webp",.45)}catch(e){};mm.stages.linked=1;save();renderMastery();saveBtn.textContent="✓ gespeichert"};left.appendChild(saveBtn);
+ const right=document.createElement("div"),c=document.createElement("canvas");c.id="memoryCanvas";c.width=560;c.height=300;c.className="memory-canvas";right.appendChild(c);const clr=document.createElement("button");clr.className="mini-btn";clr.textContent="Skizze löschen";clr.onclick=()=>{memoryDrawStrokes=[];drawMemoryCanvas(null)};right.appendChild(clr);grid.append(left,right);box.appendChild(grid);setTimeout(()=>initMemoryCanvas(m.drawing),0);addNextButton(box)
 }
 function drawMemoryCanvas(bgData){const c=$("memoryCanvas");if(!c)return;const ctx=c.getContext("2d");ctx.fillStyle="#f5f7f8";ctx.fillRect(0,0,c.width,c.height);if(bgData){const im=new Image();im.onload=()=>ctx.drawImage(im,0,0,c.width,c.height);im.src=bgData}ctx.strokeStyle="#5b7cfa";ctx.lineWidth=7;ctx.lineCap="round";memoryDrawStrokes.forEach(st=>{if(!st.length)return;ctx.beginPath();ctx.moveTo(st[0].x,st[0].y);for(let i=1;i<st.length;i++)ctx.lineTo(st[i].x,st[i].y);ctx.stroke()})}
 function initMemoryCanvas(bg){const c=$("memoryCanvas");if(!c)return;memoryDrawStrokes=[];drawMemoryCanvas(bg);const pos=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height}};c.onpointerdown=e=>{e.preventDefault();c.setPointerCapture(e.pointerId);memoryActiveStroke=[pos(e)];memoryDrawStrokes.push(memoryActiveStroke);drawMemoryCanvas(bg)};c.onpointermove=e=>{if(!memoryActiveStroke)return;e.preventDefault();memoryActiveStroke.push(pos(e));drawMemoryCanvas(bg)};c.onpointerup=c.onpointercancel=()=>{memoryActiveStroke=null}}
 function renderCloze(box){
- const phs=lessonPhrases(),ph=phs[reinforceIndex%phs.length],parts=splitTarget(ph.original);if(parts.length<2){reinforceIndex++;return renderCloze(box)}const gap=Math.abs(reinforceIndex)%parts.length,answer=parts[gap],shown=parts.map((x,i)=>i===gap?"______":x).join((lang==="zh"||lang==="cmn"||lang==="ja")?"":" ");
- box.innerHTML=exerciseHead("Audio-Lückensatz","Höre zuerst den ganzen Satz. Fülle danach die Lücke aus dem Klanggedächtnis – nicht aus einer Grammatikregel.");const play=document.createElement("button");play.className="btn primary";play.textContent="🔊 Ganzen Satz hören";play.onclick=()=>speech(ph.original);box.appendChild(play);const line=document.createElement("div");line.className="cloze-line";line.textContent=shown;if(courses[lang].rtl)line.dir="rtl";box.appendChild(line);
- const distract=shuffle(currentWords().map(w=>w.target).filter(x=>x!==answer)).slice(0,3);const g=document.createElement("div");g.className="chunk-bank";shuffle([answer,...distract]).forEach(x=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=x;b.onclick=()=>{[...g.children].forEach(y=>y.disabled=true);const ok=x===answer;line.textContent=ph.original;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Aus dem Klang rekonstruiert.":`Gesucht war: ${answer}`;box.appendChild(f);if(ok)currentWords().slice(0,3).forEach(w=>setMastery(w.id,"understood"));renderMastery()};g.appendChild(b)});box.appendChild(g);addNextButton(box)
+ const ph=currentReinforceSentence(),parts=splitTarget(ph.original);if(!ph||parts.length<2){reinforceIndex++;return renderCloze(box)}
+ const gap=Math.abs(reinforceIndex)%parts.length,answer=parts[gap],sep=(lang==="zh"||lang==="cmn"||lang==="ja")?"":" ",shown=parts.map((x,i)=>i===gap?"______":x).join(sep);
+ box.innerHTML=exerciseHead("Audio-Lückensatz","Höre zuerst den ganzen Satz. Die Lücke wird aus dem Klanggedächtnis ergänzt – das fehlende Wort ist nur ein Baustein im Satz.");
+ const play=document.createElement("button");play.className="btn primary";play.textContent="🔊 Ganzen Satz hören";play.onclick=()=>{speech(ph.original);setSentenceMastery(ph.id,"heard");renderMastery()};box.appendChild(play);
+ const line=document.createElement("div");line.className="cloze-line";line.textContent=shown;if(courses[lang].rtl)line.dir="rtl";box.appendChild(line);
+ const distract=shuffle(sentenceTokenPool().filter(x=>x!==answer)).slice(0,3),g=document.createElement("div");g.className="chunk-bank";
+ shuffle([answer,...distract]).forEach(x=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=x;b.onclick=()=>{[...g.children].forEach(y=>y.disabled=true);const ok=x===answer;line.textContent=ph.original;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Satz aus dem Klang rekonstruiert.":`Gesucht war: ${answer}`;box.appendChild(f);if(ok){setSentenceMastery(ph.id,"understood");markSentence(ph,true)}else markSentence(ph,false);renderMastery();renderProgress()};g.appendChild(b)});
+ box.appendChild(g);addNextButton(box)
 }
 function renderSentenceLab(box){
- const l=courses[lang].lessons[lessonIndex],pat=l.patterns[reinforceIndex%l.patterns.length],w=currentReinforceWord();box.innerHTML=exerciseHead("Satz weiterdenken","Kein vorgegebener einzig richtiger Satz: Nimm das bekannte Muster und mache daraus etwas Eigenes. Genau hier wird aus Wiedererkennen produktives Können.");
- const p=document.createElement("div");p.className="exercise-big"+(courses[lang].rtl?" rtl":"");p.textContent=pat[0];box.appendChild(p);const hint=document.createElement("div");hint.className="exercise-help";hint.textContent=pat[1];box.appendChild(hint);const chips=document.createElement("div");chips.className="chunk-bank";currentWords().slice(0,10).forEach(x=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=x.target;b.onclick=()=>{inp.value+=(inp.value?" ":"")+x.target};chips.appendChild(b)});box.appendChild(chips);const inp=document.createElement("textarea");inp.className="sentence-input";inp.placeholder="Mein eigener Satz …";box.appendChild(inp);const sv=document.createElement("button");sv.className="btn primary";sv.textContent="Eigenen Satz speichern";sv.onclick=()=>{const v=inp.value.trim();if(!v)return;const m=masteryFor(w.id);m.sentences=m.sentences||[];m.sentences.push({text:v,date:Date.now()});m.stages.transferred=1;m.stages.used=1;save();renderMastery();sv.textContent="✓ gespeichert"};box.appendChild(sv);addNextButton(box)
+ const ph=currentReinforceSentence();if(!ph)return;
+ box.innerHTML=exerciseHead("Satzlabor · variieren","Nimm einen verstandenen Satz und verändere nur einen kleinen Teil. So bleibt das Muster stabil, während du produktiv wirst.");
+ const p=document.createElement("div");p.className="exercise-big"+(courses[lang].rtl?" rtl":"");p.textContent=ph.original;box.appendChild(p);
+ const hint=document.createElement("div");hint.className="exercise-help";hint.textContent=`Bedeutung: ${ph.natural||ph.literal||""} · Ändere z. B. Person, Ort, Zeit oder Inhalt.`;box.appendChild(hint);
+ const chips=document.createElement("div");chips.className="chunk-bank";phraseWordTokens(ph.original,ph.analysis,ph.translit).forEach(x=>{const b=document.createElement("button");b.className="chunk-btn";b.textContent=x;b.onclick=()=>{inp.value+=(inp.value?" ":"")+x};chips.appendChild(b)});box.appendChild(chips);
+ const inp=document.createElement("textarea");inp.className="sentence-input";inp.placeholder="Meine Variante des Satzes …";box.appendChild(inp);
+ const copy=document.createElement("button");copy.className="btn";copy.textContent="Vorlage übernehmen";copy.onclick=()=>{inp.value=ph.original;inp.focus()};box.appendChild(copy);
+ const sv=document.createElement("button");sv.className="btn primary";sv.textContent="Eigene Satzvariante speichern";sv.onclick=()=>{const v=inp.value.trim();if(!v)return;const m=sentenceMasteryFor(ph.id);m.sentences=m.sentences||[];m.sentences.push({text:v,date:Date.now()});m.stages.transferred=1;m.stages.used=1;save();renderMastery();sv.textContent="✓ gespeichert"};box.appendChild(sv);addNextButton(box)
 }
 const ALPHABETS={de:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",en:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",it:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",es:"ABCDEFGHIJKLMNÑOPQRSTUVWXYZ",ro:"AĂÂBCDEFGHIÎJKLMNOPQRSȘTȚUVWXYZ",tr:"ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ",ru:"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ",ar:"ابتثجحخدذرزسشصضطظعغفقكلمنهوي"};
 function knowledgeKey(){return `${lang}:${lessonIndex}`}
@@ -1966,18 +2121,18 @@ function renderKnowledgeNet(box){
  const topic=TOPICS[lessonIndex%TOPICS.length];if(!saved.knowledgeNet)saved.knowledgeNet={};const k=knowledgeKey(),data=saved.knowledgeNet[k]||{items:[],history:[]};saved.knowledgeNet[k]=data;
  box.innerHTML=exerciseHead("ABC / KaWa – Wissensnetz wachsen lassen","Nicht A bis Z abarbeiten. Springe frei zu einem Buchstaben oder notiere bei asiatischen Schriften einfach spontane Begriffe. Leere Stellen sind ausdrücklich erlaubt.");const wrap=document.createElement("div");wrap.className="knowledge-net";const center=document.createElement("div");center.className="net-center";center.textContent=topic;const area=document.createElement("div");
  const alphabet=ALPHABETS[lang];if(alphabet){const lb=document.createElement("div");lb.className="letter-bank";shuffle([...alphabet]).slice(0,18).forEach(letter=>{const b=document.createElement("button");b.className="letter-btn";b.textContent=letter;b.onclick=()=>{inp.value=letter+" – ";inp.focus()};lb.appendChild(b)});area.appendChild(lb)}
- const inp=document.createElement("input");inp.className="assoc-input";inp.style.minHeight="46px";inp.placeholder=alphabet?"z. B. M – …":"Ein Begriff, Zeichen oder eine Assoziation …";area.appendChild(inp);const add=document.createElement("button");add.className="btn primary";add.textContent="Assoziation hinzufügen";add.onclick=()=>{const v=inp.value.trim();if(!v)return;data.items.push(v);inp.value="";save();renderKnowledgeNet(box);currentWords().slice(0,5).forEach(w=>setMastery(w.id,"linked"));renderMastery()};area.appendChild(add);const list=document.createElement("div");list.className="assoc-list";data.items.forEach(v=>{const s=document.createElement("span");s.className="assoc-chip";s.textContent=v;list.appendChild(s)});area.appendChild(list);
+ const inp=document.createElement("input");inp.className="assoc-input";inp.style.minHeight="46px";inp.placeholder=alphabet?"z. B. M – …":"Ein Begriff, Zeichen oder eine Assoziation …";area.appendChild(inp);const add=document.createElement("button");add.className="btn primary";add.textContent="Assoziation hinzufügen";add.onclick=()=>{const v=inp.value.trim();if(!v)return;data.items.push(v);inp.value="";save();renderKnowledgeNet(box);sentenceItemsForLesson().forEach(ph=>setSentenceMastery(ph.id,"linked"));renderMastery()};area.appendChild(add);const list=document.createElement("div");list.className="assoc-list";data.items.forEach(v=>{const s=document.createElement("span");s.className="assoc-chip";s.textContent=v;list.appendChild(s)});area.appendChild(list);
  const snap=document.createElement("button");snap.className="mini-btn";snap.textContent="Heute als Wissensstand speichern";snap.onclick=()=>{data.history.push({date:Date.now(),count:data.items.length});save();renderKnowledgeNet(box)};area.appendChild(snap);const last=data.history[data.history.length-2]||data.history[0];const growth=document.createElement("div");growth.className="growth-box";growth.textContent=last?`Früher: ${last.count} Begriffe · heute: ${data.items.length} · Wachstum: ${data.items.length-last.count>=0?"+":""}${data.items.length-last.count}`:`Heute sind ${data.items.length} Begriffe im Wissensnetz. Speichere später erneut, um das Wachstum zu sehen.`;area.appendChild(growth);wrap.append(center,area);box.appendChild(wrap)
 }
 function renderStory(box){
  const all=[];for(let i=Math.max(0,lessonIndex-2);i<=lessonIndex;i++)courses[lang].lessons[i].phrases.forEach(p=>all.push(phraseParts(p)));const story=all.slice(Math.max(0,all.length-5)).map(x=>x.original).join(" ");const meanings=all.slice(Math.max(0,all.length-5)).map(x=>x.natural).filter(Boolean);box.innerHTML=exerciseHead("Mini-Geschichte","Mehrere vertraute Sätze werden zu einem kleinen Hörblock. Erst hören, dann Text aufdecken. Der Sinn steht vor der Einzelwortkontrolle.");
  const play=document.createElement("button");play.className="btn primary";play.textContent="🔊 Geschichte hören";play.onclick=()=>speech(story);box.appendChild(play);const sc=document.createElement("div");sc.className="story-card story-hidden";sc.textContent=story;if(courses[lang].rtl)sc.dir="rtl";box.appendChild(sc);const reveal=document.createElement("button");reveal.className="btn";reveal.textContent="Text aufdecken";reveal.onclick=()=>{sc.classList.remove("story-hidden");reveal.disabled=true};box.appendChild(reveal);
- if(meanings.length){const q=document.createElement("div");q.className="story-q";q.textContent="Welche Bedeutung kam in der Geschichte vor?";box.appendChild(q);const correct=meanings[reinforceIndex%meanings.length],other=courses[lang].coreLessons.flatMap(x=>x.phrases).map(phraseParts).map(x=>x.natural).filter(x=>x&&x!==correct);const cg=document.createElement("div");cg.className="choices";shuffle([correct,...shuffle(other).slice(0,2)]).forEach(x=>{const b=document.createElement("button");b.className="choice";b.textContent=x;b.onclick=()=>{[...cg.children].forEach(y=>y.disabled=true);const ok=x===correct;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Sinnzusammenhang verstanden.":`Diese Aussage kam vor: ${correct}`;box.appendChild(f);if(ok)currentWords().slice(0,5).forEach(w=>setMastery(w.id,"understood"));renderMastery()};cg.appendChild(b)});box.appendChild(cg)}addNextButton(box)
+ if(meanings.length){const q=document.createElement("div");q.className="story-q";q.textContent="Welche Bedeutung kam in der Geschichte vor?";box.appendChild(q);const correct=meanings[reinforceIndex%meanings.length],other=courses[lang].coreLessons.flatMap(x=>x.phrases).map(phraseParts).map(x=>x.natural).filter(x=>x&&x!==correct);const cg=document.createElement("div");cg.className="choices";shuffle([correct,...shuffle(other).slice(0,2)]).forEach(x=>{const b=document.createElement("button");b.className="choice";b.textContent=x;b.onclick=()=>{[...cg.children].forEach(y=>y.disabled=true);const ok=x===correct;const f=document.createElement("div");f.className="feedback";f.style.color=ok?"var(--ok)":"var(--danger)";f.textContent=ok?"✓ Sinnzusammenhang verstanden.":`Diese Aussage kam vor: ${correct}`;box.appendChild(f);if(ok){const cur=currentReinforceSentence();if(cur)setSentenceMastery(cur.id,"understood")}renderMastery()};cg.appendChild(b)});box.appendChild(cg)}addNextButton(box)
 }
 function speakWithVolume(text,volume,rateMul=1){if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=courses[lang].voice;u.rate=(courses[lang].rate||.86)*rateMul;u.volume=volume;speechSynthesis.cancel();speechSynthesis.speak(u)}
 function renderChorus(box){
- const ph=lessonPhrases()[reinforceIndex%lessonPhrases().length];box.innerHTML=exerciseHead("Chor-Sprechen","Die Vorlage wird Schritt für Schritt leiser. Sprich gleichzeitig mit – erst getragen von der Stimme, später selbständiger. Keine Punktzahl für Akzent.");const tx=document.createElement("div");tx.className="exercise-big"+(courses[lang].rtl?" rtl":"");tx.textContent=ph.original;box.appendChild(tx);const r=document.createElement("div");r.className="chorus-rounds";[["1 · Vorlage laut",1],["2 · mittel",.65],["3 · leise",.32],["4 · ich allein",0]].forEach(([label,v])=>{const b=document.createElement("button");b.className="chorus-btn";b.textContent=label;b.onclick=()=>{if(v)speakWithVolume(ph.original,v,.92);else speechSynthesis.cancel();currentWords().slice(0,3).forEach(w=>setMastery(w.id,"heard"));renderMastery()};r.appendChild(b)});box.appendChild(r);
- const actions=document.createElement("div");actions.className="actions";const rec=document.createElement("button");rec.className="btn primary";rec.textContent="🎙 Aufnahme starten";const stop=document.createElement("button");stop.className="btn";stop.textContent="■ Stop";stop.disabled=true;const play=document.createElement("button");play.className="btn";play.textContent="▶ Meine Aufnahme";play.disabled=!recordedAudioUrl;const state=document.createElement("div");state.className="record-state";state.textContent="Die Aufnahme bleibt nur in dieser Sitzung.";rec.onclick=async()=>{try{mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});mediaChunks=[];mediaRecorder=new MediaRecorder(mediaStream);mediaRecorder.ondataavailable=e=>{if(e.data.size)mediaChunks.push(e.data)};mediaRecorder.onstop=()=>{const blob=new Blob(mediaChunks,{type:mediaRecorder.mimeType||"audio/webm"});if(recordedAudioUrl)URL.revokeObjectURL(recordedAudioUrl);recordedAudioUrl=URL.createObjectURL(blob);play.disabled=false;mediaStream?.getTracks().forEach(t=>t.stop());state.textContent="Aufnahme fertig – höre dich neben der Vorlage an.";currentWords().slice(0,3).forEach(w=>setMastery(w.id,"used"));renderMastery()};mediaRecorder.start();rec.disabled=true;stop.disabled=false;state.textContent="● Aufnahme läuft …";state.classList.add("recording")}catch(e){state.textContent="Mikrofon konnte nicht geöffnet werden."}};stop.onclick=()=>{if(mediaRecorder&&mediaRecorder.state!=="inactive")mediaRecorder.stop();rec.disabled=false;stop.disabled=true;state.classList.remove("recording")};play.onclick=()=>{if(recordedAudioUrl)new Audio(recordedAudioUrl).play()};actions.append(rec,stop,play);box.append(actions,state);addNextButton(box)
+ const ph=lessonPhrases()[reinforceIndex%lessonPhrases().length];box.innerHTML=exerciseHead("Chor-Sprechen","Die Vorlage wird Schritt für Schritt leiser. Sprich gleichzeitig mit – erst getragen von der Stimme, später selbständiger. Keine Punktzahl für Akzent.");const tx=document.createElement("div");tx.className="exercise-big"+(courses[lang].rtl?" rtl":"");tx.textContent=ph.original;box.appendChild(tx);const r=document.createElement("div");r.className="chorus-rounds";[["1 · Vorlage laut",1],["2 · mittel",.65],["3 · leise",.32],["4 · ich allein",0]].forEach(([label,v])=>{const b=document.createElement("button");b.className="chorus-btn";b.textContent=label;b.onclick=()=>{if(v)speakWithVolume(ph.original,v,.92);else speechSynthesis.cancel();setSentenceMastery(ph.id,"heard");renderMastery()};r.appendChild(b)});box.appendChild(r);
+ const actions=document.createElement("div");actions.className="actions";const rec=document.createElement("button");rec.className="btn primary";rec.textContent="🎙 Aufnahme starten";const stop=document.createElement("button");stop.className="btn";stop.textContent="■ Stop";stop.disabled=true;const play=document.createElement("button");play.className="btn";play.textContent="▶ Meine Aufnahme";play.disabled=!recordedAudioUrl;const state=document.createElement("div");state.className="record-state";state.textContent="Die Aufnahme bleibt nur in dieser Sitzung.";rec.onclick=async()=>{try{mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});mediaChunks=[];mediaRecorder=new MediaRecorder(mediaStream);mediaRecorder.ondataavailable=e=>{if(e.data.size)mediaChunks.push(e.data)};mediaRecorder.onstop=()=>{const blob=new Blob(mediaChunks,{type:mediaRecorder.mimeType||"audio/webm"});if(recordedAudioUrl)URL.revokeObjectURL(recordedAudioUrl);recordedAudioUrl=URL.createObjectURL(blob);play.disabled=false;mediaStream?.getTracks().forEach(t=>t.stop());state.textContent="Aufnahme fertig – höre dich neben der Vorlage an.";setSentenceMastery(ph.id,"used");renderMastery()};mediaRecorder.start();rec.disabled=true;stop.disabled=false;state.textContent="● Aufnahme läuft …";state.classList.add("recording")}catch(e){state.textContent="Mikrofon konnte nicht geöffnet werden."}};stop.onclick=()=>{if(mediaRecorder&&mediaRecorder.state!=="inactive")mediaRecorder.stop();rec.disabled=false;stop.disabled=true;state.classList.remove("recording")};play.onclick=()=>{if(recordedAudioUrl)new Audio(recordedAudioUrl).play()};actions.append(rec,stop,play);box.append(actions,state);addNextButton(box)
 }
 function addNextButton(box){const a=document.createElement("div");a.className="actions";const n=document.createElement("button");n.className="btn";n.textContent="Nächster Impuls →";n.onclick=nextReinforce;a.appendChild(n);box.appendChild(a)}
 
@@ -2344,53 +2499,36 @@ function renderStages(){
  })
 }
 function renderWordField(){
+ renderSentenceChunks();
  const box=$("wordGrid"),info=$("wordFieldInfo");if(!box)return;box.innerHTML="";
  if(!wordBanks[lang]){
-   box.innerHTML='<div class="bank-loading">Die große Wortbank wird beim ersten Öffnen dieser Sprache geladen. Bis dahin kannst du die Dekodier- und Mustersätze bereits benutzen.</div>';
-   info.textContent=`Zielbereich dieser Lektion: ${lessonIndex*25+1}–${(lessonIndex+1)*25} von 3000`;return
+  box.innerHTML='<div class="bank-loading">Das Einzelwort-Lexikon wird geladen. Die Satzübungen darüber funktionieren bereits ohne diese Wortbank.</div>';
+  if(info)info.textContent=`Lexikon-Zielbereich: ${lessonIndex*25+1}–${(lessonIndex+1)*25} von 3000`;return
  }
- const words=currentWords();
- if(!words.length){box.innerHTML='<div class="bank-error">Für diesen Bereich stehen in der geladenen Wortbank nicht genügend passende Einträge zur Verfügung.</div>';return}
- const s=progressStore(),show=wordGermanVisible[lang]!==false;
- info.textContent=`Wortfeld ${lessonIndex*25+1}–${lessonIndex*25+words.length} · ${words.length} Einträge · Bedeutung (${LANGUAGE_META[nativeLanguage]?.native||"Ausgangssprache"}) ${show?"sichtbar":"ausgeblendet"}${supportsWordTrace(lang)?" · Tipp: Wort antippen zum Groß-Nachzeichnen":""}`;
+ const words=currentWords();if(!words.length){box.innerHTML='<div class="bank-error">Für diesen Lexikonbereich stehen nicht genügend Einträge zur Verfügung.</div>';return}
+ const show=wordGermanVisible[lang]!==false;
+ if(info)info.textContent=`Lexikon ${lessonIndex*25+1}–${lessonIndex*25+words.length} · ${words.length} Einzelwörter · nur Nachschlagen / Schrift / Aussprache`;
  words.forEach(w=>{
-  const st=s[w.id]||{},card=document.createElement("article");
-  card.className="word-card"+((st.score||0)>=2?" secure":(st.seen&&st.due<=dayNo()?" due":""));
-  const top=document.createElement("div");top.className="word-top";
-  const tx=document.createElement("div"),tw=document.createElement("div");tw.className="word-target"+(courses[lang].rtl?" rtl":"");tw.textContent=w.target;if(courses[lang].rtl)tw.dir="rtl";if(supportsWordTrace(lang)){tw.classList.add("script-clickable");tw.title="Groß zum Nachzeichnen öffnen";tw.tabIndex=0;tw.setAttribute("role","button");tw.addEventListener("click",()=>openWordTrace(w.target,`→ ${w.de}${w.sense?" · "+w.sense:""}`));tw.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();openWordTrace(w.target,`→ ${w.de}${w.sense?" · "+w.sense:""}`)}});}tx.appendChild(tw);
-  if(show){const de=document.createElement("div");de.className="word-de";de.textContent="→ "+w.de;tx.appendChild(de)}
+  const card=document.createElement("article");card.className="word-card";const top=document.createElement("div");top.className="word-top";
+  const tx=document.createElement("div"),tw=document.createElement("div");tw.className="word-target"+(courses[lang].rtl?" rtl":"");tw.textContent=w.target;if(courses[lang].rtl)tw.dir="rtl";
+  if(supportsWordTrace(lang)){tw.classList.add("script-clickable");tw.title="Im Schriftstudio öffnen";tw.tabIndex=0;tw.setAttribute("role","button");tw.onclick=()=>openWordTrace(w.target,`→ ${w.de}${w.sense?" · "+w.sense:""}`)}
+  tx.appendChild(tw);if(show){const de=document.createElement("div");de.className="word-de";de.textContent="→ "+w.de;tx.appendChild(de)}
   const pron=document.createElement("div");pron.className="pronunciation-line loading";const pui=pronUI();pron.innerHTML=`<b>${escapeHtml(pui.label)}:</b> ${escapeHtml(pui.loading)}`;tx.appendChild(pron);attachPronunciation(pron,w.target,lang);
   const meta=document.createElement("div");meta.className="word-meta";meta.textContent=shortMeta(w);tx.appendChild(meta);
-  const sp=document.createElement("button");sp.type="button";sp.className="sound";sp.textContent="🔊";sp.addEventListener("click",()=>{speech(w.target);setMastery(w.id,"heard");renderMastery()});top.append(tx,sp);card.appendChild(top);
-  const ac=document.createElement("div");ac.className="word-actions";
-  const unsure=document.createElement("button");unsure.type="button";unsure.className="mini-btn unsure";unsure.textContent="noch unsicher";unsure.addEventListener("click",()=>{setMastery(w.id,"decoded");markWord(w.id,false);renderWordField();renderProgress();renderMastery()});
-  const good=document.createElement("button");good.type="button";good.className="mini-btn good";good.textContent=(st.score||0)>=2?"✓ gefestigt":"kenne ich";good.addEventListener("click",()=>{setMastery(w.id,"decoded");markWord(w.id,true);renderWordField();renderProgress();renderMastery()});
-  ac.append(unsure,good);card.appendChild(ac);box.appendChild(card)
+  const sp=document.createElement("button");sp.type="button";sp.className="sound";sp.textContent="🔊";sp.onclick=()=>speech(w.target);top.append(tx,sp);card.appendChild(top);box.appendChild(card)
  })
 }
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function quizPool(){return wordQuizMode==="due"?dueWords():currentWords()}
+function quizPool(){return wordQuizMode==="due"?dueSentences():sentenceItemsForLesson()}
 function renderWordQuiz(){
- const q=$("wordQuizQuestion"),box=$("wordQuizChoices"),fb=$("wordQuizFeedback");if(!q)return;box.innerHTML="";fb.textContent="";
- const pool=quizPool();
- if(!pool.length){q.textContent=wordBanks[lang]?"In diesem Modus sind derzeit keine Wörter vorhanden.":"Wortbank wird geladen …";return}
- wordQuizIndex%=pool.length;const w=pool[wordQuizIndex];q.textContent=`Was bedeutet „${w.target}“?`;if(courses[lang].rtl)q.dir="rtl";else q.removeAttribute("dir");
- const bank=wordBanks[lang]||[],distractors=shuffle(bank.filter(x=>x.id!==w.id&&x.de!==w.de)).slice(0,3).map(x=>x.de),answers=shuffle([w.de,...distractors]);
- answers.forEach(ans=>{
-  const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=ans;
-  b.addEventListener("click",()=>{
-   [...box.children].forEach(x=>x.disabled=true);const ok=ans===w.de;markWord(w.id,ok);
-   fb.textContent=ok?"✓ Richtig – nächste Wiederholung wird später fällig.":`Noch nicht. Richtig ist: ${w.de}`;fb.style.color=ok?"var(--ok)":"var(--danger)";
-   renderProgress();renderWordField()
-  });box.appendChild(b)
- })
+ const q=$("wordQuizQuestion"),box=$("wordQuizChoices"),fb=$("wordQuizFeedback");if(!q)return;box.innerHTML="";fb.textContent="";q.innerHTML="";
+ const pool=quizPool();if(!pool.length){q.textContent=wordQuizMode==="due"?"Aktuell sind keine Sätze zur Wiederholung fällig.":"Für diese Lektion sind keine Sätze verfügbar.";return}
+ wordQuizIndex=((wordQuizIndex%pool.length)+pool.length)%pool.length;const ph=pool[wordQuizIndex],correct=ph.natural||ph.literal;
+ const wrap=document.createElement("div");wrap.className="sentence-quiz-audio";const text=document.createElement("div");text.textContent="Höre den kurzen Satz und wähle seine Bedeutung.";const play=document.createElement("button");play.className="audio-orb";play.type="button";play.textContent="🔊";play.onclick=()=>{speech(ph.original);setSentenceMastery(ph.id,"heard");renderMastery()};wrap.append(text,play);q.appendChild(wrap);
+ const answers=shuffle([correct,...shuffle(sentenceMeaningPool(ph.id)).filter(x=>x!==correct).slice(0,3)]);
+ answers.forEach(ans=>{const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=ans;b.onclick=()=>{[...box.children].forEach(x=>x.disabled=true);const ok=ans===correct;markSentence(ph,ok);fb.innerHTML=ok?`✓ Satz verstanden.<div class="sentence-reveal">${escapeHtml(ph.original)}</div>`:`Noch nicht. Gemeint ist: ${escapeHtml(correct)}<div class="sentence-reveal">${escapeHtml(ph.original)}</div>`;fb.style.color=ok?"var(--ok)":"var(--danger)";if(ok)setSentenceMastery(ph.id,"understood");renderProgress();renderMastery()};box.appendChild(b)})
 }
-function listenCurrentWords(){
- const words=currentWords();if(!words.length||!("speechSynthesis" in window))return;
- words.forEach(w=>setMastery(w.id,"heard"));renderMastery();
- let i=0;window.speechSynthesis.cancel();
- const next=()=>{if(i>=words.length)return;const u=new SpeechSynthesisUtterance(words[i++].target);u.lang=courses[lang].voice;u.rate=(courses[lang].rate||.86)*.88;u.onend=()=>setTimeout(next,280);speechSynthesis.speak(u)};next()
-}
+function listenCurrentWords(){listenCurrentSentences()}
 
 
 let courseMode="learn";
@@ -2797,16 +2935,25 @@ function initTraceCanvas(){
 }
 
 function renderQuiz(){
- const l=courses[lang].lessons[lessonIndex], q=l.quiz[quizIndex], box=$("choices");
- $("quizQuestion").textContent=q[0];$("feedback").textContent="";$("feedback").style.color="";
- box.innerHTML="";
- q[1].forEach((choice,i)=>{
+ const items=sentenceItemsForLesson(),box=$("choices");box.innerHTML="";$("feedback").textContent="";$("feedback").style.color="";
+ if(!items.length){$("quizQuestion").textContent="Für diese Lektion stehen keine Satzbausteine bereit.";return}
+ quizIndex=((quizIndex%items.length)+items.length)%items.length;const ph=items[quizIndex],meaning=ph.natural||ph.literal;
+ $("quizQuestion").textContent=`Welcher kurze Satz passt zu: „${meaning}“?`;
+ const distract=[];
+ const seen=new Set([ph.original]);
+ for(const x of [...sentenceItemsForLesson(),...allSentenceItems().slice(0,100)]){
+  if(x.id===ph.id||seen.has(x.original))continue;seen.add(x.original);distract.push(x.original);if(distract.length>=3)break
+ }
+ shuffle([ph.original,...distract]).forEach(choice=>{
   const b=document.createElement("button");b.type="button";b.className="choice";b.textContent=choice;
-  if(courses[lang].rtl&&/[\u0600-\u06FF]/.test(choice))b.dir="rtl";
-  b.addEventListener("click",()=>{
-   [...box.children].forEach(x=>x.disabled=true);
-   const ok=i===q[2];$("feedback").textContent=ok?"✓ Richtig.":"Noch nicht. Richtig ist: "+q[1][q[2]];$("feedback").style.color=ok?"var(--ok)":"var(--danger)"
-  });box.appendChild(b)
+  if(courses[lang].rtl)b.dir="rtl";
+  b.onclick=()=>{
+   [...box.children].forEach(x=>x.disabled=true);const ok=choice===ph.original;
+   $("feedback").textContent=ok?"✓ Satz und Bedeutung verbunden.":`Passend ist: ${ph.original}`;
+   $("feedback").style.color=ok?"var(--ok)":"var(--danger)";
+   if(ok){setSentenceMastery(ph.id,"transferred");markSentence(ph,true)}else markSentence(ph,false);
+   renderMastery();renderProgress()
+  };box.appendChild(b)
  })
 }
 function renderRoutine(){
@@ -2814,11 +2961,14 @@ function renderRoutine(){
  c.routine.forEach(([a,b])=>{const d=document.createElement("div");const s=document.createElement("b");s.textContent=a;const sm=document.createElement("small");sm.textContent=b;d.append(s,sm);box.appendChild(d)})
 }
 function renderProgress(){
- const done=doneSet(lang), pct=Math.round(done.size/courses[lang].lessons.length*100),due=dueWords().length,lv=levelFor(lessonIndex);
+ const done=doneSet(lang),pct=Math.round(done.size/courses[lang].lessons.length*100),due=dueSentences().length,lv=levelFor(lessonIndex);
  $("progressNum").textContent=pct+"%";$("progressBar").style.width=pct+"%";
  $("completeLesson").textContent=done.has(lessonIndex)?"✓ Lektion abgeschlossen":"Lektion abschließen";
- $("statLessons").textContent=`${done.size}/${COURSE_LENGTH}`;$("statEncountered").textContent=`${Math.min(WORD_TARGET,seenCount())}/${WORD_TARGET}`;$("statSecure").textContent=secureCount();$("statDue").textContent=due;$("dueCount").textContent=due;
- $("levelBanner").textContent=`${lv.label}: ${lv.desc} Aktuelles Wortfeld: ${lessonIndex*25+1}–${(lessonIndex+1)*25}.`;
+ $("statLessons").textContent=`${done.size}/${COURSE_LENGTH}`;
+ $("statEncountered").textContent=`${Math.min(WORD_TARGET,seenCount())}/${WORD_TARGET}`;
+ $("statSecure").textContent=sentenceItemsForLesson().filter(x=>sentenceStageCount(x.id)>=4).length;
+ $("statDue").textContent=due;$("dueCount").textContent=due;
+ $("levelBanner").textContent=`${lv.label}: ${lv.desc} Aktive Lerneinheiten: kurze Sätze/Chunks. Wortfeld ${lessonIndex*25+1}–${(lessonIndex+1)*25} bleibt als Hintergrund-Lexikon.`
 }
 
 $("homeBtn").addEventListener("click",goHome);
@@ -2828,10 +2978,11 @@ if($("languageSearch"))$("languageSearch").addEventListener("input",renderHome);
 $("listenAll").addEventListener("click",()=>{
  const p=courses[lang].lessons[lessonIndex].phrases.map(x=>x[0]).join("   ");speech(p)
 });
-$("nextQuiz").addEventListener("click",()=>{const l=courses[lang].lessons[lessonIndex];quizIndex=(quizIndex+1)%l.quiz.length;renderQuiz()});
+$("nextQuiz").addEventListener("click",()=>{const n=Math.max(1,sentenceItemsForLesson().length);quizIndex=(quizIndex+1)%n;renderQuiz()});
 $("completeLesson").addEventListener("click",()=>{
  const done=doneSet(lang);done.add(lessonIndex);setDone(lang,done);
- const ps=progressStore();currentWords().forEach(w=>{if(!ps[w.id])ps[w.id]={score:0,due:dayNo(),seen:1};setMastery(w.id,"decoded")});save();
+ const ps=progressStore();currentWords().forEach(w=>{if(!ps[w.id])ps[w.id]={score:0,due:dayNo(),seen:1}});
+ const sp=sentenceProgressStore();sentenceItemsForLesson().forEach(ph=>{if(!sp[ph.id])sp[ph.id]={score:0,due:dayNo(),seen:1};setSentenceMastery(ph.id,"decoded")});save();
  if(lessonIndex<courses[lang].lessons.length-1){lessonIndex++;quizIndex=0;wordQuizIndex=0;stageOverride=null;traceGuideIndex=0;traceStrokes=[];views.analysis=false;views.literal=false;views.natural=false}
  renderCourse()
 });
@@ -2849,7 +3000,7 @@ $("wordQuizDue").addEventListener("click",()=>{wordQuizMode="due";wordQuizIndex=
 $("reviewBtn").addEventListener("click",()=>{wordQuizMode="due";wordQuizIndex=0;$("wordQuizDue").classList.add("active");$("wordQuizCurrent").classList.remove("active");$("wordQuizSection").scrollIntoView({behavior:"smooth",block:"start"});renderWordQuiz()});
 
 
-$("randomReinforce").addEventListener("click",()=>{reinforceMode=REINFORCE_MODES[Math.floor(Math.random()*REINFORCE_MODES.length)][0];reinforceIndex=Math.floor(Math.random()*Math.max(1,currentWords().length));renderReinforce();$("reinforcementSection").scrollIntoView({behavior:"smooth",block:"start"})});
+$("randomReinforce").addEventListener("click",()=>{reinforceMode=REINFORCE_MODES[Math.floor(Math.random()*REINFORCE_MODES.length)][0];reinforceIndex=Math.floor(Math.random()*Math.max(1,sentenceItemsForLesson().length));renderReinforce();$("reinforcementSection").scrollIntoView({behavior:"smooth",block:"start"})});
 
 
 $$('.course-mode-btn').forEach(b=>b.addEventListener('click',()=>setCourseMode(b.dataset.courseMode)));

@@ -1,36 +1,36 @@
-QA-REPORT – VERSION 18
+QA-REPORT – VERSION 19 · SATZ ZUERST
 
-Korrekturen
-- Der Text „über 🔊 anhören“ wird nicht mehr als Klangschrift ausgegeben.
-- Wenn keine sichere Klangschrift verfügbar ist, steht nur „—“.
-- Deutsch verwendet den eindeutigeren Begriff „Klangschrift“.
-- Alte fehlerhafte Klangschrift-Caches werden durch einen neuen Cache-Key ignoriert.
-- Betonung aus IPA wird lesbarer dargestellt (kein schwebendes ´ vor Konsonanten mehr).
+Grundumbau
+- Aktive Übungen verwenden kurze Sätze/Chunks statt isolierter Wörter.
+- Register „Wörter“ heißt jetzt „Satzbausteine“.
+- 3000-Wörter-Material bleibt als Hintergrund-Lexikon erhalten.
+- Einzelwortkarten haben keine „kenne ich / unsicher“-Bewertung mehr.
+- Einzelwörter dienen Nachschlagen, Klangschrift, Audio und Schriftstudio.
 
-Griechisch
-- Eigene Offline-Aussprachelogik für modernes Griechisch.
-- Sie funktioniert auch bei flektierten Wörtern, die in Wiktionary nicht als eigener Lemma-Eintrag vorhanden sind.
-- Diphthonge/Digraphen wie αι, ει, οι, ου, αυ, ευ sowie μπ, ντ, γκ, τσ, τζ werden berücksichtigt.
-- χ wird kontextabhängig behandelt; Betonungszeichen werden in eine sichtbare betonte Silbe umgesetzt.
+Satzbasierte Wiederholung
+- Eigener sentenceProgress-Speicher mit Fälligkeit.
+- Eigener sentenceMastery-Speicher mit sieben Lernstufen.
+- „Fällige Wörter“ -> „Fällige Sätze“.
+- Satz-Transfer: kurzen Satz hören und Bedeutung erkennen.
+- Festigungsanzeige zählt Sätze/Chunks statt Einzelwörter.
 
-Automatisch geprüfte Beispiele bei Muttersprache Deutsch
-- Τι -> ti
-- κάνεις -> KA-nis
-- Καλά -> ka-LA
-- ευχαριστώ -> ef-cha-ri-STO
-
-Dekodierung
-- Für die im Screenshot sichtbaren griechischen Kernwörter gibt es jetzt echte Wortbedeutungen:
-  Τι = was
-  κάνεις = machst du
-  Καλά = gut
-  ευχαριστώ = ich danke
-- Wenn bei den neueren europäischen Kursen die bisherige „wörtliche“ Satzzeile in Wahrheit die natürliche Bedeutung ist,
-  heißt sie jetzt korrekt „Satzbedeutung“.
+Umgebaute Festigungsmodi
+1. Krücken-Test: kompletter kurzer Satz hören -> Sinn wählen.
+2. Hör-Puzzle: Satz aus Klangbausteinen zusammensetzen.
+3. Dekodier-Puzzle: vollständigen Satz aus Wort-/Zeichenbausteinen rekonstruieren.
+4. Situation: ganzen Satz hören -> passende Bedeutung/Situation erkennen.
+5. Gedankenbrücke: Assoziation zum ganzen Satz/Chunk.
+6. Lückensatz: fehlendes Wort bleibt Baustein eines vollständigen Satzes.
+7. Satzlabor: verstandenen Satz minimal variieren.
+8. ABC/KaWa: freies Wissensnetz; verknüpft nun Satz-Mastery.
+9. Mini-Geschichte: bereits satzbasiert; Satz-Mastery angepasst.
+10. Chor-Sprechen: Satz-Mastery statt Wort-Mastery.
 
 Regression
 - JavaScript-Syntax: OK
-- Funktionen aus v17 erhalten: 158/158
-- UI-IDs aus v17 erhalten: 109/109
-- Fehlende Funktionen: keine
-- Fehlende UI-IDs: keine
+- Alle 167 benannten Funktionen aus v18 erhalten.
+- Alle 109 bisherigen UI-IDs erhalten.
+- Neue Funktionen gesamt: 18
+- Keine v18-Funktion / kein vorhandenes UI-Element entfernt.
+
+Zusatzprüfung: Auch der bisherige Mini-Transfer wurde auf vollständige kurze Sätze umgestellt; alte isolierte Wortfragen aus den Kurs-Quizdaten werden im aktiven Lernpfad nicht mehr verwendet.
